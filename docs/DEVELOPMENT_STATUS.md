@@ -1,5 +1,9 @@
 # Development Status
 
+Frontend API default and local environment now target https://35.175.179.96/api.
+VITE_API_BASE_URL still overrides the default; Vercel overrides must match and require
+a redeploy. This configuration change does not verify remote HTTPS or CORS readiness.
+
 ## Manual Job Card workflows and machine master — 21 October 2026
 
 Processes & Machines is a separate menu for Receptionist/PM/Admin. Saved machines
