@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-ink antialiased;
+}
+
+@keyframes weave { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(36px, 28px, 0); } }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes pulse-point { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake-once { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.animate-weave { animation: weave 22s linear infinite; }
+.animate-orbit { animation: orbit 12s linear infinite; transform-origin: center; }
+.animate-pulse-point { animation: pulse-point 2.8s ease-in-out infinite; transform-origin: center; }
+.animate-rise-in { animation: rise-in .55s cubic-bezier(.2,.8,.2,1) both; }
+.animate-shake-once { animation: shake-once .35s ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+
+:focus-visible {
+  outline: 2px solid #2e7db5;
+  outline-offset: 2px;
+}
+
+/* A customer estimate prints only its public projection, never the internal costing behind it. */
+@media print {
+  body:has(.customer-estimate) * { visibility: hidden; }
+  body:has(.customer-estimate) .customer-estimate,
+  body:has(.customer-estimate) .customer-estimate * { visibility: visible; }
+  body:has(.customer-estimate) .estimate-overlay { position: absolute; inset: 0; padding: 0; background: white; overflow: visible; }
+  body:has(.customer-estimate) .customer-estimate { box-shadow: none; margin: 0; max-width: none; width: 100%; }
+}
+
+/* QC reports export only the selected report, with expanded findings. */
+@media print {
+  body:has(.qc-report) aside, body:has(.qc-report) nav, body:has(.qc-report) button { display: none !important; }
+  body:has(.qc-report) .qc-report details > * { display: block !important; }
+  body:has(.qc-report) .qc-report { width: 100%; }
+}
+
+.quotation-grid th, .quotation-grid td { border: 1px solid black; }
+@page quotation { size: A4 portrait; margin: 14mm; }
+@media print {
+  body:has(.quotation-sheet) * { visibility: hidden; }
+  body:has(.quotation-sheet) .quotation-sheet,
+  body:has(.quotation-sheet) .quotation-sheet * { visibility: visible; }
+  body:has(.quotation-sheet) .quotation-overlay { position: absolute; inset: 0; padding: 0; background: white; overflow: visible; }
+  body:has(.quotation-sheet) .quotation-sheet { page: quotation; box-shadow: none; border-radius: 0; padding: 0; margin: 0; width: 100%; max-width: none; }
+  .quotation-sheet thead { display: table-header-group; }
+  .quotation-sheet tr { break-inside: avoid; }
+  .quotation-sheet .overflow-x-auto { overflow: visible; }
+}

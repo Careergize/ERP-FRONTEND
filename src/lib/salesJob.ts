@@ -1,0 +1,18 @@
+import type { JobCard, SalesOrder, SalesOrderItem, Model, User } from '../types';
+import type { CostEstimate } from './customCosting';
+import { estimateMatchesOrder, materialRequirements } from './customCosting';
+import { normalizeJobCard } from './jobCards';
+import { today } from './salesOrders';
+import { RAW_MATERIALS } from './rawMaterialData';
+export function buildLinkedJob(order: SalesOrder, item: SalesOrderItem, model: Model, requiredDate: string, specifications: string, materials: NonNullable<JobCard['requiredMaterials']>, user: User, cards: JobCard[], estimate?: CostEstimate) {
+  if (estimate && (!estimateMatchesOrder(estimate, order.id, item.id) || estimate.input.modelId !== model.id || estimate.input.modelRevision !== (model.revision ?? 1) || ['Superseded', 'Revision Required'].includes(estimate.status))) throw new Error('Use a current costing revision for this order line and model.');
+  if (estimate) materials = materialRequirements(estimate.input);
+  if (item.fulfillmentSource !== 'manufacturing' || !order.items?.some(i => i.id === item.id)) throw new Error('Select a manufacturing line from this order.');
+  if (new Set(materials.map(m => m.materialId)).size !== materials.length || materials.some(m => !RAW_MATERIALS.some(raw => raw.id === m.materialId && raw.unit === m.unit))) throw new Error('Use distinct raw materials with their configured units.');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(requiredDate) || !Number.isFinite(Date.parse(requiredDate)) || requiredDate < order.date || !materials.length || materials.some(m => !m.materialId || !Number.isFinite(m.requiredQuantity) || m.requiredQuantity <= 0)) throw new Error('Complete delivery date and editable material requirements. Model quantities are not configured.');
+    const id = crypto.randomUUID();
+    const card = normalizeJobCard({ id, jobCardNumber: `JC-${Math.max(0, ...cards.map(c => Number(c.jobCardNumber.replace('JC-', '')) || 0)) + 1}`, salesOrderId: order.id, salesOrderItemId: item.id, finishedProductId: item.itemId, salesOrderNumber: order.orderNumber, customerName: order.customerName, product: item.itemName, modelId: model.id, modelRevision: model.revision ?? 1, estimateId: estimate?.id, estimateRevision: estimate?.revision, routingRevision: 1, modelName: model.name, qty: item.quantity, unit: item.unit, createdDate: today(), requiredDate, specifications, productionRequirements: estimate ? `Estimate ${estimate.number} revision ${estimate.revision}: explicit recipe quantities and configured units. PM review required.` : `Editable draft: ${model.billOfMaterials}. Material quantities entered manually; no configured formula.`, requiredMaterials: materials, status: estimate ? 'Draft' : 'PendingApproval', department: 'Production Manager', stages: model.stages.map((stage, i) => ({ stage, sequenceOrder: i + 1, required: true, status: 'Pending' })), activityHistory: [{ id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Job card created', user: user.name, department: 'Production Manager', description: `Linked to ${order.orderNumber}, item ${item.id}. Draft requirements require PM review.` }] }, [order]);
+    if (model.routing?.length) card.productionStages = structuredClone(model.routing).map((s, i) => ({ ...s, sequence: i + 1, status: 'Pending', inputQuantity: null, outputQuantity: null, wasteQuantity: null, operator: '', remarks: '', handover: undefined, startedAt: undefined, completedAt: undefined }));
+    else card.productionStages = card.productionStages?.map(stage => ({ ...stage, inputUnit: item.unit, outputUnit: item.unit, wasteUnit: item.unit }));
+  return card;
+}

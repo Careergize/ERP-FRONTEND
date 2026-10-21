@@ -1,0 +1,81 @@
+import { useAuth } from '@/context/AuthContext';
+import { Link } from 'react-router-dom';
+import { useQuality } from '@/context/QualityContext';
+import { rawQualityStatus } from '@/lib/qualityIntegration';
+import { useState } from 'react';
+import { ArrowDownToLine, ArrowUpFromLine, Search, Download, Filter } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import { ENTRY_INPUT } from '@/components/ui/SearchSelect';
+import { InventoryMovementModal } from '@/components/ui/InventoryMovementModal';
+import { useInventory } from '@/context/InventoryContext';
+import { RAW_CATEGORY_LABEL, rawMaterialBalance, type RawCategory } from '@/lib/rawMaterialData';
+
+type View = 'levels' | 'movements' | 'report';
+const categories = Object.entries(RAW_CATEGORY_LABEL) as [RawCategory, string][];
+const views: [View, string][] = [['levels', 'Stock Levels'], ['movements', 'Movements'], ['report', 'Monthly Report']];
+const fmt = (value: number | null) => value === null ? 'Not recorded' : value.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const button = 'flex items-center gap-2 rounded-card border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-navy';
+const th = 'px-4 py-3 font-medium';
+const td = 'px-4 py-3 tabular-nums';
+export function RawMaterialPage() {
+  const quality = useQuality();
+  const { rawMovements, rawMaterials:RAW_MATERIALS, addRawMovement,rawLoading,rawError,reloadRaw,rawCanPost } = useInventory();
+  const {user}=useAuth();const demo=user?.id.startsWith('demo-');
+  const [category, setCategory] = useState<RawCategory>('virgin');
+  const [view, setView] = useState<View>('levels');
+  const [query, setQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [unit, setUnit] = useState('all');
+  const [status, setStatus] = useState('all');
+  const [family, setFamily] = useState('all');
+  const [month, setMonth] = useState('2026-09');
+  const [direction, setDirection] = useState<'IN' | 'OUT' | null>(null);
+  const [movementType, setMovementType] = useState('all');
+  const [notice, setNotice] = useState('');
+  const families = [...new Set(RAW_MATERIALS.filter(m => m.category === category).map(m => m.family))];
+  const statusLabel = (m: typeof RAW_MATERIALS[number], balance: number | null) => balance === null ? 'Not recorded' : balance < 0 ? 'Negative balance' : balance === 0 ? 'Out of stock' : m.minLevel !== undefined && balance < m.minLevel ? 'Below minimum' : 'Stock in Hand';
+  const units = [...new Set(RAW_MATERIALS.filter(m => m.category === category).map(m => m.unit))];
+  const materials = RAW_MATERIALS.filter(m => m.category === category && (family === 'all' || m.family === family) && [m.name, m.family].join(' ').toLowerCase().includes(query.trim().toLowerCase()) && (unit === 'all' || m.unit === unit) && (status === 'all' || statusLabel(m, rawMaterialBalance(m, rawMovements, view === 'report' ? month : undefined).currentStock) === status));
+  const ids = new Set(materials.map(m => m.id));
+  const movements = rawMovements.filter(m => ids.has(m.materialId) && (movementType === 'all' || m.movementType === movementType))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const rows = materials.map(material => ({ material, ...rawMaterialBalance(material, rawMovements, view === 'report' ? month : undefined) }));
+  const summary = categories.map(([id, label]) => {
+    const entries = RAW_MATERIALS.filter(m => m.category === id).map(m => ({ m, balance: rawMaterialBalance(m, rawMovements) }));
+    const known = entries.filter(e => e.balance.currentStock !== null);
+    const totals = new Map<string, number>();
+    known.forEach(({ m, balance }) => totals.set(m.unit, (totals.get(m.unit) ?? 0) + balance.currentStock!));
+    return { label: `${label} Stock`, value: known.length ? [...totals].map(([unit, total]) => `${fmt(total)} ${unit}`).join(', ') : 'Not recorded',
+      hint: `${entries.length} materials${known.length < entries.length ? ` · ${entries.length - known.length} balances unrecorded` : ''}` };
+  });
+  const minimumMasters = RAW_MATERIALS.filter(m => m.minLevel !== undefined);
+  const low = minimumMasters.filter(m => { const balance = rawMaterialBalance(m, rawMovements).currentStock; return balance !== null && balance < m.minLevel!; }).length;
+  const exportReport = () => {
+    const lines = [['Material / Grade', 'Family', 'Unit', 'Opening Stock', 'Stock IN', 'Stock OUT', 'Closing Stock'],
+      ...rows.map(row => [row.material.name, row.material.family, row.material.unit, row.openingStock ?? 'Not recorded', row.stockIn, row.stockOut, row.currentStock ?? 'Not recorded'])];
+    const blob = new Blob([lines.map(line => line.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `raw-material-${category}-${month}.csv`; a.click(); URL.revokeObjectURL(url);
+  };
+  if(rawLoading)return <p role="status" className="p-6">Loading saved raw-material inventory...</p>;
+  if(rawError)return <Card><p role="alert">{rawError}</p><button className="mt-3 underline" onClick={()=>void reloadRaw()}>Reload saved inventory</button></Card>;
+  return <div className="space-y-6"><Card><h2 className="font-semibold text-navy">Raw receipt quality status</h2><p className="text-xs text-gray-500">Physical Stock IN does not imply QC acceptance. Pending/rejected receipts remain physically recorded and are excluded from ordinary issue availability.</p><Link to="/qc/raw" className="underline">Raw Material Inspection</Link><details><summary>Receipt acceptance history</summary>{rawMovements.filter(m => m.movementType === "IN").map(m => <p key={m.id} className="text-xs">{m.date} · {m.materialName} · Receipt {m.id} · {m.quantity} {m.unit} · {rawQualityStatus(quality, m.id)}</p>)}</details></Card>
+    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-semibold text-navy">Raw Material</h1><p className="mt-1 text-sm text-gray-500">Virgin materials, recycled granules and inks used in production.</p></div><div className="flex gap-2"><button className={button} disabled={!rawCanPost} onClick={() => setDirection('IN')}><ArrowDownToLine size={16} />Stock IN</button><button className={"flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-navy"} disabled={!rawCanPost} onClick={() => setDirection('OUT')}><ArrowUpFromLine size={16} />Stock OUT</button></div></header>
+    <section aria-label="Raw material summary" className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[summary[0], { label: 'Below Minimum', value: minimumMasters.length ? String(low) : 'Not configured', hint: minimumMasters.length ? 'Materials with configured minimums' : 'Workbook does not specify minimum levels' }, summary[1], summary[2]].map(card => <Card key={card.label}><p className="text-sm text-gray-500">{card.label}</p><p className="mt-1 text-2xl font-semibold text-navy">{card.value}</p><p className="mt-1 text-xs text-gray-500">{card.hint}</p></Card>)}</section>
+    <button className="text-navy underline" onClick={()=>void reloadRaw()}>Reload latest saved stock</button>
+    <p className="text-xs text-gray-500">Reference: September 2026 physical stock workbook. All 91 material records are included; existing demo granules are kept separately. Ink and solvent opening balances were not recorded.</p>
+    {notice && <p role="status" className="rounded-card bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}
+    <div role="group" aria-label="Raw material category" className="inline-flex flex-wrap rounded-card bg-gray-100 p-1">{categories.map(([id, label]) => <button key={id} aria-pressed={category === id} onClick={() => { setCategory(id); setFamily('all'); setUnit('all'); }} className={`rounded-md px-3 py-1.5 text-sm font-medium ${category === id ? 'bg-white text-navy shadow-sm' : 'text-gray-600 hover:text-navy'}`}>{label}</button>)}</div>
+    <div role="tablist" aria-label="Raw material views" className="flex gap-6 border-b border-gray-200">{views.map(([id, label]) => <button key={id} id={`raw-tab-${id}`} role="tab" aria-selected={view === id} aria-controls={`raw-panel-${id}`} onClick={() => setView(id)} className={`-mb-px border-b-2 pb-3 text-sm font-medium ${view === id ? 'border-navy text-navy' : 'border-transparent text-gray-500 hover:text-navy'}`}>{label}</button>)}</div>
+    <div className="flex flex-wrap gap-3"><div className="relative min-w-[220px] flex-1"><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input aria-label="Search material or grade" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search material or grade" className={`${ENTRY_INPUT} pl-9`} /></div><button type="button" className={button} aria-expanded={showFilters} aria-controls="raw-filters" onClick={() => setShowFilters(!showFilters)}><Filter size={16} />Filter{family !== 'all' || unit !== 'all' || status !== 'all' ? ' (active)' : ''}</button>{view === 'movements' && <select aria-label="Movement type" value={movementType} onChange={event => setMovementType(event.target.value)} className={ENTRY_INPUT + ' !w-auto'}><option value="all">Stock IN and OUT</option><option value="IN">Stock IN</option><option value="OUT">Stock OUT</option></select>}{view === 'report' && <><label className="flex items-center gap-2 text-sm text-gray-500">Month<input aria-label="Report month" type="month" value={month} onChange={event => { if (event.target.value) setMonth(event.target.value); }} className={ENTRY_INPUT} /></label><button onClick={exportReport} className={button}><Download size={16} />Export CSV</button></>}</div>
+    {showFilters && <div id="raw-filters" className="flex flex-wrap items-end gap-3 rounded-card border border-gray-200 bg-white p-4"><label className="text-sm text-gray-600">Family<select aria-label="Material family" value={family} onChange={event => setFamily(event.target.value)} className={ENTRY_INPUT + ' !w-auto'}><option value="all">All families</option>{families.map(name => <option key={name}>{name}</option>)}</select></label><label className="text-sm text-gray-600">Unit<select aria-label="Filter unit" value={unit} onChange={event => setUnit(event.target.value)} className={ENTRY_INPUT}><option value="all">All units</option>{units.map(value => <option key={value}>{value}</option>)}</select></label><label className="text-sm text-gray-600">Status<select aria-label="Filter status" value={status} onChange={event => setStatus(event.target.value)} className={ENTRY_INPUT}><option value="all">All statuses</option>{['Stock in Hand', 'Below minimum', 'Out of stock', 'Negative balance', 'Not recorded'].map(value => <option key={value}>{value}</option>)}</select></label><button type="button" className={button} onClick={() => { setFamily('all'); setUnit('all'); setStatus('all'); setMovementType('all'); setQuery(''); }}>Clear filters</button></div>}
+    <div role="tabpanel" id={`raw-panel-${view}`} aria-labelledby={`raw-tab-${view}`} className="overflow-x-auto rounded-card border border-gray-200 bg-white">
+      {view === 'movements' ? <table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500"><tr>{['Date', 'Material / Grade', 'Category', 'Type', 'Quantity', 'Reference', 'Remarks'].map(label => <th scope="col" key={label} className={th}>{label}</th>)}</tr></thead><tbody className="divide-y divide-gray-100">{movements.map(m => <tr key={m.id} className="hover:bg-gray-50"><td className={`${td} whitespace-nowrap`}>{m.date}</td><td className={`${td} font-medium text-gray-900`}>{m.materialName}</td><td className={td}>{RAW_CATEGORY_LABEL[m.category]}</td><td className={`${td} whitespace-nowrap ${m.movementType === 'IN' ? 'text-emerald-700' : 'text-amber-700'}`}>Stock {m.movementType}</td><td className={`${td} whitespace-nowrap`}>{fmt(m.quantity)} {m.unit}</td><td className={td}>{m.reference || '—'}</td><td className={td}>{m.remarks || '—'}</td></tr>)}{!movements.length && <tr><td colSpan={7} className="p-10 text-center text-gray-500">No movements match your filters.</td></tr>}</tbody></table> : <>
+        {view === 'report' && <div className="border-b border-gray-200 p-4"><h2 className="font-semibold text-navy">{RAW_CATEGORY_LABEL[category]} — {month}</h2><p className="mt-1 text-xs text-gray-500">Closing Stock = Opening Stock + Stock IN − Stock OUT. Balances before the reference opening date are unrecorded.</p></div>}
+        <table className="w-full min-w-[900px] text-left text-sm"><thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500"><tr>{[category === 'ink' ? 'Ink Name / Colour' : 'Material / Grade', 'Category / Family', 'Opening Stock', 'Stock IN', 'Stock OUT', view === 'report' ? 'Closing Stock' : 'Current Stock', 'Unit', 'Status'].map((label, index) => <th key={label} scope="col" className={`${th} ${index > 1 && index < 6 ? 'text-right' : ''}`}>{label}</th>)}</tr></thead><tbody className="divide-y divide-gray-100">{rows.map(row => <tr key={row.material.id} className="hover:bg-gray-50"><td className={`${td} max-w-[300px] font-medium text-gray-900`}>{row.material.name}</td><td className={`${td} text-gray-500`}>{row.material.family}</td>{[row.openingStock, row.stockIn, row.stockOut, row.currentStock].map((value, index) => <td key={index} className={`${td} text-right ${index === 3 ? 'font-semibold text-navy' : 'text-gray-600'}`}>{fmt(value)}</td>)}<td className={td}>{row.material.unit}</td><td className={td}><span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${row.currentStock === null ? 'bg-gray-100 text-gray-500' : row.currentStock <= 0 ? 'bg-red-50 text-red-700' : row.material.minLevel !== undefined && row.currentStock < row.material.minLevel ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>{row.currentStock === null ? 'Not recorded' : row.currentStock < 0 ? 'Negative balance' : row.currentStock === 0 ? 'Out of stock' : row.material.minLevel !== undefined && row.currentStock < row.material.minLevel ? 'Below minimum' : 'Stock in Hand'}</span></td></tr>)}{!rows.length && <tr><td colSpan={8} className="p-10 text-center text-gray-500">No materials match your filters.</td></tr>}</tbody></table>
+      </>}
+    </div>
+    <p className="text-xs text-gray-500">{view === 'levels' ? 'Opening Stock is the reference opening balance; Stock IN and Stock OUT include all recorded movements.' : view === 'report' ? 'Movement totals apply only to the selected month.' : `${movements.length} movements`} {demo?'Demo entries reset on refresh.':'Entries are saved in the database and reload after sign-in.'}</p>
+    {direction && <InventoryMovementModal saveNotice={demo?'Demo entries reset on refresh.':'This receipt or consumption is saved to the shared database before confirmation.'} direction={direction} title="Raw Material" categories={categories} initialCategory={category} options={RAW_MATERIALS.map(m => ({ ...m, available: rawMaterialBalance(m, rawMovements).currentStock, fields: [['Category / Family', m.family], ['Opening Stock', fmt(rawMaterialBalance(m, rawMovements).openingStock)], ['Stock IN', fmt(rawMaterialBalance(m, rawMovements).stockIn)], ['Stock OUT', fmt(rawMaterialBalance(m, rawMovements).stockOut)], ['Status', statusLabel(m, rawMaterialBalance(m, rawMovements).currentStock)]] as [string, string][] }))} onClose={() => setDirection(null)} onSave={async entry => { const material = RAW_MATERIALS.find(m => m.id === entry.materialId)!; await addRawMovement({ ...entry, materialName: material.name, category: material.category, movementType: direction, unit: material.unit }); setNotice(`Stock ${direction} recorded for ${material.name}.`); }} />}
+  </div>;
+}
