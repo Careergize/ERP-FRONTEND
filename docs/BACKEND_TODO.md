@@ -1,5 +1,36 @@
 # Backend Integration TODO
 
+Implemented production-workflow/machines GET/POST, saved machine/process compatibility
+checks, and per-item jobRouting overrides through Sales Order allocation and PM edits.
+Migration 0013 adds ProductionMachine; existing process-master permissions govern access.
+Machine maintenance/deactivation UI and later production-run persistence remain pending.
+
+## API-only Sales Orders — 21 October 2026
+
+Implemented shared order list/detail reads without sample fallback, API creation
+options for active customers/staff/latest model revisions, and persisted quotation
+conversion references with duplicate protection. No schema migration required.
+Historical illustrative orders are no longer displayed. Later production/QC/dispatch
+persistence and full quotation authoring persistence remain pending.
+
+## API-only Job Card reads — 21 October 2026
+
+List/detail now use production-workflow/jobs exclusively; no sample-card or legacy
+job-cards response fallback remains. Allocation accepts shared API-backed Sales Orders
+only. Empty/error responses stay explicit. Later production tracking persistence remains
+pending; reloading replaces local state with the authoritative API snapshot.
+
+## Shared direct Sales Order handoff — 21 October 2026
+
+Implemented production-workflow models/processes/orders/jobs and permission-controlled
+PM correction/approval and Store Issue. New direct order/model/Job Card handoffs persist;
+raw issues lock materials, check availability and write OUT atomically. Model revisions,
+explicit output batches, request UUIDs and job versions protect scope and retry behavior.
+Still pending: migration of illustrative/quotation-conversion orders, shared persistence
+for later production/QC/finished dispatch, durable server-owned QC holds/release checks,
+order amendments/reversals and PostgreSQL concurrency verification. Existing auth,
+purchase/GRN and manual procurement workflows are preserved.
+
 ## Goods Received Notes — 21 October 2026
 
 Implemented persisted GRN list/create/detail, immutable receiver identity, partial

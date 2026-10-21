@@ -25,13 +25,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["project_manager", "receptionist", "production_manager", "store_keeper", "production_operator", "recycling_operator", "accounts", "admin"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["admin", "store_keeper", "project_manager", "production_manager", "accounts"] },
+  { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["receptionist", "admin"] },
   { to: "/goods-received-notes", label: "Goods Received Notes", icon: ClipboardList, roles: ["admin", "store_keeper", "project_manager", "production_manager", "accounts"] },
+  { to: "/production-models", label: "Product Models", icon: Settings, roles: ["admin", "receptionist", "production_manager"] },
+  { to: "/production-processes", label: "Processes & Machines", icon: Settings, roles: ["admin", "receptionist", "production_manager"] },
   { to: "/procurement", label: "Procurement Planner", icon: ClipboardList, roles: ["admin", "store_keeper", "production_manager", "project_manager", "accounts"] },
   { to: "/quotations", label: "Quotations", icon: FileText, roles: ["project_manager", "receptionist", "accounts", "production_manager", "admin"] },
   { to: "/qc", label: "Quality Control", icon: ClipboardList, roles: QC_VIEW_ROLES },
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["project_manager", "receptionist", "production_manager", "store_keeper", "production_operator", "recycling_operator", "accounts", "admin"] },
-  { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["receptionist", "admin"] },
   { to: "/job-cards", label: "Job Cards", icon: ClipboardList, roles: ["receptionist", "production_manager", "store_keeper", "production_operator", "admin"] },
   { to: "/stock", label: "Stock", icon: Boxes, roles: ["store_keeper", "admin"] },
   { to: "/raw-materials", label: "Raw Material", icon: Package, roles: ["store_keeper", "admin"] },
@@ -43,10 +45,11 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const FINANCE_NAV_ITEMS: NavItem[] = [
+  { to: "/", label: "Finance Dashboard", icon: LayoutDashboard, roles: ["accounts"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["accounts"] },
+  { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["accounts"] },
   { to: "/goods-received-notes", label: "Goods Received Notes", icon: ClipboardList, roles: ["accounts"] },
   { to: "/procurement", label: "Procurement Planner", icon: ClipboardList, roles: ["accounts"] },
-  { to: "/", label: "Finance Dashboard", icon: LayoutDashboard, roles: ["accounts"] },
   { to: "/consumables", label: "Consumables", icon: Package, roles: ["accounts"] },
   { to: "/costing", label: "Costing", icon: Calculator, roles: ["accounts"] },
   { to: "/masters", label: "Masters", icon: Settings, roles: ["accounts"] },
@@ -54,7 +57,6 @@ const FINANCE_NAV_ITEMS: NavItem[] = [
   { to: "/quotations", label: "Quotations", icon: FileText, roles: ["accounts"] },
   { to: "/raw-materials", label: "Raw Materials", icon: Package, roles: ["accounts"] },
   { to: "/recycling", label: "Recycling", icon: Recycle, roles: ["accounts"] },
-  { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["accounts"] },
   { to: "/stock", label: "Stocks", icon: Boxes, roles: ["accounts"] },
   { to: "/track-trace", label: "Track & Trace", icon: Search, roles: ["accounts"] },
 ];

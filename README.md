@@ -6,6 +6,8 @@ Current modules: Dashboard, Sales Orders, Job Cards, Stock, Raw Material, Recycl
 
 ## Current phase
 
+Job Cards load exclusively from the active Django production workflow API. Empty or failed responses do not fall back to static cards; allocating a Job Card requires an API-backed Sales Order.
+
 Frontend workflows are being implemented and validated. Sales Orders and finished-goods Stock retain their frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the active adjacent Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. The monorepo includes a separate [Django Phase 1 foundation](../backend/README.md); this frontend is not automatically integrated with it and production domain persistence is not verified.
 
 ## Stack and structure
@@ -36,7 +38,7 @@ Vite uses port 5173. Real Django login is the default; set
 are shown on the login screen only when demo mode is enabled. Demo identities remain
 local to the browser and never authenticate backend requests.
 
-`VITE_API_BASE_URL` configures Axios. Defaults: http://127.0.0.1:8001/api in development, /api in production. These are client expectations, not evidence of a deployed backend. Do not put secrets in VITE variables.
+`VITE_API_BASE_URL` configures Axios. The default API is https://35.175.179.96/api in development and production. An explicit environment value overrides it; configure the same value in Vercel and rebuild after changes. Backend HTTPS/CORS availability must be verified separately. Do not put secrets in VITE variables.
 
 ```powershell
 npm run build
@@ -76,3 +78,7 @@ is created. Run `node scripts/check-led-finance.mjs` for confirmed LED MAX/snaps
 and demo-auth regressions. [Rule, pending percentage base and demo boundaries](docs/sales-fulfillment.md#client-confirmed-led-max-and-finance-demo--15-october-2026).
 
 Raw inventory setup and API contract: [active Backend inventory](../../Backend/inventory/README.md).
+
+Sales Orders use only the active Backend's production-workflow/orders API. Creation
+choices load through order-options and finished-stock APIs; errors show retry instead
+of sample data. Quotation conversion saves a shared order before navigating to it.

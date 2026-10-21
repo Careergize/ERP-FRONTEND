@@ -33,6 +33,7 @@ export interface User {
 
 export type CustomerType = "B2B" | "B2C";
 export interface SalesOrderItem {
+  jobRouting?: JobProductionStage[];
   led?: import('@/lib/led').LEDInput;
   ledSnapshot?: import('@/lib/led').LEDSnapshot;
   quotationLineId?: string;
@@ -144,6 +145,7 @@ export interface JobCardMaterial {
 }
 export type ProductionStageStatus = "Pending" | "Received" | "InProgress" | "Completed" | "OnHold";
 export interface JobProductionStage {
+  processId?: string;
   qcTemplateIds?: string[];
   machineId?: string;
   id: string;

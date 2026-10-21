@@ -1,5 +1,33 @@
 # Business Rules
 
+Manufacturing workflow steps can be chosen and ordered manually per Sales Order item;
+the model route is only a default when no override is supplied. Explicit empty overrides
+are invalid. Each process can run on a selected compatible active machine, and repeated
+processes have distinct step IDs. Per-order planned step quantities are copied unchanged;
+only model-template quantities use batch scaling. PM edits remain locked after approval.
+
+## Shared Sales Order and production handoff — 21 October 2026
+
+Receptionist/Admin creates direct Sales Orders. Selecting an existing stock item needs
+no Job Card. A manufacturing line requires a saved model revision, configured material
+recipe, ordered process route and delivery date. Optional allocation creates one parent
+Job Card with only manufacturing lines, submitted immediately for PM review. Every
+manufacturing line must have configured requirements even when allocation is deferred.
+Required materials = per-batch recipe × order quantity / explicit model production
+output per batch. Output units must match the Sales Order exactly; mass percentages
+require explicit compatible mass units and must sum to 100. No guessed ctn↔kg yield.
+
+Process steps are user-defined and reusable. Each product selects and orders its own
+steps; model revisions and old job snapshots remain separate. PM can correct pending
+specifications/due dates, materials and route; quantity/unit remain tied to the order.
+Only PM/Admin approves; only Store/Admin issues approved requirements. Server permissions,
+not submitted role strings, authorize actions. Positive partial issues may not exceed
+approved remaining requirements or known raw availability. Unknown opening stock must
+be resolved. Raw OUT, issue quantities and audit/status commit together; stale workflow
+versions fail without a second deduction. Manual procurement stock is untouched.
+Production/QC beyond this handoff retains existing frontend checks; server-owned QC
+holds/release persistence remain a separate pending scope.
+
 ## Goods Received Notes — 21 October 2026
 
 New POs await GRN by default. The explicit immediate-receipt option posts all ordered

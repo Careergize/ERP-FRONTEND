@@ -9,7 +9,7 @@ import { createQuotation, submitQuotation, approveQuotation, sendQuotation, reco
 import { api } from '@/lib/api';
 import { saveQuotationSnapshot, saveQuotationDraft, loadQuotationDrafts } from '@/lib/quotationApi';
 import { FINISHED_BY_ID } from '@/lib/finishedGoodsData';
-interface Value { quotations: Quotation[]; loading: boolean; loadError: string; reload: () => Promise<void>; generateQuotation: (source: { customerId?: string; prospectId?: string; estimateId?: string }) => Quotation; reject: (id: string, remarks: string) => void; saveEmailDraft: (id: string, to: string, cc: string, subject: string, message: string) => void; create: () => Quotation; edit: (draft: Quotation) => Promise<void>; linkEstimate: (id: string, lineId: string, estimateId: string) => void; submit: (id: string) => Promise<void>; approve: (id: string) => void; requestChanges: (id: string, remarks: string) => void; send: (id: string) => void; respond: (id: string, response: Omit<QuotationResponse, 'id' | 'revision'>) => void; revise: (id: string, duplicate?: boolean) => Quotation; convert: (id: string, customerId: string, requiredDate: string) => string }
+interface Value { quotations: Quotation[]; loading: boolean; loadError: string; reload: () => Promise<void>; generateQuotation: (source: { customerId?: string; prospectId?: string; estimateId?: string }) => Quotation; reject: (id: string, remarks: string) => void; saveEmailDraft: (id: string, to: string, cc: string, subject: string, message: string) => void; create: () => Quotation; edit: (draft: Quotation) => Promise<void>; linkEstimate: (id: string, lineId: string, estimateId: string) => void; submit: (id: string) => Promise<void>; approve: (id: string) => void; requestChanges: (id: string, remarks: string) => void; send: (id: string) => void; respond: (id: string, response: Omit<QuotationResponse, 'id' | 'revision'>) => void; revise: (id: string, duplicate?: boolean) => Quotation; convert: (id: string, customerId: string, requiredDate: string) => Promise<string> }
 const Context = createContext<Value | undefined>(undefined);
 export function QuotationsProvider({ children }: { children: ReactNode }) {
   const [quotations, setQuotations] = useState<Quotation[]>([]); const current = useRef(quotations);
@@ -55,13 +55,13 @@ export function QuotationsProvider({ children }: { children: ReactNode }) {
     send: id => { const q = get(id); check(q); replace(sendQuotation(q, estimates, versions, actor())); },
     respond: (id, response) => replace(recordQuotationResponse(get(id), response, actor())),
     revise: (id, duplicate = false) => { const u = actor(); const old = get(id); const next = reviseQuotation(old, current.current, company, u, duplicate); publish([...current.current.map(q => !duplicate && q.id === id ? { ...q, status: 'Superseded' as const, events: [...q.events, quotationEvent(u, 'Superseded', `New revision ${next.revision}; original prices/terms/acceptance retained.`)] } : q), next]); return next; },
-    convert: (id, customerId, requiredDate) => {
+    convert: async (id, customerId, requiredDate) => {
       const u = actor(['receptionist', 'admin']); const q = get(id); const existing = getOrders().find(o => o.quotationId === q.rootId); if (existing) return existing.id;
       if (current.current.some(n => n.rootId === q.rootId && n.revision > q.revision)) throw new Error('Convert only the latest accepted revision.');
       check(q);
       const linkedCustomer = q.customer.customerId ?? prospects.find(p => p.id === q.customer.prospectId)?.linkedCustomerId;
       if (!customers.some(c => c.id === customerId) || (linkedCustomer && customerId !== linkedCustomer)) throw new Error('Select the exact customer master linked to this quotation/prospect.');
-      const draft = quotationConversionDraft(q, customerId, requiredDate, getOrders(), estimates, versions); if (q.customer.prospectId && !linkedCustomer) promoteProspect(q.customer.prospectId, customerId); const order = createSalesOrder(draft);
+      const draft = quotationConversionDraft(q, customerId, requiredDate, getOrders(), estimates, versions); const order = await createSalesOrder(draft); if (q.customer.prospectId && !linkedCustomer) promoteProspect(q.customer.prospectId, customerId);
       for (const item of order.items ?? []) if (item.estimateId) bindQuotationOrder(item.estimateId, order.id, item.id);
       replace({ ...q, status: 'Converted to Sales Order', salesOrderId: order.id, events: [...q.events, quotationEvent(u, 'Converted', `Existing Sales Order ${order.orderNumber}; costing adopted without changing its approved financial snapshot. No Job Card or stock action created.`)] }); return order.id;
     },

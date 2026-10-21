@@ -1,5 +1,24 @@
 # Frontend Data Models
 
+ProductionMachine stores name and JSON configuration (department, type, active,
+processIds). Machines use existing process-master view/add permissions. SalesOrderItem
+jobRouting optionally snapshots the manually chosen per-order stages. Stage processId
+identifies a reusable process; machineId references a saved compatible active machine.
+Each occurrence retains a unique step ID, including repeated processes.
+
+## Shared production workflow — 21 October 2026
+
+Active adjacent Backend/erp adds ProductionProcess (reusable process definition),
+ProductionModelRevision (unique model ID/revision and frozen configuration),
+WorkflowOrder (unique creation UUID, creator and order snapshot) and WorkflowJob
+(one parent per order, versioned manufacturing-item/material/process/audit snapshot).
+New Model fields productionBatchQuantity/productionBatchUnit explicitly describe output
+for one recipe batch. Job Card fields persistedWorkflow/workflowKey/workflowVersion
+identify the shared handoff; storeIssueComplete marks fully issued parent requirements.
+JSON snapshots preserve existing UI shapes without replacing legacy order/job APIs.
+Stock IN/OUT remains owned by inventory: issue writes authenticated RawMovement OUT;
+Sales Order creation itself does not reserve, deduct or manufacture stock lines.
+
 ## Goods Received Notes — 21 October 2026
 
 PurchaseOrder.receipt_method records grn or immediate; existing orders retain

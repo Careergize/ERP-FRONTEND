@@ -1,7 +1,9 @@
+import { ProcessManager } from '@/pages/Masters/ProcessManager';
 import { CommercialProvider } from '@/context/CommercialContext';
 import { ProcurementPlanner } from '@/pages/ProcurementPlanner';
 import { PurchaseOrders, PurchaseOrderEditor, PurchaseOrderDetail } from '@/pages/PurchaseOrders';
 import { GoodsReceivedNotes, GoodsReceivedNoteEditor, GoodsReceivedNoteDetail } from '@/pages/GoodsReceivedNotes';
+import { ModelManager } from '@/pages/Masters/ModelManager';
 import { QuotationsProvider } from '@/context/QuotationsContext';
 import { QuotationList, QuotationsGuard } from '@/pages/Quotations/QuotationList';
 import { QuotationDetail } from '@/pages/Quotations/QuotationDetail';
@@ -71,6 +73,8 @@ function AppRoutes() {
         <Route path="/quotations/:id" element={<QuotationsGuard><QuotationDetail /></QuotationsGuard>} />
         <Route path="/quotations/:id/edit" element={<QuotationsGuard><QuotationEditor /></QuotationsGuard>} />
         <Route path="/sales-orders" element={<SalesOrderList />} />
+        <Route path="/production-models" element={<ModelManager />} />
+        <Route path="/production-processes" element={<ProcessManager />} />
         <Route path="/purchase-orders" element={<PurchaseOrders />} />
         <Route path="/goods-received-notes" element={<GoodsReceivedNotes />} />
         <Route path="/goods-received-notes/new" element={<GoodsReceivedNoteEditor />} />

@@ -32,6 +32,9 @@ export function validateOrder(draft: SalesOrderDraft) {
   if (!draft.currency?.trim()) errors.currency = 'Enter the transaction currency.';
   if (draft.taxRate === undefined) errors.taxRate = 'Confirm the transaction tax rate (0 for no tax).';
   draft.items.forEach((item, i) => {
+    if (item.fulfillmentSource === 'manufacturing' && item.jobRouting !== undefined) {
+      if (!item.jobRouting.length || !item.jobRouting.some(s => s.required) || item.jobRouting.some(s => !s.name.trim() || !s.department.trim() || !s.inputUnit.trim() || !s.outputUnit.trim() || !s.wasteUnit.trim())) errors[`${i}.item`] = 'Add the Job Card workflow with process names, departments and units.';
+    }
     if (!['stock', 'manufacturing'].includes(item.fulfillmentSource ?? '')) errors[`${i}.source`] = 'Select a fulfillment source.';
     if ((!item.itemId && !(item.fulfillmentSource === 'manufacturing' && item.modelId)) || !item.itemName.trim()) errors[`${i}.item`] = 'Select an item.';
     if (item.modelId && (!item.requiredDate || !Number.isFinite(Date.parse(item.requiredDate)) || item.requiredDate < draft.date)) errors[`${i}.item`] = 'Enter a required delivery date on or after the order date.';

@@ -19,11 +19,14 @@ import { useInvoices } from '@/context/InvoicesContext';
 const button = 'rounded-card border border-gray-200 px-3 py-2 text-sm text-navy';
 export function SalesOrderDetail() {
   const { versions } = useModels(); const { estimates } = useCosting();
-  const { id } = useParams(); const { orders } = useSalesOrders(); const order = orders.find(o => o.id === id);
+  const { id } = useParams(); const { orders, loading: ordersLoading, loadError, reloadOrders } = useSalesOrders(); const order = orders.find(o => o.id === id);
   const { ledger, allocateStock, directDispatch, dispatch, reverse } = useInventory(); const { cards, load, createLinked } = useJobCards(); const { user } = useAuth(); const { invoices } = useInvoices();
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [invoiceOpen, setInvoiceOpen] = useState(false);
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void reloadOrders(); }, [id, reloadOrders]);
   const run = (action: () => void) => { try { action(); setError(''); setNotice('Recorded in frontend session state.'); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to save.'); } };
+  if (ordersLoading) return <p role="status" className="p-6">Loading Sales Order…</p>;
+  if (loadError) return <Card><p role="alert" className="text-red-700">{loadError}</p><button className="mt-3 underline" onClick={() => void reloadOrders()}>Retry</button></Card>;
   if (!order) return <Card>Sales Order not found. <Link to="/sales-orders">Return to orders</Link></Card>;
   const canFulfill = !!user && ['admin', 'store_keeper', 'receptionist'].includes(user.role);
   return <div className="space-y-5"><Link to="/sales-orders" className="text-navy underline">Sales Orders</Link><h1 className="text-2xl font-semibold text-navy">{order.orderNumber} · {order.customerName}</h1><p className="text-sm text-gray-500">{order.date} · {order.customerType} · Marketing: {order.marketingPersonName} · Customer PO: {order.requisitionOrder || 'Not recorded'}</p><p className="rounded-card bg-sky-50 p-3 text-sm text-sky-800">Frontend simulation. All receipts, reservations, dispatches and invoices reset on refresh. Quantities retain their own units.</p>{error && <p role="alert" className="text-red-700">{error}</p>}{notice && <p role="status">{notice}</p>}

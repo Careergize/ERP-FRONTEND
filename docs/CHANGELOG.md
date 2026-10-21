@@ -1,5 +1,37 @@
 # Changelog
 
+## Separate processes, machines and manual Job Card routing — 21 October 2026
+
+Added Processes & Machines with API-backed machine/process mapping. Manufacturing
+items now have an individually editable ordered Job Card workflow in Sales Order
+entry. Machine choices respect supported processes; saved routing carries into PM
+review/approval independently of the model template.
+
+## API-only Sales Orders — 21 October 2026
+
+Removed sample Sales Orders and local-only creation. List/detail load shared API
+records with loading, retry and empty states. Creation choices use API customers,
+staff, model revisions and finished stock; order numbers are assigned by the server.
+Quotation conversion now saves through the API with duplicate protection. Build,
+sales/quotation/customer checks and 8 backend workflow tests pass.
+
+## Removed static Job Cards — 21 October 2026
+
+Job Card screens now display only production workflow API records. Removed sample
+merging, old detail fallback and local-only allocation. Empty lists, load failures and
+detail retry are explicit. Reloading always replaces cards with the server response.
+Build and existing sales/integrated checks pass.
+
+## Product-specific process workflows and shared handoff — 21 October 2026
+
+Added user-defined reusable process steps with per-model selection/order and explicit
+recipe-batch output. Direct Sales Orders optionally allocate a linked manufacturing-only
+Job Card, automatically calculating materials without requiring costing. PM corrections
+and approval persist, and approved jobs enter Store's queue. Store Issue records checked
+Raw Material OUT atomically. Stock-only items never create Job Cards. Product Models has
+its own menu for Receptionist/PM/Admin. Legacy examples and later production tracking
+remain separate. Backend 80 tests, build and relevant frontend regressions pass.
+
 ## Goods Received Notes — 21 October 2026
 
 Added Goods Received Notes below Purchase Orders: list/search, PO-linked entry,

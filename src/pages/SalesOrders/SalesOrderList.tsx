@@ -4,7 +4,7 @@ import { useJobCards } from '@/context/JobCardsContext';
 import { orderFulfillmentStatus } from '@/lib/fulfillment';
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Download, FileText, Info, Plus, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, Plus, Search, X } from "lucide-react";
 import { useSalesOrders } from '@/context/SalesOrdersContext';
 import { NewSalesOrderModal } from './NewSalesOrderModal';
 import { useLocation } from 'react-router-dom';
@@ -124,16 +124,19 @@ function TableSkeleton() {
 // ---------------------------------------------------------------------------
 
 export function SalesOrderList() {
-  const { orders: sourceOrders } = useSalesOrders();
+  const { orders: sourceOrders, loading, loadError, reloadOrders } = useSalesOrders();
   const { ledger } = useInventory();
   const { cards, load } = useJobCards();
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') void reloadOrders(); };
+    void reloadOrders(); window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [reloadOrders]);
   const orders = useMemo(() => sourceOrders.map(order => ({ ...order, status: orderFulfillmentStatus(order, ledger, cards) })), [sourceOrders, ledger, cards]);
   const location = useLocation();
   const [showNewOrder, setShowNewOrder] = useState(location.pathname === '/sales-orders/new');
   const [success, setSuccess] = useState('');
-  const loading = false;
-  const usingDemoData = true;
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("newest");
@@ -218,13 +221,8 @@ export function SalesOrderList() {
         </div>
       </header>
 
-      {usingDemoData && (
-        <div role="status" className="flex items-start gap-2 rounded-card border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          <Info size={16} className="mt-0.5 shrink-0" />
-          Frontend demo orders. Changes are shared with Stock during this session and reset on browser refresh.
-        </div>
-      )}
-
+      <div className="flex items-center gap-3"><button disabled={loading} className="text-sm text-navy underline disabled:opacity-50" onClick={() => void reloadOrders()}>Reload Sales Orders</button><p className="text-xs text-gray-500">Sales Orders are loaded from the API.</p></div>
+      {loadError && <p role="alert" className="rounded-card bg-red-50 p-3 text-sm text-red-700">{loadError}</p>}
       <SalesSummary/>
       {/* Summary */}
       <section aria-label="Order summary" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -303,10 +301,10 @@ export function SalesOrderList() {
       <section aria-label="Sales orders" className="overflow-hidden rounded-card border border-gray-200 bg-white">
         {loading ? (
           <TableSkeleton />
-        ) : orders.length === 0 ? (
+        ) : loadError ? (<div className="p-6 text-sm text-red-700">Unable to load Sales Orders. Use Reload Sales Orders to retry.</div>) : orders.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="font-medium text-navy">No sales orders yet</p>
-            <p className="mt-1 text-sm text-gray-500">Create an order and allocate a job card to send it to the Production Manager.</p>
+            <p className="mt-1 text-sm text-gray-500">Create a Sales Order. Allocate a Job Card only for items that need manufacturing.</p>
             <button type="button" onClick={() => setShowNewOrder(true)} className="mt-4 inline-flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90">
               <Plus size={16} /> New order
             </button>

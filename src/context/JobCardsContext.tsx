@@ -3,14 +3,11 @@ import { appendProductionRun, type ProductionRun } from '@/lib/productionRuns';
 import { useQuality } from './QualityContext';
 import { assertMachineQC, assertProductionQC, finishedAuthorization, rawHeldQuantity } from '@/lib/qualityIntegration';
 import { rawMaterialBalance } from '@/lib/rawMaterialData';
-import { attachManufacturingItem, assertCompleteManufacturingScope, findWorkItem, parentForItem, summarizeParent } from '@/lib/parentJobCards';
-import { buildLinkedJob } from '@/lib/salesJob';
+import { assertCompleteManufacturingScope, findWorkItem, parentForItem, summarizeParent } from '@/lib/parentJobCards';
 import { createContext, useCallback, useContext, useRef, useState, useEffect, type ReactNode } from 'react';
 import { api } from '@/lib/api';
-import { MOCK_JOB_CARDS } from '@/lib/mockData';
-import { normalizeJobCard, approveJobCard, issueJobMaterials, updateJobStage, transferJobToStock, editJobCard, toggleJobStage, type StageUpdate, type StockReceiptOptions } from '@/lib/jobCards';
+import { approveJobCard, issueJobMaterials, updateJobStage, transferJobToStock, editJobCard, toggleJobStage, type StageUpdate, type StockReceiptOptions } from '@/lib/jobCards';
 import { useInventory } from './InventoryContext';
-import { useModels } from './ModelsContext';
 import { useCosting } from './CostingContext';
 import { estimateMatchesOrder, materialRequirements } from '@/lib/customCosting';
 import { changeRouting, reopenRouting, validateRouting } from '@/lib/productionRouting';
@@ -26,7 +23,6 @@ interface JobCardsState {
   workflowError: string;
   cards: JobCard[];
   loading: boolean;
-  usingDemo: boolean;
   load: () => Promise<void>;
   loadDetail: (id: string) => Promise<void>;
   postPreparedReceipts: (id: string, productId: string) => void;
@@ -48,61 +44,45 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const quality = useQuality();
   const { orders, linkJob, linkFinishedProduct } = useSalesOrders();
-  const { versions } = useModels();
   const { estimates, invalidate, bindJob } = useCosting();
   const { postReceipt, rawMovements, reloadRaw, rawMaterials: RAW_MATERIALS } = useInventory();
   const orderRef = useRef(orders); orderRef.current = orders;
   const [cards, setCards] = useState<JobCard[]>([]);
   const current = useRef<JobCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingDemo, setUsingDemo] = useState(false);
   const [workflowError, setWorkflowError] = useState('');
   const owner = useRef(user?.id); owner.current = user?.id;
   const request = useRef<Promise<void>>();
-  const dirty = useRef(new Set<string>());
-  const details = useRef(new Map<string, Promise<void>>());
   const publish = (next: JobCard[]) => { current.current = next; setCards(next); };
   const load = useCallback(() => {
+    const account = user?.id;
+    if (!account || account.startsWith('demo-')) {
+      publish([]); setLoading(false);
+      setWorkflowError(account ? 'Sign in with a Django account to load Job Cards from the server.' : '');
+      return Promise.resolve();
+    }
     if (!request.current) {
-      const account = user?.id; setLoading(true); setWorkflowError('');
-      request.current = (account && !account.startsWith('demo-') ? workflowRequest<JobCard[]>('jobs/') : Promise.resolve<JobCard[]>([])).then(shared => {
-        if (owner.current !== account) return;
-        const legacy = MOCK_JOB_CARDS.map(card => current.current.find(c => c.id === card.id && dirty.current.has(c.id)) ?? normalizeJobCard(card, orderRef.current));
-        publish([...shared.map(card => current.current.find(previous => previous.id === card.id && previous.workflowVersion === card.workflowVersion) ?? card), ...legacy]); setUsingDemo(!shared.length);
-      }).catch(e => { if (owner.current === account) setWorkflowError(e.message); }).finally(() => { if (owner.current === account) { setLoading(false); request.current = undefined; } });
+      setLoading(true); setWorkflowError('');
+      request.current = workflowRequest<JobCard[]>('jobs/').then(shared => {
+        if (!Array.isArray(shared) || !shared.every(validCard)) throw new Error('The server returned invalid Job Card data. Reload or check the backend.');
+        if (owner.current === account) publish(shared);
+      }).catch(e => { if (owner.current === account) { publish([]); setWorkflowError(e.message); } }).finally(() => { if (owner.current === account) { setLoading(false); request.current = undefined; } });
     }
     return request.current;
   }, [user?.id]);
-  useEffect(() => { request.current = undefined; details.current.clear(); dirty.current.clear(); publish([]); void load(); }, [load]);
+  useEffect(() => { request.current = undefined; publish([]); void load(); }, [load]);
   const remoteAction = async (id: string, action: string, data: object = {}) => {
     const parent = parentForItem(current.current, id);
     if (!parent?.persistedWorkflow) throw new Error('Shared Job Card not found.');
     const saved = await workflowRequest<JobCard>(`jobs/${parent.workflowKey}/${action}/`, { expectedVersion: parent.workflowVersion, itemId: id, ...data });
     publish(current.current.map(card => card.id === saved.id ? saved : card));
   };
-  const loadDetail = useCallback((id: string) => {
-    if (id.startsWith('wf-job-')) return load();
-    if (!details.current.has(id)) details.current.set(id, load().then(async () => {
-      if (dirty.current.has(id) || parentForItem(current.current, id)?.manufacturingItems) return;
-      try {
-        const { data } = await api.get<JobCard>(`/job-cards/${encodeURIComponent(id)}/`);
-        if (dirty.current.has(id) || parentForItem(current.current, id)?.manufacturingItems) return;
-        if (!validCard(data) || data.id !== id) throw new Error('Invalid job card detail');
-        const card = normalizeJobCard(data, orderRef.current);
-        publish([...current.current.filter(c => c.id !== id), card]);
-      } catch {
-        // Keep the known list/mock record; unknown IDs remain a genuine not-found.
-      }
-    }));
-    return details.current.get(id)!;
-  }, [load]);
+  const loadDetail = useCallback((_id: string) => load(), [load]);
   const mutate = (id: string, change: (card: JobCard) => JobCard) => {
     if (!user) throw new Error('Sign in to update job cards.');
     const card = current.current.find(c => c.id === id) ?? findWorkItem(current.current, id);
     if (!card) throw new Error('Job card not found.');
     const next = change(card);
-    dirty.current.add(id);
-    const parent = parentForItem(current.current, id); if (parent) dirty.current.add(parent.id);
     publish(current.current.map(c => c.id === id ? next : c.manufacturingItems?.some(i => i.id === id) ? summarizeParent(c, c.manufacturingItems.map(i => i.id === id ? next : i)) : c));
   };
   const saveSequence = async (id: string) => {
@@ -114,25 +94,13 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
     mutate(id, latest => ({ ...latest, activityHistory: [...(latest.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Stage requirements saved', user: user.name, department: 'Production Manager', description: persisted ? 'Existing stage API accepted the request; manufacturing tracking remains frontend-only.' : 'Saved in frontend state only; stage API was unavailable.' }] }));
     return persisted;
   };
-  const createLinked: JobCardsState['createLinked'] = async (orderId, itemId, modelId, requiredDate, specifications, materials, estimateId) => {
-    if (!user || !['admin', 'receptionist', 'production_manager'].includes(user.role)) throw new Error('Your role cannot create job cards.');
-    await load();
-    if (orderId.startsWith('wf-order-')) { const parent = await workflowRequest<JobCard>(`orders/${orderId.replace('wf-order-', '')}/allocate/`, {}); publish([...current.current.filter(c => c.id !== parent.id), parent]); linkJob(orderId, parent.id); return parent; }
-    const order = orderRef.current.find(o => o.id === orderId), item = order?.items?.find(i => i.id === itemId), model = versions.find(m => m.id === modelId && m.revision === (item?.modelRevision ?? versions.filter(v => v.id === modelId).at(-1)?.revision));
-    if (!order || !item || item.fulfillmentSource !== 'manufacturing' || !model) throw new Error('Select a custom order item and model.');
-    const existing = current.current.flatMap(c => c.manufacturingItems ?? [c]).find(c => c.salesOrderId === orderId && c.salesOrderItemId === itemId);
-    if (existing) return parentForItem(current.current, existing.id) ?? existing;
-    const estimate = estimates.find(e => e.id === (estimateId ?? item.estimateId));
-    if (item.modelId && !estimate) throw new Error('Save the line costing estimate before creating a linked custom Job Card.');
-    const card = buildLinkedJob(order, item, model, requiredDate, specifications, materials, user, current.current, estimate);
-    const attached = attachManufacturingItem(current.current, order, card);
-    dirty.current.add(attached.parent.id);
-    dirty.current.add(attached.item.id);
-    if (estimate) bindJob(estimate.id, attached.item.id);
-    publish([...current.current.filter(c => c.id !== attached.parent.id), attached.parent]);
-    linkJob(order.id, attached.parent.id); return attached.parent;
+  const createLinked: JobCardsState['createLinked'] = async (orderId) => {
+    if (!user || !['admin', 'receptionist'].includes(user.role)) throw new Error('Only Receptionist/Admin can allocate Job Cards.');
+    if (user.id.startsWith('demo-') || !orderId.startsWith('wf-order-')) throw new Error('Save a Sales Order through the shared API before allocating its Job Card. Sample or session-only orders cannot create Job Cards.');
+    const parent = await workflowRequest<JobCard>(`orders/${orderId.replace('wf-order-', '')}/allocate/`, {});
+    publish([...current.current.filter(card => card.id !== parent.id), parent]); linkJob(orderId, parent.id); return parent;
   };
-  return <Context.Provider value={{ createLinked, workflowError, cards, loading, usingDemo, load, loadDetail,
+  return <Context.Provider value={{ createLinked, workflowError, cards, loading, load, loadDetail,
     registerBatch: (id, stageId, number, quantity) => {
       if (!user || !['admin', 'qc_inspector', 'qc_supervisor'].includes(user.role)) throw new Error('QC staff/Admin registers inspection lots.');
       const card = findWorkItem(current.current, id); const stage = card?.productionStages?.find(s => s.id === stageId);

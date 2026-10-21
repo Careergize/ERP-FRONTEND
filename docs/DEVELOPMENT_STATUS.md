@@ -1,5 +1,59 @@
 # Development Status
 
+## Manual Job Card workflows and machine master — 21 October 2026
+
+Processes & Machines is a separate menu for Receptionist/PM/Admin. Saved machines
+declare supported processes and persist in the active Backend. Each manufacturing
+Sales Order item can add/remove/reorder its own workflow and assign compatible
+machines. Model routing is an optional starting template; recipe requirements still
+use the saved model output batch. Per-order planned quantities are not batch-scaled.
+PM can correct the saved Job Card before approval; approved routing stays locked.
+Migration 0013 applied; build, sales/quotation checks and 10 backend workflow tests pass.
+
+Navigation starts with Dashboard, Purchase Orders, Sales Orders and Goods Received
+Notes in operations and finance, subject to existing role visibility. Verified by
+TypeScript and production build on 21 October 2026.
+
+## API-only Sales Orders — 21 October 2026
+
+Sales Orders load exclusively from /api/production-workflow/orders/. Sample records
+and local creation fallback are removed. List/detail reload from the server and show
+explicit loading, retry and empty states. Creation options come from order-options/
+and finished-stock APIs. Quotation conversion now persists the shared order and its
+quotation references, with retries deduplicated by quotation identity. This supersedes
+the earlier frontend-only quotation-conversion limitation; later production/QC and
+commercial document editing still have their existing persistence limits.
+
+## API-only Job Cards — 21 October 2026
+
+JobCardsContext now loads exclusively from /api/production-workflow/jobs/. Removed
+sample-card merging, legacy detail fallback, local Job Card allocation and reuse of
+locally modified cards in place of fresh API results. Direct detail navigation reloads
+API data; errors clear stale cards and show Retry rather than not-found/sample content.
+Empty responses show a genuine empty state. Demo accounts must sign in to load cards.
+Allocation requires a saved shared Sales Order and confirmed backend response. Existing
+API records are preserved. Build and sales/integrated workflow checks pass.
+
+## Shared Sales Order → Job Card → Store Issue — 21 October 2026
+
+New direct Sales Orders save in the active adjacent Backend through production-workflow
+APIs. Receptionist/Admin choose stock or manufacturing per line and optionally allocate
+one parent Job Card for manufacturing items only. Model recipes and explicit production
+output per batch calculate required materials; selected ordered processes become the
+job's stage snapshot. Costing is not required for this direct workflow. PM corrects
+pending requirements/routing, approves the parent and forwards it to Store. Store issue
+validates current physical raw balances and records Raw Material OUT atomically. Job
+queues reload on focus/every 30 seconds while visible. New models/processes/revisions
+and handoff states survive staff sign-in/refresh; earlier illustrative records and the
+quotation-conversion prototype retain their existing frontend behavior. Later production
+runs/QC/finished-goods dispatch are not included in this new persistence boundary.
+
+Django checks/migration drift, all 80 backend tests, frontend build and existing sales,
+custom-costing, inventory, integrated-operations, QC and procurement scripts pass.
+Focused tests cover actual Receptionist → PM → Store sessions, corrections, scaled
+recipes, separate product routes, stock-only/mixed orders, stale saves and invalid issue.
+Local SQLite was exercised; PostgreSQL concurrency and browser interaction were not.
+
 ## Goods Received Notes — 21 October 2026
 
 Added GRN list/search, PO-linked entry and printable detail views directly below

@@ -3,7 +3,7 @@ import { clearSession, readToken, replaceTokens } from './authSession';
 
 // Point this at your DRF backend. Injected via .env as VITE_API_BASE_URL
 // so the same build can target dev/staging/prod without a code change.
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://127.0.0.1:8001/api" : "/api");
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || "https://35.175.179.96/api";
 
 export const api = axios.create({
   baseURL: apiBaseUrl,

@@ -27,7 +27,7 @@ export function JobCardDetail() {
   const [search, setSearch] = useSearchParams();
   const { user } = useAuth();
   const tabs = allTabs.filter(t => !isQCRole(user?.role) || t !== 'Costing');
-  const { cards, loadDetail, approve, edit, issue, updateStage, transfer, postPreparedReceipts, toggleStage, saveSequence } = useJobCards();
+  const { cards, loading: jobsLoading, workflowError, loadDetail, approve, edit, issue, updateStage, transfer, postPreparedReceipts, toggleStage, saveSequence } = useJobCards();
   const quality = useQuality();
   const { rawMovements, rawMaterials: RAW_MATERIALS } = useInventory();
   const [detailLoading, setDetailLoading] = useState(true);
@@ -41,7 +41,8 @@ export function JobCardDetail() {
   useEffect(() => { let active = true; setDetailLoading(true); setTab('Overview'); setForm(null); setStageId(null); setNotice(''); setError(''); void loadDetail(id).finally(() => { if (active) setDetailLoading(false); }); return () => { active = false; }; }, [id, loadDetail, search]);
   const parent = parentForItem(cards, id);
   const card = parent?.manufacturingItems ? parent.manufacturingItems.find(i => i.id === (search.get('item') ?? id)) ?? parent.manufacturingItems[0] : parent;
-  if (detailLoading) return <p role="status" className="text-sm text-gray-500">Loading job card…</p>;
+  if (detailLoading || jobsLoading) return <p role="status" className="text-sm text-gray-500">Loading job card…</p>;
+  if (workflowError) return <Card><h1 className="text-xl font-semibold text-navy">Unable to load Job Card</h1><p role="alert" className="mt-2 text-sm text-red-700">{workflowError}</p><button className={`${JOB_BUTTON} mt-4`} onClick={() => void loadDetail(id)}>Retry</button><Link to="/job-cards" className={`${JOB_BUTTON} ml-3 mt-4`}>Back to Job Cards</Link></Card>;
   if (!card) return <Card><h1 className="text-xl font-semibold text-navy">Job card not found</h1><p className="mt-2 text-sm text-gray-500">No Job Card record exists for this reference.</p><Link to="/job-cards" className={`${JOB_BUTTON} mt-4`}>Back to Job Cards</Link></Card>;
   const location = currentLocation(card), totals = productionTotals(card);
   const stages = orderedStages(card), required = productionStages(card);
