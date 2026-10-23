@@ -30,8 +30,8 @@ import { TrackTrace } from "@/pages/TrackTrace/ConnectedTrace";
 import { StockPage } from "@/pages/Stocks/stocks";
 import { RawMaterialPage } from "@/pages/RawMaterials/RawMaterialPage";
 import { InventoryProvider } from "@/context/InventoryContext";
-import { ConsumablesProvider } from "@/context/ConsumablesContext";
 import { JobCardsProvider } from "@/context/JobCardsContext";
+import { ItemRegisterPage } from "@/pages/Registers/ItemRegisterPage";
 import { ConsumablesPage } from "@/pages/Consumables/ConsumablesPage";
 
 import { RecyclingPage } from "@/pages/Recycling/RecyclingPage";
@@ -88,6 +88,7 @@ function AppRoutes() {
         <Route path="/stock" element={<StockPage />} />
         <Route path="/raw-materials" element={<RawMaterialPage />} />
         <Route path="/procurement" element={<ProcurementPlanner />} />
+        <Route path="/spares" element={<ItemRegisterPage key="spares" kind="spares" />} />
         <Route path="/consumables" element={<ConsumablesPage />} />
         <Route path="/recycling" element={<RecyclingPage />} />
         <Route path="/costing" element={<CostingPage />} />
@@ -101,7 +102,7 @@ function AppRoutes() {
 export function App() {
   return (
     <AuthProvider>
-      <SalesOrdersProvider><ModelsProvider><CommercialProvider><QualityProvider><InventoryProvider><CostingProvider><QuotationsProvider><ConsumablesProvider><JobCardsProvider><InvoicesProvider><AppRoutes /></InvoicesProvider></JobCardsProvider></ConsumablesProvider></QuotationsProvider></CostingProvider></InventoryProvider></QualityProvider></CommercialProvider></ModelsProvider></SalesOrdersProvider>
+      <SalesOrdersProvider><ModelsProvider><CommercialProvider><QualityProvider><InventoryProvider><CostingProvider><QuotationsProvider><JobCardsProvider><InvoicesProvider><AppRoutes /></InvoicesProvider></JobCardsProvider></QuotationsProvider></CostingProvider></InventoryProvider></QualityProvider></CommercialProvider></ModelsProvider></SalesOrdersProvider>
     </AuthProvider>
   );
 }

@@ -1,5 +1,11 @@
 # Development Status
 
+## Local workflow and registers update — 23 October 2026
+
+Separate API-backed Spares/Consumables registers are implemented locally; stock posting and operational approvals remain blocked. Earlier quotation-first/automatic-allocation notes below are superseded by the user decisions recorded in the implementation report.
+
+See [implementation, checks and blockers](spares-consumables-implementation.md).
+
 ## Quotation-first orders and Sales Order approval — 23 October 2026
 
 Current flow: saved Quotation → Sales Order awaiting approval → Production Manager

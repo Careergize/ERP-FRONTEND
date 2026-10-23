@@ -14,3 +14,9 @@ export async function workflowRequest<T>(path: string, data?: unknown): Promise<
     throw new Error(data ? typeof data === 'string' ? data : JSON.stringify(data) : 'Unable to reach the production workflow server. Your entries have been kept; reload and retry.');
   }
 }
+/** Load existing array-based workflow masters without demo fallback. */
+export async function loadWorkflowCollection<T>(path: string): Promise<T[]> {
+  const rows = await workflowRequest<unknown>(path);
+  if (!Array.isArray(rows)) throw new Error('The workflow server returned an invalid response: expected a collection. Please retry.');
+  return rows as T[];
+}

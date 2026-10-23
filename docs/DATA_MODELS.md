@@ -1,5 +1,11 @@
 # Frontend Data Models
 
+## Local workflow and registers update — 23 October 2026
+
+Added separate SpareItem/Consumable masters and an append-only SpareStockMovement ledger with Decimal quantities, explicit unknown opening and no Consumable balance/ledger.
+
+See [implementation, checks and blockers](spares-consumables-implementation.md).
+
 ## Quotation-first orders and Sales Order approval — 23 October 2026
 
 Current flow: saved Quotation → Sales Order awaiting approval → Production Manager

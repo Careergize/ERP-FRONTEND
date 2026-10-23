@@ -77,6 +77,7 @@ export function CostingPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-navy">Costing</h1>
+      <p role="note" className="mt-2 text-sm text-amber-800">Backend costing and exchange-rate persistence are pending. Fallback records are samples; local calculations and rate entries are session-only and are not confirmed database saves.</p>
       <p className="mt-1 text-sm text-gray-500">Review item costs and maintain the manual exchange rates used by Accounts.</p>
 
       <section aria-label="Costing summary" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">

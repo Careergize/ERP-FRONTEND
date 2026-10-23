@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, useState, useEffect, type ReactNode } from 'react';
-import { workflowRequest } from '@/lib/productionWorkflowApi';
+import { loadWorkflowCollection, workflowRequest } from '@/lib/productionWorkflowApi';
 import type { JobProductionStage } from '@/types';
 import { MOCK_MODELS } from '@/lib/mockData';
 import { useAuth } from './AuthContext';
@@ -16,7 +16,22 @@ export function ModelsProvider({ children }: { children: ReactNode }) {
     let active = true;
     const seed = user?.id.startsWith('demo-') ? MOCK_MODELS.map(m => ({ ...m, revision: 1 })) : []; current.current = seed; setVersions(seed); setProcesses([]); setError('');
     setMachines([]);
-    if (user && !user.id.startsWith('demo-')) void Promise.all([workflowRequest<Model[]>('models/'), workflowRequest<JobProductionStage[]>('processes/'), workflowRequest<Machine[]>('machines/')]).then(([models, steps, savedMachines]) => { if (active) { current.current = models; setVersions(models); setProcesses(steps); setMachines(savedMachines); } }).catch(e => { if (active) setError(e.message); });
+    if (user && !user.id.startsWith('demo-')) {
+      // Each supported master loads independently; an unavailable machine service
+      // must not discard saved models or reusable processes.
+      const failed = (resource: string, cause: unknown) => {
+        if (active) setError(previous => [previous, `${resource}: ${cause instanceof Error ? cause.message : 'Unable to load.'}`].filter(Boolean).join('\n'));
+      };
+      void loadWorkflowCollection<Model>('models/').then(models => {
+        if (active) { current.current = models; setVersions(models); }
+      }).catch(cause => failed('Product models', cause));
+      void loadWorkflowCollection<JobProductionStage>('processes/').then(steps => {
+        if (active) setProcesses(steps);
+      }).catch(cause => failed('Production processes', cause));
+      void loadWorkflowCollection<Machine>('machines/').then(savedMachines => {
+        if (active) setMachines(savedMachines);
+      }).catch(cause => failed('Machines (backend integration pending)', cause));
+    }
     return () => { active = false; };
   }, [user?.id]);
   const models = versions.filter(m => !versions.some(n => n.id === m.id && (n.revision ?? 1) > (m.revision ?? 1)));

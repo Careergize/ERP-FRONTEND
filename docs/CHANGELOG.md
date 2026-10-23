@@ -1,5 +1,11 @@
 # Changelog
 
+## Local workflow and registers update — 23 October 2026
+
+Added separate API-backed Spares and Consumables registers; reconciled workflow conflicts and disabled unresolved operational transitions. Existing business databases were not migrated.
+
+See [implementation, checks and blockers](spares-consumables-implementation.md).
+
 ## Quotation-first orders and Sales Order approval — 23 October 2026
 
 Current flow: saved Quotation → Sales Order awaiting approval → Production Manager

@@ -1,5 +1,11 @@
 # Backend Integration TODO
 
+## Local workflow and registers update — 23 October 2026
+
+Apply new catalog/graph merge migrations only to an approved environment; assign approved master permissions. Publish authority/policy and source evidence before stock posting or operational approval/release. Complete standalone controlled Job Card authoring without bypassing Task 04/05 gates.
+
+See [implementation, checks and blockers](spares-consumables-implementation.md).
+
 ## Quotation-first orders and Sales Order approval — 23 October 2026
 
 Current flow: saved Quotation → Sales Order awaiting approval → Production Manager

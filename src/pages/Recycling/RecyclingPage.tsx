@@ -45,7 +45,8 @@ export function RecyclingPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy">Recycling</h1><Card className="mt-3"><h2 className="font-semibold">Recycling extruder QC warnings</h2>{quality.inspections.filter(i => i.subject.machineType === "recycle_extruder" && subjectHeld(quality, i.subject)).map(i => <p key={i.id} className="text-sm text-amber-700">{i.subject.label} · {i.number} · {i.status} · Verification / corrective action required</p>)}<p className="text-xs text-gray-500">Machine checks are separate from recycling stock transactions. QC staff review the machine-specific records in Quality Control.</p></Card>
+      <h1 className="text-2xl font-semibold text-navy">Recycling</h1>
+      <p role="note" className="mt-2 text-sm text-amber-800">Backend recycling ledgers are pending. Fallback waste and granule records are sample data, not confirmed stock transactions.</p><Card className="mt-3"><h2 className="font-semibold">Recycling extruder QC warnings</h2>{quality.inspections.filter(i => i.subject.machineType === "recycle_extruder" && subjectHeld(quality, i.subject)).map(i => <p key={i.id} className="text-sm text-amber-700">{i.subject.label} · {i.number} · {i.status} · Verification / corrective action required</p>)}<p className="text-xs text-gray-500">Machine checks are separate from recycling stock transactions. QC staff review the machine-specific records in Quality Control.</p></Card>
       <p className="mt-1 text-sm text-gray-500">Track production waste through recycling and back into raw material stock.</p>
 
       <section aria-label="Recycling summary" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">

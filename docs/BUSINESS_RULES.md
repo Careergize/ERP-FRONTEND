@@ -1,5 +1,11 @@
 # Business Rules
 
+## Local workflow and registers update — 23 October 2026
+
+Quotation is optional. Draft preparation does not authorize production. Order approval and Job Card creation are separate; standalone production requires documented authorization. Consumables are register-only; spare posting awaits Procurement/Stores mapping.
+
+See [implementation, checks and blockers](spares-consumables-implementation.md).
+
 ## Quotation-first orders and Sales Order approval — 23 October 2026
 
 Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
