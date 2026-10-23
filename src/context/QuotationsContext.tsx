@@ -56,6 +56,7 @@ export function QuotationsProvider({ children }: { children: ReactNode }) {
     respond: (id, response) => replace(recordQuotationResponse(get(id), response, actor())),
     revise: (id, duplicate = false) => { const u = actor(); const old = get(id); const next = reviseQuotation(old, current.current, company, u, duplicate); publish([...current.current.map(q => !duplicate && q.id === id ? { ...q, status: 'Superseded' as const, events: [...q.events, quotationEvent(u, 'Superseded', `New revision ${next.revision}; original prices/terms/acceptance retained.`)] } : q), next]); return next; },
     convert: async (id, customerId, requiredDate) => {
+      if (get(id).salesOrderId) return get(id).salesOrderId!;
       const u = actor(['receptionist', 'admin']); const q = get(id); const existing = getOrders().find(o => o.quotationId === q.rootId); if (existing) return existing.id;
       if (current.current.some(n => n.rootId === q.rootId && n.revision > q.revision)) throw new Error('Convert only the latest accepted revision.');
       check(q);

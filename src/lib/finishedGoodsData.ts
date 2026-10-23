@@ -26,6 +26,7 @@ export interface FinishedGood {
   dataNotes: string[];
 }
 export interface FinishedGoodsMovement {
+  sale?: import('./stockSale').StockSaleSnapshot;
   goodsReceivedNoteId?: string;
   purchaseOrderId?: string;
   quantitySnapshot?: import('./stockIntelligence').QuantitySnapshot;

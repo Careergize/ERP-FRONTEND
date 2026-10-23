@@ -21,6 +21,7 @@ try {
   const item = { id: 'line-custom', itemName: 'Custom bag', modelId: model.id, modelRevision: 2, fulfillmentSource: 'manufacturing', specifications: 'Customer print', requiredDate: '2026-10-15', quantity: 107, unit: 'kg', unitPrice: 0, totalPrice: 0 };
   const order = s.buildSalesOrder({ customerName: 'Test customer', marketingPersonName: 'Test sales', customerType: 'B2B', date: '2026-10-09', requisitionOrder: 'PO-test', currency: 'UGX', taxRate: 0, items: [item, { ...item, id: 'second-custom' }] }, []);
   assert.equal(order.items.length, 2); assert.equal(order.items[0].itemId, undefined); assert.equal(order.items[0].modelRevision, 2);
+  assert.equal(c.newCostingInput(order, item, { ...model, wastePercent: 25 }).wastePercent, 0, 'New estimates must not inherit predefined product wastage.');
   const input = { ...c.newCostingInput(order, item, model), processes: [{ id: 'process-1', name: 'Extrusion', basis: 'per kg', rate: 100, quantity: 107, unit: 'kg', remarks: 'Manual rate' }, { id: 'process-2', name: 'Setup', basis: 'fixed', rate: 500, quantity: 99, unit: 'batch', remarks: '' }], wastePercent: 3, overheads: 1000, additionalCosts: 200, markupPercent: 10, taxPercent: 18, chargePercent: 2.5, minimumCharge: 28000, validityDate: '2026-10-20' };
   const totals = c.calculateCost(input);
   assert.equal(totals.materialCost, 107 * 4000); assert.equal(totals.processCost, 107 * 100 + 500); assert.equal(totals.wasteCost, 12840);

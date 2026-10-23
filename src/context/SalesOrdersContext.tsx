@@ -6,6 +6,7 @@ import type { SalesOrder } from '@/types';
 
 interface OrdersContextValue {
   createSharedSalesOrder: (draft: SalesOrderDraft) => Promise<SalesOrder>;
+  approveSalesOrder: (id: string) => Promise<SalesOrder>;
   orders: SalesOrder[];
   getOrders: () => SalesOrder[];
   linkFinishedProduct: (orderId: string, itemId: string, productId: string) => void;
@@ -48,7 +49,13 @@ export function SalesOrdersProvider({ children }: { children: ReactNode }) {
     sequence.current++; setLoading(false); setLoadError('');
     current.current = [saved, ...current.current.filter(order => order.id !== saved.id)]; setOrders(current.current); return saved;
   };
-  return <OrdersContext.Provider value={{ orders, getOrders: () => current.current, createSalesOrder: createSharedSalesOrder, createSharedSalesOrder, loading, loadError, reloadOrders, linkFinishedProduct: (orderId, itemId, productId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, items: o.items?.map(i => i.id === itemId ? { ...i, itemId: productId } : i) } : o); setOrders(current.current); }, linkEstimate: (orderId, itemId, estimateId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, items: o.items?.map(i => i.id === itemId ? { ...i, estimateId } : i) } : o); setOrders(current.current); }, linkJob: (orderId, jobId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, jobCardIds: [...new Set([...o.jobCardIds, jobId])] } : o); setOrders(current.current); } }}>{children}</OrdersContext.Provider>;
+  return <OrdersContext.Provider value={{ approveSalesOrder: async id => {
+    if (!user || !['admin', 'production_manager'].includes(user.role)) throw new Error('Production Manager or Admin must approve the Sales Order.');
+    const account = user.id;
+    const saved = await workflowRequest<SalesOrder>(`orders/${id.replace('wf-order-', '')}/approve/`, {});
+    if (owner.current !== account) throw new Error('The signed-in account changed. Reload Sales Orders.');
+    sequence.current++; current.current = current.current.map(o => o.id === saved.id ? saved : o); setOrders(current.current); return saved;
+  }, orders, getOrders: () => current.current, createSalesOrder: createSharedSalesOrder, createSharedSalesOrder, loading, loadError, reloadOrders, linkFinishedProduct: (orderId, itemId, productId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, items: o.items?.map(i => i.id === itemId ? { ...i, itemId: productId } : i) } : o); setOrders(current.current); }, linkEstimate: (orderId, itemId, estimateId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, items: o.items?.map(i => i.id === itemId ? { ...i, estimateId } : i) } : o); setOrders(current.current); }, linkJob: (orderId, jobId) => { current.current = current.current.map(o => o.id === orderId ? { ...o, jobCardIds: [...new Set([...o.jobCardIds, jobId])] } : o); setOrders(current.current); } }}>{children}</OrdersContext.Provider>;
 }
 export function useSalesOrders() {
   const value = useContext(OrdersContext);

@@ -35,6 +35,10 @@ try {
   const unmarkedPrice = structuredClone(manuallyPriced); unmarkedPrice.lines[1].manualPriceOverride = false;
   assert.throws(() => q.validateQuotationSources(unmarkedPrice, [e], [model]));
   assert.throws(() => q.validateQuotationSources(manuallyPriced, [], [model]));
+  const manualWithoutEstimate = structuredClone(manuallyPriced);
+  delete manualWithoutEstimate.lines[1].estimateId; delete manualWithoutEstimate.lines[1].estimateRevision;
+  q.validateQuotationSources(manualWithoutEstimate, [], [model]);
+  assert.throws(() => q.validateQuotationSources(manualWithoutEstimate, [], [{ ...model, revision: 2 }]));
   const allEstimates = [e]; q.validateQuotation(quote); q.validateQuotationSources(quote, allEstimates, [model]);
   assert.throws(() => q.quotationConversionDraft(quote, 'customer-1', q.addDays(sales.today(), 21), [], allEstimates, [model]));
   const before = JSON.stringify(quote.lines);
@@ -55,6 +59,7 @@ try {
   quote = q.recordQuotationResponse(quote, { response: 'Accepted', date: sales.today(), respondedBy: 'Buyer', remarks: 'Accepted this exact revision', reference: 'EMAIL-1' }, reception);
   assert.equal(quote.status, 'Accepted'); assert.equal(quote.responses.at(-1).revision, quote.revision);
   const conversion = q.quotationConversionDraft(quote, 'customer-1', q.addDays(sales.today(), 21), [], allEstimates, [model]);
+  assert.deepEqual(q.quotationConversionDraft(quote, 'customer-1', q.addDays(sales.today(), 21), [], allEstimates, [model]).items.map(i => i.id), conversion.items.map(i => i.id), 'Conversion retries retain exact line identities.');
   const order = sales.buildSalesOrder(conversion, []); assert.equal(order.jobCardIds.length, 0); assert.equal(order.items.length, 2);
   assert.equal(order.quotationId, quote.rootId); assert.equal(order.prospectId, 'prospect-1'); assert.equal(order.customerContact.email, quote.customer.email);
   assert.equal(order.commercialTerms.quantityTolerance, 10); assert.equal(order.commercialPricing.taxMode, 'inclusive');

@@ -7,7 +7,8 @@ export const findWorkItem = (cards: JobCard[], id: string) => cards.flatMap(work
 export const parentForItem = (cards: JobCard[], id: string) => cards.find(c => c.id === id || c.manufacturingItems?.some(i => i.id === id));
 
 export function summarizeParent(parent: JobCard, items: JobCard[]): JobCard {
-  if (!items.length || items.some(i => i.manufacturingItems || i.parentJobCardId !== parent.id || i.salesOrderId !== parent.salesOrderId || !i.salesOrderItemId) || new Set(items.map(i => i.id)).size !== items.length || new Set(items.map(i => i.salesOrderItemId)).size !== items.length) throw new Error('Parent manufacturing items must have distinct stable item and order-line references.');
+  const manual = parent.origin === 'production_for_stock' && !parent.salesOrderId;
+  if (!items.length || items.some(i => i.manufacturingItems || i.parentJobCardId !== parent.id || (manual ? i.origin !== 'production_for_stock' || !!i.salesOrderId || !!i.salesOrderItemId : i.salesOrderId !== parent.salesOrderId || !i.salesOrderItemId)) || new Set(items.map(i => i.id)).size !== items.length || (!manual && new Set(items.map(i => i.salesOrderItemId)).size !== items.length)) throw new Error('Parent manufacturing items must have distinct stable item and order-line references.');
   const status = items.every(i => i.status === 'Completed') ? 'Completed'
     : items.some(i => i.status === 'Draft' || i.status === 'PendingApproval') ? 'PendingApproval'
     : items.some(i => i.status === 'OnHold') ? 'OnHold'

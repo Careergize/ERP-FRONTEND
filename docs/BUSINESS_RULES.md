@@ -1,5 +1,29 @@
 # Business Rules
 
+## Quotation-first orders and Sales Order approval — 23 October 2026
+
+Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
+or Admin approval → automatic manufacturing Job Card and planned costing sheet.
+This replaces the earlier order-first automatic quotation/allocation behavior.
+The existing quotation review and customer-response UI still precedes conversion.
+Manual selling prices may be entered without a preliminary costing estimate;
+linked estimates retain their approval/model checks. Job Card costing is reviewed
+after creation, before production approval and Store material issue.
+
+New orders must identify an exact saved quotation revision and retain its lines,
+prices, units, customer, tax/discount and LED snapshot. Direct order creation is
+rejected by the API. Order approval is persisted with actor/time, limited to
+Production Manager/Admin, atomic with job creation and safe to retry. Stock-only
+orders create no Job Card. Existing-item manufacture still requires known zero
+stock, rechecked at approval. Standalone manual production Job Cards remain allowed.
+
+Sales Orders offers “Start with quotation”; the old new-order route opens Quotations.
+Stock OUT new-sale entry saves a quotation first. Dispatch against an existing
+order requires Sales Order approval. Finished-goods dispatch remains browser-session
+state; this change does not add database persistence to dispatch or customer responses.
+Migration erp.0015 grants the Sales Order approval permission to PM/Admin roles.
+
+
 Manufacturing workflow steps can be chosen and ordered manually per Sales Order item;
 the model route is only a default when no override is supplied. Explicit empty overrides
 are invalid. Each process can run on a selected compatible active machine, and repeated
@@ -204,3 +228,92 @@ Parent Job Cards remain one per order. Multiple append-only executions aggregate
 ## Client-confirmed LED MAX — 15 October 2026
 
 LED = MAX(LED_Base × 2.5%, Eligible_KG/1,000 × USD 70 × saved USD→UGX). Higher of the Two is now the default for new applicable records. This supersedes prior statements that higher/lower selection awaits confirmation. **Percentage base remains pending clarification** and explicitly configurable; applicability and VAT-on-LED are not assumed. Both weight and FX/date are mandatory for the comparison; missing product/model KG conversion blocks finalization, never percentage-only fallback. Historical method/rate/base/FX/amount snapshots are preserved. LED is a separate commercial charge; existing base VAT basis is retained and additional VAT applies to LED only when explicitly configured. Source snapshots, not current exchange rates, flow through quotes/orders/partial invoices. See the updated sales-fulfillment report.
+# Existing-item manufacturing — 23 October 2026
+
+Sales Order manufacturing lines may use a manually entered custom product or an
+existing finished-goods variant. Existing variants require exactly zero available
+stock; positive, negative and unknown balances block manufacturing. Manufacture the
+full ordered quantity, not a calculated shortage. A saved production model remains
+required for the material recipe. Manual names are preserved when selecting a model.
+The server checks persisted opening stock and purchase/GRN receipts on order creation
+and deferred Job Card allocation. Already allocated retries retain idempotency.
+Browser-only finished-goods movements/reservations are not persisted in that server
+balance; they remain an integration limitation and cannot authorize server allocation.
+
+# Manual Job Cards — 23 October 2026
+
+Receptionist/Admin may create a production-for-stock Job Card without a Sales Order.
+A saved model recipe, positive production quantity in its output unit, delivery date
+on or after creation, and required routing are mandatory. Existing items retain the
+known-zero-stock requirement. PM reviews/approves; Store issues materials through
+the existing permissions and balance checks. Duplicate creation retries return the
+same job; changed details with the same creation key conflict. No artificial Sales
+Order or order-line reference is created.
+
+# Operator-recorded wastage — 23 October 2026
+
+Product creation does not define a waste percentage. Employees handling machines
+record actual waste quantities and units against the production stage/run. Product
+and routing editors omit default/planned waste percentages. New model revisions
+saved through the editor omit those legacy defaults; new costing drafts do not
+inherit product waste percentages. Explicit estimate allowances remain costing-only;
+actual wastage is entered during production. Historical snapshots remain unchanged.
+
+# Sales Order quotation generation — 23 October 2026
+
+A new direct Sales Order automatically creates one linked draft Sales Quotation in
+the same transaction. Generation copies saved quantities/prices/units, currency and
+tax treatment; the sample VAT rate is not forced onto orders. Quotation-origin orders
+reuse their existing quotation. Draft creation neither approves nor sends a document.
+Template defaults are 14 days validity/delivery, 30 days credit and ±10% quantity
+tolerance wording; review terms before sending. Tolerance does not authorize excess
+dispatch/invoicing. Generated documents link back to their existing order and cannot
+be converted into another order through the quotation UI.
+
+# Planned Job Card costing — 23 October 2026
+
+Manufacturing Job Card creation prepares planned costing after the job is saved,
+for both Sales Order and manual production. Required material quantities/units and
+process references come from that job, not a guessed spreadsheet conversion. Missing
+prices, currencies or required exchange rates block costing approval, rather than
+becoming zero. Genuine zero prices must be explicitly recorded. PM/Admin approves
+each complete costing sheet before the parent Job Card is approved for material issue.
+Routing/material corrections invalidate costing approval and preserve prior revisions.
+Approved/issued Job Cards lock costing. Legacy records without costing are preserved;
+pending legacy cards may explicitly create a sheet.
+
+VAT-inclusive purchase prices use price/(1 + VAT rate). Currency changes require
+explicit exchange rates. LED applies only when selected and uses the higher of 2.5%
+on the declared base or USD 70 per tonne, with eligible kg, dated FX and explicit VAT
+treatment. Piece/carton output requires a documented eligible-weight source. Four
+selling-price comparisons use markup on cost, not gross margin. Wastage is recorded
+by machine employees during production; no fixed product waste percentage or actual
+final cost is invented at Job Card creation. Conflicting example overhead values are
+not treated as authoritative rates. Units are saved on the product model/output batch.
+
+# Stock OUT sales entry — 23 October 2026
+
+Stock OUT sales may create a new stock-only Sales Order (Receptionist/Admin), or
+confirm quantities against an existing order (Receptionist/Store/Admin). Existing
+order rates/customer/tax details are retained. Multiple products and partial dispatch
+are supported, with one row per selected order line and explicit batch/challan/date/
+destination. Confirmation validates all lines against current stock, dated batch
+balances, remaining order quantities and QC holds before publishing any movement.
+No outstanding stock reservation is created by this form. Transfer/waste/adjustment
+remain non-sales actions. Sales Order creation alone does not deduct physical stock.
+
+VAT and LED are explicit commercial inputs; the reference's flat LED example does
+not override the confirmed higher-of-the-two rule. Partial order discounts are
+apportioned by selected line value. Dispatch commercial snapshots are not invoices.
+Finished dispatch remains browser-session state until backend posting is integrated.
+
+# Customer type and automatic order numbers — 23 October 2026
+
+New Sales Order numbers are assigned by the backend, never manually entered or
+guessed from a browser counter. Exact creation retries reuse that order number.
+B2B sales expose VAT/LED inputs and totals; applicability/conversion and Higher-of-
+the-Two LED validation remain explicit. B2C sales do not add VAT or LED. Switching
+to B2C removes stale charge inputs/snapshots, and the server applies the same rule
+to new direct orders. Existing accepted quotation/order snapshots are not silently
+rewritten. B2C dispatch snapshots retain the saved item rates without adding charges.
+

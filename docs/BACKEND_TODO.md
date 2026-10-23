@@ -1,5 +1,29 @@
 # Backend Integration TODO
 
+## Quotation-first orders and Sales Order approval — 23 October 2026
+
+Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
+or Admin approval → automatic manufacturing Job Card and planned costing sheet.
+This replaces the earlier order-first automatic quotation/allocation behavior.
+The existing quotation review and customer-response UI still precedes conversion.
+Manual selling prices may be entered without a preliminary costing estimate;
+linked estimates retain their approval/model checks. Job Card costing is reviewed
+after creation, before production approval and Store material issue.
+
+New orders must identify an exact saved quotation revision and retain its lines,
+prices, units, customer, tax/discount and LED snapshot. Direct order creation is
+rejected by the API. Order approval is persisted with actor/time, limited to
+Production Manager/Admin, atomic with job creation and safe to retry. Stock-only
+orders create no Job Card. Existing-item manufacture still requires known zero
+stock, rechecked at approval. Standalone manual production Job Cards remain allowed.
+
+Sales Orders offers “Start with quotation”; the old new-order route opens Quotations.
+Stock OUT new-sale entry saves a quotation first. Dispatch against an existing
+order requires Sales Order approval. Finished-goods dispatch remains browser-session
+state; this change does not add database persistence to dispatch or customer responses.
+Migration erp.0015 grants the Sales Order approval permission to PM/Admin roles.
+
+
 Implemented production-workflow/machines GET/POST, saved machine/process compatibility
 checks, and per-item jobRouting overrides through Sales Order allocation and PM edits.
 Migration 0013 adds ProductionMachine; existing process-master permissions govern access.
@@ -212,3 +236,48 @@ Server must independently authorize actors, validate IDs/expected versions/reque
 ## Confirmed LED MAX / finance follow-up
 
 Enforce client-confirmed `MAX(base×0.025, eligibleKG/1000×70×savedFX)` centrally. Percentage-base definition remains pending; keep explicit versioned configuration, product scope and VAT-on-LED. Reject missing weight/conversion/FX/date; no percentage fallback. Snapshot both alternatives/selected branch/rates/FX/date/conversion/base with costing revisions and accepted quotation/order records. Preserve history; allocate original LED across partial invoices with final Decimal reconciliation and no double VAT. Authoritatively validate source versions and permissions; do not trust client snapshots or migrate old financial amounts silently. Finance demo adds no backend: provision accounts credentials/permissions and real session handling through existing authentication integration. See the canonical report for details.
+# Existing-item manufacturing integration — 23 October 2026
+
+The adjacent Backend enforces known zero persisted finished-goods balance for existing
+manufacturing items at order save and Job Card allocation. Persisted balance includes
+opening quantities and purchase/GRN receipts. Unify browser-only finished movements
+and reservations with server stock before treating frontend available quantities as
+an authoritative shared balance. No automatic shortage split is implemented.
+
+# Manual Job Cards — 23 October 2026
+
+POST /api/production-workflow/jobs/ now persists manual production-for-stock jobs
+without orders, with creation-key idempotency, existing model/routing/stock validation
+and existing Receptionist/Admin allocation permissions. Nullable order references
+and manual request IDs require migration 0014. PM edits handle a manual creation-date
+baseline. SQLite workflow tests pass; PostgreSQL concurrency and browser QA remain
+unverified. Production/QC/finished receipts retain existing integration boundaries.
+
+# Automatic order quotations — 23 October 2026
+
+Implemented atomic workflow-order to QuotationDraft generation, retry reuse, source
+quotation conversion exclusion, persisted cross-links and LED-aware document totals.
+Migration quotations/0006 grants Receptionist/Admin view/add quotation access. Verify
+remote deployment, shared company-settings persistence, PostgreSQL concurrency and
+end-to-end browser review/printing. Existing orders are not automatically backfilled.
+
+# Persisted Job Card costing — 23 October 2026
+
+Implemented automatic plannedCosting snapshots and jobs/{id}/costing/ plus
+jobs/{id}/approve-costing/ actions under existing job visibility/PM authority, with
+explicit editor roles, scope/version checks, calculation, revision history and
+approval locks. New job approval requires approved item costing. Legacy pending
+jobs can explicitly create sheets; historical approved data is preserved. No schema
+migration. Actual consumed quantities, operator waste, actual machine prices and
+final actual-cost persistence remain separate work. Browser-print QA, PostgreSQL
+concurrency and deployment remain unverified.
+# Stock OUT sales form boundary — 23 October 2026
+
+The frontend now supports atomic multi-line sales dispatch from Stock OUT and saves
+new stock-only Sales Orders/quotations through the existing API. Finished movement/
+dispatch/commercial snapshots remain session-only. A future backend integration must
+post all lines atomically, preserve request IDs and commercial snapshots, recheck
+permissions/current and dated batch balances/QC/order remainder, and make failed
+network retries recoverable without losing or duplicating Stock OUT. No new dispatch
+endpoint was introduced by the form change.
+

@@ -6,8 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Download, FileText, Plus, Search, X } from "lucide-react";
 import { useSalesOrders } from '@/context/SalesOrdersContext';
-import { NewSalesOrderModal } from './NewSalesOrderModal';
-import { useLocation } from 'react-router-dom';
+
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -135,8 +135,9 @@ export function SalesOrderList() {
   }, [reloadOrders]);
   const orders = useMemo(() => sourceOrders.map(order => ({ ...order, status: orderFulfillmentStatus(order, ledger, cards) })), [sourceOrders, ledger, cards]);
   const location = useLocation();
-  const [showNewOrder, setShowNewOrder] = useState(location.pathname === '/sales-orders/new');
-  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
+  useEffect(() => { if (location.pathname === '/sales-orders/new') navigate('/quotations', { replace: true }); }, [location.pathname, navigate]);
+  const [success] = useState('');
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("newest");
@@ -195,13 +196,12 @@ export function SalesOrderList() {
 
   return (
     <div className="space-y-6">
-      {showNewOrder && <NewSalesOrderModal onClose={() => setShowNewOrder(false)} onCreated={(number) => { setShowNewOrder(false); setSuccess(`${number} created successfully.`); setQuery(''); setStatusFilter('all'); setSort('newest'); setPage(1); }} />}
       {success && <p role="status" className="rounded-card border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</p>}
       {/* Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-navy">Sales Orders</h1>
-          <p className="mt-1 text-sm text-gray-500">Track every order from creation to job card, approval and store issue.</p>
+          <p className="mt-1 text-sm text-gray-500">Quotation → Sales Order → Production Manager/Admin approval → Job Card → Store issue.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -213,10 +213,10 @@ export function SalesOrderList() {
             <Download size={16} /> Export CSV
           </button>
           <button
-            type="button" onClick={() => setShowNewOrder(true)}
+            type="button" onClick={() => navigate('/quotations')}
             className="flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
           >
-            <Plus size={16} /> New order
+            <Plus size={16} /> Start with quotation
           </button>
         </div>
       </header>
@@ -305,8 +305,8 @@ export function SalesOrderList() {
           <div className="px-6 py-12 text-center">
             <p className="font-medium text-navy">No sales orders yet</p>
             <p className="mt-1 text-sm text-gray-500">Create a Sales Order. Allocate a Job Card only for items that need manufacturing.</p>
-            <button type="button" onClick={() => setShowNewOrder(true)} className="mt-4 inline-flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90">
-              <Plus size={16} /> New order
+            <button type="button" onClick={() => navigate('/quotations')} className="mt-4 inline-flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+              <Plus size={16} /> Start with quotation
             </button>
           </div>
         ) : filtered.length === 0 ? (

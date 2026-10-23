@@ -1,7 +1,7 @@
 import { FINISHED_BY_ID, finishedBalance, type FinishedGoodsMovement } from './finishedGoodsData';
 import type { SalesOrder, SalesOrderItem, JobCard } from '../types';
 export interface Allocation { id: string; orderId: string; itemId: string; productId: string; batch: string; quantity: number; dispatched: number; released: boolean }
-export interface Dispatch { modelId?: string; modelName?: string; id: string; number: string; allocationId: string; orderId: string; itemId: string; productId: string; batch: string; quantity: number; unit: string; date: string; challan: string; destination: string; vehicle: string; remarks: string; status: 'Confirmed' | 'Cancelled' }
+export interface Dispatch { sale?: import('./stockSale').StockSaleSnapshot; modelId?: string; modelName?: string; id: string; number: string; allocationId: string; orderId: string; itemId: string; productId: string; batch: string; quantity: number; unit: string; date: string; challan: string; destination: string; vehicle: string; remarks: string; status: 'Confirmed' | 'Cancelled' }
 export interface FulfillmentLedger { movements: FinishedGoodsMovement[]; allocations: Allocation[]; dispatches: Dispatch[] }
 const round = (value: number) => Math.round(value * 1e6) / 1e6;
 const check = (ok: unknown, message: string) => { if (!ok) throw new Error(message); };
@@ -40,7 +40,7 @@ export function confirmDispatch(state: FulfillmentLedger, draft: Omit<Dispatch, 
   check(laterDates.every(date => (finishedBalance(product, state.movements.filter(m => m.date <= date)).currentStock ?? 0) >= draft.quantity && (batchPhysical({ ...state, movements: state.movements.filter(m => m.date <= date) }, product.id, a!.batch) ?? 0) >= draft.quantity), 'Backdated dispatch would make a later historical balance negative.');
   check(draft.date >= product.openingDate && draft.destination.trim() && draft.challan.trim(), 'Date must follow opening; destination and delivery note are required.');
   const dispatch: Dispatch = { ...draft, modelId: batchReceipts[0]?.modelId, modelName: batchReceipts[0]?.modelName, number: `DSP-${state.dispatches.length + 1}`, orderId: a!.orderId, itemId: a!.itemId, productId: a!.productId, batch: a!.batch, unit: product.unit, status: 'Confirmed' };
-  return { movements: [...state.movements, { id: `out-${draft.id}`, type: 'OUT', movementPurpose: 'sale', modelId: dispatch.modelId, modelName: dispatch.modelName, productId: a!.productId, quantity: draft.quantity, unit: product.unit, date: draft.date, salesOrderId: a!.orderId, salesOrderItemId: a!.itemId, dispatchId: draft.id, batch: a!.batch, reference: dispatch.number, remarks: draft.remarks }], allocations: state.allocations.map(row => row.id === a!.id ? { ...row, dispatched: round(row.dispatched + draft.quantity) } : row), dispatches: [...state.dispatches, dispatch] };
+  return { movements: [...state.movements, { id: `out-${draft.id}`, type: 'OUT', movementPurpose: 'sale', modelId: dispatch.modelId, modelName: dispatch.modelName, productId: a!.productId, quantity: draft.quantity, unit: product.unit, date: draft.date, salesOrderId: a!.orderId, salesOrderItemId: a!.itemId, dispatchId: draft.id, batch: a!.batch, reference: dispatch.number, customer: draft.sale?.customerName, sale: draft.sale, remarks: draft.remarks }], allocations: state.allocations.map(row => row.id === a!.id ? { ...row, dispatched: round(row.dispatched + draft.quantity) } : row), dispatches: [...state.dispatches, dispatch] };
 }
 export function reverseDispatch(state: FulfillmentLedger, id: string, date: string, reason: string): FulfillmentLedger {
   const d = state.dispatches.find(d => d.id === id);
@@ -59,6 +59,22 @@ export function confirmDirectDispatch(state: FulfillmentLedger, order: SalesOrde
   return { ...posted, allocations: posted.allocations.map(a=>a.id===`direct-${draft.id}`?{...a,released:true}:a) };
 }
 
+export type DispatchBatchEntry = { itemId: string; batch: string; draft: Parameters<typeof confirmDirectDispatch>[4] };
+/** Validate the complete sale before its caller publishes any stock change. */
+export function confirmDispatchBatch(state: FulfillmentLedger, order: SalesOrder, entries: DispatchBatchEntry[]): FulfillmentLedger {
+  check(entries.length > 0 && new Set(entries.map(e => e.draft.id)).size === entries.length, 'Add distinct dispatch lines.');
+  check(new Set(entries.map(e => e.itemId)).size === entries.length, 'Use one dispatch row per Sales Order line.');
+  for (const entry of entries) {
+    const previous = state.dispatches.find(d => d.id === entry.draft.id);
+    check(!previous || JSON.stringify(previous.sale) === JSON.stringify(entry.draft.sale), 'Dispatch commercial details changed. Keep the original confirmation or start a new dispatch.');
+  }
+  return entries.reduce((next, entry) => {
+    const item = order.items?.find(line => line.id === entry.itemId);
+    check(item, 'Select a saved Sales Order item for each dispatch line.');
+    return confirmDirectDispatch(next, order, item!, entry.batch, entry.draft);
+  }, state);
+}
+
 export function orderFulfillmentStatus(order: SalesOrder, state: FulfillmentLedger, cards: JobCard[]): SalesOrder['status'] {
   if (order.status === 'Cancelled' || !order.items?.length) return order.status;
   const dispatched = (itemId: string) => state.dispatches.filter(d => d.orderId === order.id && d.itemId === itemId && d.status === 'Confirmed').reduce((sum, d) => sum + d.quantity, 0);
@@ -69,6 +85,6 @@ export function orderFulfillmentStatus(order: SalesOrder, state: FulfillmentLedg
   const jobs = cards.filter(c => c.salesOrderId === order.id).flatMap(c => c.manufacturingItems ?? [c]);
   if (jobs.some(j => j.status === 'ReadyForStock')) return 'Ready for Stock';
   if (jobs.some(j => ['MaterialIssued', 'InProduction', 'OnHold'].includes(j.status))) return 'In Production';
-  if (jobs.some(j => j.approval)) return 'Approved';
+  if (order.salesOrderApproval || jobs.some(j => j.approval)) return 'Approved';
   return 'Draft';
 }

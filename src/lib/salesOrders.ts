@@ -3,6 +3,7 @@ import { calculateCommercialTotals } from './commercialPricing';
 import type { CustomerType, SalesOrder, SalesOrderItem } from '@/types';
 
 export interface SalesOrderDraft extends Pick<SalesOrder, 'quotationId' | 'quotationRevisionId' | 'quotationNumber' | 'quotationRevision' | 'prospectId' | 'customerContact' | 'commercialTerms' | 'commercialPricing'> {
+  quotationTemplate?: { company: import('./quotations').CompanySettings; validityDays: number };
   creationKey?: string;
   allocateJobCard?: boolean;
   taxRate?: number;
@@ -32,13 +33,14 @@ export function validateOrder(draft: SalesOrderDraft) {
   if (!draft.currency?.trim()) errors.currency = 'Enter the transaction currency.';
   if (draft.taxRate === undefined) errors.taxRate = 'Confirm the transaction tax rate (0 for no tax).';
   draft.items.forEach((item, i) => {
+    if (item.fulfillmentSource === 'manufacturing' && !item.modelId) errors[`${i}.item`] = 'Select a saved production model for the Job Card material recipe.';
     if (item.fulfillmentSource === 'manufacturing' && item.jobRouting !== undefined) {
       if (!item.jobRouting.length || !item.jobRouting.some(s => s.required) || item.jobRouting.some(s => !s.name.trim() || !s.department.trim() || !s.inputUnit.trim() || !s.outputUnit.trim() || !s.wasteUnit.trim())) errors[`${i}.item`] = 'Add the Job Card workflow with process names, departments and units.';
     }
     if (!['stock', 'manufacturing'].includes(item.fulfillmentSource ?? '')) errors[`${i}.source`] = 'Select a fulfillment source.';
     if ((!item.itemId && !(item.fulfillmentSource === 'manufacturing' && item.modelId)) || !item.itemName.trim()) errors[`${i}.item`] = 'Select an item.';
     if (item.modelId && (!item.requiredDate || !Number.isFinite(Date.parse(item.requiredDate)) || item.requiredDate < draft.date)) errors[`${i}.item`] = 'Enter a required delivery date on or after the order date.';
-    if(item.led?.applies){try{const expected=calculateConfiguredLED(item.led,item.quantity*item.unitPrice,undefined,draft.currency??'');if(JSON.stringify(expected)!==JSON.stringify(item.ledSnapshot)||item.ledSnapshot?.conversion?.originalQuantity!==item.quantity||item.ledSnapshot?.conversion?.originalUnit!==item.unit||item.ledSnapshot?.conversion?.productId!==(item.itemId??''))throw new Error();}catch{errors[`${i}.led`]='LED MAX needs valid weight/conversion, FX and a refreshed snapshot.';}}
+    if(item.led?.applies){try{const expected=calculateConfiguredLED(item.led,item.quantity*item.unitPrice/(draft.commercialPricing?.taxMode==='inclusive'?1+(draft.taxRate??0)/100:1),undefined,draft.currency??'');if(JSON.stringify(expected)!==JSON.stringify(item.ledSnapshot)||item.ledSnapshot?.conversion?.originalQuantity!==item.quantity||item.ledSnapshot?.conversion?.originalUnit!==item.unit||item.ledSnapshot?.conversion?.productId!==(item.itemId??''))throw new Error();}catch{errors[`${i}.led`]='LED MAX needs valid weight/conversion, FX and a refreshed snapshot.';}}
     if (!Number.isFinite(item.quantity) || item.quantity <= 0) errors[`${i}.quantity`] = 'Quantity must be greater than 0.';
     if (!item.unit.trim()) errors[`${i}.unit`] = 'Select a unit.';
     if (!Number.isFinite(item.unitPrice) || item.unitPrice < 0) errors[`${i}.price`] = 'Price must be 0 or greater.';

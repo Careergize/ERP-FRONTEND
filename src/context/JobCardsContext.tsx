@@ -17,6 +17,7 @@ import { useSalesOrders } from './SalesOrdersContext';
 import type { JobCard } from '@/types';
 
 interface JobCardsState {
+  savePlannedCosting: (id: string, input?: import('@/lib/jobPlannedCosting').PlannedCostInput, approve?: boolean, expectedCostingRevision?: number) => Promise<void>;
   recordRun: (id: string, run: ProductionRun, finish: boolean) => void;
   registerBatch: (id: string, stageId: string, number: string, quantity: number) => NonNullable<JobCard['productionBatches']>[number];
   createLinked: (orderId: string, itemId: string, modelId: string, requiredDate: string, specifications: string, materials: NonNullable<JobCard["requiredMaterials"]>, estimateId?: string) => Promise<JobCard>;
@@ -97,10 +98,11 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
   const createLinked: JobCardsState['createLinked'] = async (orderId) => {
     if (!user || !['admin', 'receptionist'].includes(user.role)) throw new Error('Only Receptionist/Admin can allocate Job Cards.');
     if (user.id.startsWith('demo-') || !orderId.startsWith('wf-order-')) throw new Error('Save a Sales Order through the shared API before allocating its Job Card. Sample or session-only orders cannot create Job Cards.');
+    if (!orderRef.current.find(o => o.id === orderId)?.salesOrderApproval) throw new Error('Production Manager or Admin must approve the Sales Order first.');
     const parent = await workflowRequest<JobCard>(`orders/${orderId.replace('wf-order-', '')}/allocate/`, {});
     publish([...current.current.filter(card => card.id !== parent.id), parent]); linkJob(orderId, parent.id); return parent;
   };
-  return <Context.Provider value={{ createLinked, workflowError, cards, loading, load, loadDetail,
+  return <Context.Provider value={{ savePlannedCosting: (id, input, approve = false, expectedCostingRevision) => remoteAction(id, approve ? 'approve-costing' : 'costing', { ...(input ? { input } : {}), expectedCostingRevision }), createLinked, workflowError, cards, loading, load, loadDetail,
     registerBatch: (id, stageId, number, quantity) => {
       if (!user || !['admin', 'qc_inspector', 'qc_supervisor'].includes(user.role)) throw new Error('QC staff/Admin registers inspection lots.');
       const card = findWorkItem(current.current, id); const stage = card?.productionStages?.find(s => s.id === stageId);
@@ -117,7 +119,7 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
       const product = FINISHED_BY_ID.get(productId);
       if (!product || product.unit !== card.stockTransfer?.unit || card.stockTransfers.some(r => r.date < product.openingDate)) throw new Error('Choose an exact finished product with matching output unit and valid opening date. No package conversion is assumed.');
       for (const receipt of card.stockTransfers) if (receipt.quantity > 0) postReceipt({ stockApprovalId: finishedAuthorization(quality.getState(), card, receipt.batch, 0, 0).id, qualityReleaseId: quality.getState().releases.find(r => r.purpose === "quality" && r.inspectionId === finishedAuthorization(quality.getState(), card, receipt.batch, 0, 0).inspectionId)?.id, id: receipt.id, productId: product.id, date: receipt.date, type: 'IN', quantity: receipt.quantity, unit: product.unit, salesOrderId: card.salesOrderId, salesOrderItemId: card.salesOrderItemId, jobCardId: card.parentJobCardId ?? card.id, manufacturingItemId: card.id, modelId: card.modelId, modelName: card.modelName, batch: receipt.batch, reference: card.jobCardNumber, customer: card.customerName, remarks: 'QC-prepared receipt explicitly mapped by Store.' });
-      if (card.salesOrderItemId) linkFinishedProduct(card.salesOrderId, card.salesOrderItemId, productId);
+      if (card.salesOrderId && card.salesOrderItemId) linkFinishedProduct(card.salesOrderId, card.salesOrderItemId, productId);
       const produced = card.productionStages?.filter(s => s.required && s.kind === 'production').at(-1)?.outputQuantity ?? 0;
       return { ...card, finishedProductId: productId, stockReceiptPending: false, status: (card.acceptedQuantity ?? 0) + (card.rejectedQuantity ?? 0) >= produced ? 'Completed' : 'ReadyForStock', activityHistory: [...(card.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Prepared Stock IN posted', user: user!.name, department: 'Store', description: `Mapped exact product ${product.id}; QC batches posted to shared frontend inventory.` }] };
     }),
@@ -126,7 +128,7 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
     recalculate: (id, estimateId) => mutate(id, card => {
       if (!['admin', 'production_manager'].includes(user!.role) || card.approval || !['Draft', 'PendingApproval'].includes(card.status)) throw new Error('Requirements can only be recalculated by PM/Admin before approval.');
       const estimate = estimates.find(e => e.id === estimateId);
-      if (!estimate || estimate.status !== 'Approved' || !estimateMatchesOrder(estimate, card.salesOrderId, card.salesOrderItemId) || estimate.input.modelId !== card.modelId || estimate.input.modelRevision !== card.modelRevision) throw new Error('Select an internally approved, recalculated estimate for this line and model revision.');
+      if (!card.salesOrderId || !estimate || estimate.status !== 'Approved' || !estimateMatchesOrder(estimate, card.salesOrderId, card.salesOrderItemId) || estimate.input.modelId !== card.modelId || estimate.input.modelRevision !== card.modelRevision) throw new Error('Select an internally approved, recalculated estimate for this line and model revision.');
       bindJob(estimate.id, card.id);
       return { ...card, requiredMaterials: materialRequirements(estimate.input), estimateId: estimate.id, estimateRevision: estimate.revision, requirementsReviewRequired: false, activityHistory: [...(card.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Requirements recalculated', user: user!.name, department: 'Production Manager', description: `Applied ${estimate.number} revision ${estimate.revision}. Explicit recipe quantities and costs were reviewed.` }] };
     }),
@@ -171,8 +173,8 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
       if (next === card) return card;
       if ((next.acceptedQuantity ?? 0) === 0 && next.status === 'Completed') return { ...next, stockReceiptPending: false };
       const product = FINISHED_BY_ID.get(card.finishedProductId ?? '');
-      if (!product && !card.finishedProductId && card.salesOrderItemId) return { ...next, status: 'ReadyForStock', stockReceiptPending: true, activityHistory: [...(next.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Stock IN prepared', user: user!.name, department: 'Store', description: 'QC quantities and batches retained; choose an exact finished-goods variant/unit to post. No physical inventory change occurred.' }] };
-      if (!product || product.unit !== next.stockTransfer!.unit || !card.salesOrderItemId) throw new Error('Link a finished product and Sales Order item with matching output unit before posting stock. Legacy demo cards cannot be matched by name.');
+      if (!product && !card.finishedProductId && (card.salesOrderItemId || card.origin === 'production_for_stock')) return { ...next, status: 'ReadyForStock', stockReceiptPending: true, activityHistory: [...(next.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Stock IN prepared', user: user!.name, department: 'Store', description: 'QC quantities and batches retained; choose an exact finished-goods variant/unit to post. No physical inventory change occurred.' }] };
+      if (!product || product.unit !== next.stockTransfer!.unit || (!card.salesOrderItemId && card.origin !== 'production_for_stock')) throw new Error('Link an exact finished product with matching output unit before posting stock. Legacy demo cards cannot be matched by name.');
       if (accepted > 0) postReceipt({ stockApprovalId: authorization.id, qualityReleaseId: quality.getState().releases.find(r => r.purpose === "quality" && r.inspectionId === authorization.inspectionId)?.id, id: receipt?.id ?? `receipt-${card.id}`, productId: product.id, date, type: 'IN', quantity: accepted, unit: product.unit, salesOrderId: card.salesOrderId, salesOrderItemId: card.salesOrderItemId, jobCardId: card.parentJobCardId ?? card.id, manufacturingItemId: card.id, modelId: card.modelId, modelName: card.modelName, batch: receipt?.batch ?? `LOT-${card.jobCardNumber}`, reference: card.jobCardNumber, customer: card.customerName, remarks: 'Accepted quantity verified by Store; frontend receipt.' });
       return next;
     }),

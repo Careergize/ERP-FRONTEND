@@ -10,12 +10,14 @@ import { createContext, useContext, useState, useRef, useEffect, useCallback, ty
 import { fetchRawInventory, postRawMovement, persistRawPlan, inventoryError } from '@/lib/rawInventoryApi';
 import { validatePlan, type ProcurementItem } from '@/lib/procurement';
 import { FINISHED_MOVEMENTS, FINISHED_BY_ID, type FinishedGoodsMovement } from '@/lib/finishedGoodsData';
-import { allocate, confirmDirectDispatch, confirmDispatch, reverseDispatch, reserved, physical, batchPhysical, type FulfillmentLedger } from '@/lib/fulfillment';
+import { allocate, confirmDirectDispatch, confirmDispatch, confirmDispatchBatch, reverseDispatch, reserved, physical, batchPhysical, type FulfillmentLedger, type DispatchBatchEntry } from '@/lib/fulfillment';
 import type { SalesOrder, SalesOrderItem } from '@/types';
 import { RAW_MATERIALS, RAW_MOVEMENTS, type RawMaterial, type RawMaterialMovement } from '@/lib/rawMaterialData';
 import { snapshotMovements, validateConversion, validateThreshold, type ProductConversion, type StockThreshold } from '@/lib/stockIntelligence';
 
 interface InventoryContextValue {
+  previewDispatchBatch: (order: SalesOrder, entries: DispatchBatchEntry[]) => void;
+  dispatchBatch: (orderId: string, entries: DispatchBatchEntry[]) => void;
   finishedProducts: FinishedGood[];
   finishedLoading: boolean;
   finishedError: string;
@@ -160,12 +162,33 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     rawSequence.current++;
     rawCurrent.current = [...rawCurrent.current.filter(m=>m.id!==saved.id),saved]; setRaw(rawCurrent.current);
   };
-  return <InventoryContext.Provider value={{ finishedProducts,finishedLoading,finishedError,reloadFinished,rawMaterials,rawPlans,rawLoading,rawError,rawCanPost,rawCanPlan,reloadRaw,saveRawPlan,conversions, thresholds,
+  const requireApprovedOrder = (order?: SalesOrder) => { if (!order?.salesOrderApproval) throw new Error('Production Manager or Admin must approve the Sales Order before Stock OUT.'); };
+  const checkDispatchBatch = (order: SalesOrder, entries: DispatchBatchEntry[]) => {
+    if (!['admin', 'store_keeper', 'receptionist'].includes(user?.role ?? '')) throw new Error('Your role cannot dispatch stock.');
+    requireApprovedOrder(order);
+    for (const entry of entries) {
+      const item = order.items?.find(line => line.id === entry.itemId);
+      if (!item) throw new Error('Select an exact Sales Order item.');
+      const sale = entry.draft.sale;
+      if (sale) {
+        const line = sale.lines.find(row => row.itemId === entry.itemId);
+        const taxRate = order.customerType === 'B2C' ? 0 : order.taxRate;
+        const taxMode = order.customerType === 'B2C' ? 'exclusive' : order.commercialPricing?.taxMode ?? 'exclusive';
+        if (!line || line.productId !== item.itemId || line.unit !== item.unit || line.quantity !== entry.draft.quantity || line.rate !== item.unitPrice || sale.customerName !== order.customerName || sale.customerType !== order.customerType || sale.marketingPersonName !== order.marketingPersonName || sale.requisitionOrder !== (order.requisitionOrder ?? '') || sale.currency !== order.currency || sale.taxRate !== taxRate || sale.taxMode !== taxMode || (order.customerType === 'B2C' && (sale.vat !== 0 || sale.led !== 0 || sale.lines.some(row => row.ledSnapshot)))) throw new Error('Order commercial details changed. Reload the order before confirming Stock OUT.');
+      }
+      const held = current.current.movements.some(m => m.productId === item.itemId && m.batch === entry.batch && m.manufacturingItemId && quality.getState().inspections.some(i => i.subject.manufacturingItemId === m.manufacturingItemId && i.subject.batchNumber === entry.batch && subjectHeld(quality.getState(), i.subject)));
+      if (held) throw new Error('A QC hold prevents dispatch of this batch.');
+      if (entry.draft.date < order.date) throw new Error('Dispatch date cannot precede the Sales Order.');
+    }
+    return confirmDispatchBatch(current.current, order, entries);
+  };
+  return <InventoryContext.Provider value={{ previewDispatchBatch: (order, entries) => { checkDispatchBatch(order, entries); }, dispatchBatch: (orderId, entries) => { const order = getOrders().find(row => row.id === orderId); if (!order) throw new Error('Select a saved Sales Order.'); publish(checkDispatchBatch(order, entries)); }, finishedProducts,finishedLoading,finishedError,reloadFinished,rawMaterials,rawPlans,rawLoading,rawError,rawCanPost,rawCanPlan,reloadRaw,saveRawPlan,conversions, thresholds,
     saveConversion: draft => { if (!['admin','production_manager'].includes(user?.role ?? '')) throw new Error('Admin/Production Manager manages conversions.'); const product = FINISHED_BY_ID.get(draft.productId); if (!product || product.unit !== draft.unit) throw new Error('Select exact product/unit.'); const next = { ...draft, id: crypto.randomUUID(), version: 1 + Math.max(0,...conversionRef.current.filter(c=>c.productId===draft.productId && c.modelId===draft.modelId).map(c=>c.version)) }; validateConversion(next); conversionRef.current=[...conversionRef.current,next]; setConversions(conversionRef.current); },
     saveThreshold: draft => { if (!['admin','store_keeper','production_manager'].includes(user?.role ?? '')) throw new Error('Your role cannot configure stock thresholds.'); if (FINISHED_BY_ID.get(draft.productId)?.unit !== draft.unit) throw new Error('Use exact stock unit.'); validateThreshold(draft); setThresholds(list=>[...list.filter(t=>t.productId!==draft.productId), structuredClone(draft)]); },
-    directDispatch: (order,item,batch,draft) => { if (!['admin','store_keeper','receptionist'].includes(user?.role ?? '')) throw new Error('Your role cannot dispatch stock.'); const stored=getOrders().find(o=>o.id===order.id),line=stored?.items?.find(i=>i.id===item.id);if(!stored||!line)throw new Error('Select a current Sales Order line.'); const held=current.current.movements.some(m=>m.productId===line.itemId && m.batch===batch && m.manufacturingItemId && quality.getState().inspections.some(i=>i.subject.manufacturingItemId===m.manufacturingItemId && i.subject.batchNumber===batch && subjectHeld(quality.getState(),i.subject))); if(held) throw new Error('A QC hold prevents dispatch of this batch.'); publish(confirmDirectDispatch(current.current,stored,line,batch,draft)); },
-    ledger, postReceipt, allocateStock: (order, item, quantity, batch, requestId) => publish(allocate(current.current, order, item, quantity, batch, requestId)), dispatch: draft => {
+    directDispatch: (order,item,batch,draft) => { if (!['admin','store_keeper','receptionist'].includes(user?.role ?? '')) throw new Error('Your role cannot dispatch stock.'); const stored=getOrders().find(o=>o.id===order.id),line=stored?.items?.find(i=>i.id===item.id);if(!stored||!line)throw new Error('Select a current Sales Order line.'); requireApprovedOrder(stored); const held=current.current.movements.some(m=>m.productId===line.itemId && m.batch===batch && m.manufacturingItemId && quality.getState().inspections.some(i=>i.subject.manufacturingItemId===m.manufacturingItemId && i.subject.batchNumber===batch && subjectHeld(quality.getState(),i.subject))); if(held) throw new Error('A QC hold prevents dispatch of this batch.'); publish(confirmDirectDispatch(current.current,stored,line,batch,draft)); },
+    ledger, postReceipt, allocateStock: (order, item, quantity, batch, requestId) => { requireApprovedOrder(order); publish(allocate(current.current, order, item, quantity, batch, requestId)); }, dispatch: draft => {
     const a = current.current.allocations.find(a => a.id === draft.allocationId);
+    requireApprovedOrder(getOrders().find(o => o.id === a?.orderId));
     if (a && current.current.movements.some(m => m.productId === a.productId && m.batch === a.batch && m.manufacturingItemId && quality.getState().inspections.some(i => i.subject.manufacturingItemId === m.manufacturingItemId && i.subject.batchNumber === a.batch && subjectHeld(quality.getState(), i.subject)))) throw new Error('A QC hold prevents dispatch of this batch.');
     publish(confirmDispatch(current.current, draft));
   }, reverse: (id, date, reason) => publish(reverseDispatch(current.current, id, date, reason)), finishedMovements, finishedPieces, updateFinishedPieces, rawMovements, addFinishedMovement, addRawMovement }}>{children}</InventoryContext.Provider>;

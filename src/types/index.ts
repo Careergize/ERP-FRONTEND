@@ -55,6 +55,9 @@ export interface SalesOrderItem {
 }
 
 export interface SalesOrder {
+  salesOrderApproval?: { approvedBy: string; approvedById: number; approvedAt: string };
+  generatedQuotationId?: string;
+  generatedQuotationNumber?: string;
   quotationId?: string;
   quotationRevisionId?: string;
   quotationNumber?: string;
@@ -98,9 +101,10 @@ export interface JobCard {
   manufacturingItems?: JobCard[];
   parentJobCardId?: string;
   origin?: 'sales_order' | 'production_for_stock';
+  plannedCosting?: import('@/lib/jobPlannedCosting').PlannedCosting;
   id: string;
   jobCardNumber: string;
-  salesOrderId: string;
+  salesOrderId?: string;
   salesOrderItemId?: string;
   finishedProductId?: string;
   modelId?: string;
@@ -132,7 +136,7 @@ export interface JobCard {
   rejectedQuantity?: number;
   stockReceiptPending?: boolean;
   stockTransfers?: { id: string; batch: string; quantity: number; rejectedQuantity: number; date: string }[];
-  stockTransfer?: { quantity: number; unit: string; batchDate: string; confirmedBy: string; confirmedAt: string; jobCardId: string; salesOrderId: string; customerName: string; modelName: string; product: string };
+  stockTransfer?: { quantity: number; unit: string; batchDate: string; confirmedBy: string; confirmedAt: string; jobCardId: string; salesOrderId?: string; customerName: string; modelName: string; product: string };
 }
 
 export interface JobCardMaterial {

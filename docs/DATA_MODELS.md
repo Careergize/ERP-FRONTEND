@@ -1,5 +1,29 @@
 # Frontend Data Models
 
+## Quotation-first orders and Sales Order approval — 23 October 2026
+
+Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
+or Admin approval → automatic manufacturing Job Card and planned costing sheet.
+This replaces the earlier order-first automatic quotation/allocation behavior.
+The existing quotation review and customer-response UI still precedes conversion.
+Manual selling prices may be entered without a preliminary costing estimate;
+linked estimates retain their approval/model checks. Job Card costing is reviewed
+after creation, before production approval and Store material issue.
+
+New orders must identify an exact saved quotation revision and retain its lines,
+prices, units, customer, tax/discount and LED snapshot. Direct order creation is
+rejected by the API. Order approval is persisted with actor/time, limited to
+Production Manager/Admin, atomic with job creation and safe to retry. Stock-only
+orders create no Job Card. Existing-item manufacture still requires known zero
+stock, rechecked at approval. Standalone manual production Job Cards remain allowed.
+
+Sales Orders offers “Start with quotation”; the old new-order route opens Quotations.
+Stock OUT new-sale entry saves a quotation first. Dispatch against an existing
+order requires Sales Order approval. Finished-goods dispatch remains browser-session
+state; this change does not add database persistence to dispatch or customer responses.
+Migration erp.0015 grants the Sales Order approval permission to PM/Admin roles.
+
+
 ProductionMachine stores name and JSON configuration (department, type, active,
 processIds). Machines use existing process-master view/add permissions. SalesOrderItem
 jobRouting optionally snapshots the manually chosen per-order stages. Stage processId
@@ -206,3 +230,37 @@ Canonical formulas, field semantics, ownership, role checks, server capabilities
 ## Confirmed LED / finance follow-up
 
 Optional CostingInput.led and QuotationLine.led capture applicability, provisional percentage base, eligible KG, conversion, FX/date and VAT-on-LED. CostingTotals.led, QuotationLine.ledSnapshot and SalesOrderItem.ledSnapshot retain LEDSnapshot (confirmed higher method/rates, base value/choice, KG, both comparison amounts, selected raw/rounded amount/branch, FX/date, conversion identity/version, VAT flag). CommercialTotals optionally adds led/ledTax; accepted order totals include them. Invoice retains apportioned per-line snapshots/LED total and final reconciliation. Existing historical records without LED fields retain prior behavior; no migration/backend model was added. Finance uses the existing accounts Role/User; no parallel user entity.
+# Manual production references — 23 October 2026
+
+JobCard.salesOrderId and stockTransfer.salesOrderId are optional for
+origin=production_for_stock. Manual parent/child references use stable Job Card IDs
+without order-line IDs. Backend WorkflowJob.order is nullable; an optional unique
+request_id supports manual creation retries (migration 0014).
+
+# Generated Sales Order quotations — 23 October 2026
+
+SalesOrder.generatedQuotationId/generatedQuotationNumber identify the automatically
+created QuotationDraft. They are distinct from quotationId/quotationRevisionId, which
+identify an accepted quotation used as the source of an order. QuotationDraft editor
+data retains salesOrderId and per-line LED input/snapshot JSON. SalesOrderDraft may
+carry quotationTemplate company/validity settings for the saved commercial snapshot.
+
+# Job Card planned costing snapshot — 23 October 2026
+
+WorkflowJob.data manufacturing items may contain plannedCosting with revision,
+Draft/Approved status, planned basis, input, calculated totals, validationError,
+approval actor/time and previous revision history. Inputs carry exact material and
+stage IDs, job quantities/units, purchase currency/price/price unit/VAT basis/FX,
+process cost basis/rate/quantity, overheads, sales tax and LED weight/base/dated FX.
+Totals include per-material/process costs, production cost/per-output-unit and four
+markup scenarios. actualCost remains null. Costing is JSON within the existing job
+record; no new table/migration is required.
+
+# Stock sale dispatch snapshot — 23 October 2026
+
+Dispatch.sale and FinishedGoodsMovement.sale may retain a StockSaleSnapshot with
+document ID/order number, customer/type, marketing/requisition, currency/tax basis,
+subtotal/discount/VAT/LED/total and exact selected item/product/quantity/unit/rate/
+amount/LED snapshots. This metadata shares the existing session ledger lifecycle;
+it is not a new persisted invoice or dispatch model.
+

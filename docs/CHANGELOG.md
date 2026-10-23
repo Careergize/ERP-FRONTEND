@@ -1,5 +1,89 @@
 # Changelog
 
+## Quotation-first orders and Sales Order approval — 23 October 2026
+
+Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
+or Admin approval → automatic manufacturing Job Card and planned costing sheet.
+This replaces the earlier order-first automatic quotation/allocation behavior.
+The existing quotation review and customer-response UI still precedes conversion.
+Manual selling prices may be entered without a preliminary costing estimate;
+linked estimates retain their approval/model checks. Job Card costing is reviewed
+after creation, before production approval and Store material issue.
+
+New orders must identify an exact saved quotation revision and retain its lines,
+prices, units, customer, tax/discount and LED snapshot. Direct order creation is
+rejected by the API. Order approval is persisted with actor/time, limited to
+Production Manager/Admin, atomic with job creation and safe to retry. Stock-only
+orders create no Job Card. Existing-item manufacture still requires known zero
+stock, rechecked at approval. Standalone manual production Job Cards remain allowed.
+
+Sales Orders offers “Start with quotation”; the old new-order route opens Quotations.
+Stock OUT new-sale entry saves a quotation first. Dispatch against an existing
+order requires Sales Order approval. Finished-goods dispatch remains browser-session
+state; this change does not add database persistence to dispatch or customer responses.
+Migration erp.0015 grants the Sales Order approval permission to PM/Admin roles.
+
+
+## Automatic order numbers and B2B-only charges — 23 October 2026
+
+Order numbers are automatic/read-only and retain their server number on retries.
+VAT/LED entry and totals appear only for B2B; B2C strips hidden charges in both the
+form and new direct-order API saves. Saved historical commercial records are retained.
+
+## Stock OUT sales form — 23 October 2026
+
+Added sales-style Stock OUT for new sales or existing Sales Orders, with customer
+type, requisition, multi-item rates/amounts and separate VAT/LED totals. Confirmation
+validates all rows before posting any Stock OUT; duplicate retries preserve their
+commercial snapshot. Non-sales movements keep their separate form. Dispatch remains
+session-only; new orders and quotations use their existing database workflow.
+
+## Saved Job Card planned costing sheets — 23 October 2026
+
+Job Card creation automatically prepares a persisted planned costing sheet. Complete
+material/process prices, exchange rates and applicable taxes, save/calculate, then
+PM-approve costing before approving the Job Card. Includes four markup comparisons,
+revision history, stale-save protection and Print/Save PDF. Units are retained on the
+model; Sales Orders show VAT and LED separately. No predefined waste is introduced.
+
+## Automatic quotation from Sales Orders — 23 October 2026
+
+Saving a new direct Sales Order automatically saves a linked Sales Quotation draft
+using the existing Navapack template. Open Preview / Print or Review quotation from
+the order. Added explicit inclusive/exclusive VAT entry. Existing quotation conversions
+keep their original document; retries do not duplicate quotations. Approval and sending
+remain explicit. LED snapshots and PDF totals are preserved.
+
+## Operator-recorded wastage — 23 October 2026
+
+Removed Default waste % from product creation and Planned Waste % from routing entry.
+New costing drafts no longer inherit a model waste percentage. Machine employees
+record actual wastage at each production stage/run.
+
+## Job Card output unit — 23 October 2026
+
+Manual Job Card and Sales Order manufacturing entry now use the model production
+output unit, with legacy batch/default fallback, rather than only its default unit.
+Manual Job Cards show selection prompts and warn when product/model units differ.
+
+## Manual Job Card creation — 23 October 2026
+
+Added Create Job Card on the Job Cards page for Receptionist/Admin. Jobs can be saved
+without a Sales Order and sent directly for PM review using a saved model recipe and
+manual routing. Manual jobs show their origin without a broken Sales Order link.
+
+## Existing-item manufacturing entry — 23 October 2026
+
+Added explicit manual/custom and existing-item entry choices for manufacturing.
+Existing items require known zero stock before a Job Card can be created for the full
+order quantity; backend rechecks on deferred allocation. Selecting a recipe model
+preserves the manually entered product name.
+
+## Sales Order API errors — 23 October 2026
+
+Replaced raw production workflow HTML errors with readable messages, including
+configuration guidance for missing API routes. Added focused error handling checks.
+
 ## Separate processes, machines and manual Job Card routing — 21 October 2026
 
 Added Processes & Machines with API-backed machine/process mapping. Manufacturing

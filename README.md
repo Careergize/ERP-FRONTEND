@@ -6,9 +6,11 @@ Current modules: Dashboard, Sales Orders, Job Cards, Stock, Raw Material, Recycl
 
 ## Current phase
 
+Sales Orders now require a saved quotation. Production Manager/Admin approval creates the manufacturing Job Card and planned costing sheet; standalone production Job Cards remain supported.
+
 Job Cards load exclusively from the active Django production workflow API. Empty or failed responses do not fall back to static cards; allocating a Job Card requires an API-backed Sales Order.
 
-Frontend workflows are being implemented and validated. Sales Orders and finished-goods Stock retain their frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the active adjacent Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. The monorepo includes a separate [Django Phase 1 foundation](../backend/README.md); this frontend is not automatically integrated with it and production domain persistence is not verified.
+Frontend workflows are being implemented and validated. Sales Orders are saved through the active adjacent Backend workflow API. Finished-goods dispatch retains its frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the active adjacent Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. The monorepo includes a separate [Django Phase 1 foundation](../backend/README.md); this frontend is not automatically integrated with it and production domain persistence is not verified.
 
 ## Stack and structure
 

@@ -1,6 +1,148 @@
 # Development Status
 
-Frontend API default and local environment now target https://35.175.179.96/api.
+## Quotation-first orders and Sales Order approval — 23 October 2026
+
+Current flow: saved Quotation → Sales Order awaiting approval → Production Manager
+or Admin approval → automatic manufacturing Job Card and planned costing sheet.
+This replaces the earlier order-first automatic quotation/allocation behavior.
+The existing quotation review and customer-response UI still precedes conversion.
+Manual selling prices may be entered without a preliminary costing estimate;
+linked estimates retain their approval/model checks. Job Card costing is reviewed
+after creation, before production approval and Store material issue.
+
+New orders must identify an exact saved quotation revision and retain its lines,
+prices, units, customer, tax/discount and LED snapshot. Direct order creation is
+rejected by the API. Order approval is persisted with actor/time, limited to
+Production Manager/Admin, atomic with job creation and safe to retry. Stock-only
+orders create no Job Card. Existing-item manufacture still requires known zero
+stock, rechecked at approval. Standalone manual production Job Cards remain allowed.
+
+Sales Orders offers “Start with quotation”; the old new-order route opens Quotations.
+Stock OUT new-sale entry saves a quotation first. Dispatch against an existing
+order requires Sales Order approval. Finished-goods dispatch remains browser-session
+state; this change does not add database persistence to dispatch or customer responses.
+Migration erp.0015 grants the Sales Order approval permission to PM/Admin roles.
+Local verification: frontend typecheck/build and quotations, sales fulfillment,
+custom costing, inventory workflows and integrated operations checks passed.
+The 39-test workflow/quotation regression suite and separate Admin approval test
+passed. Django system checks and migration drift check passed; migration applied locally.
+
+
+## Automatic numbering and customer-type charges — 23 October 2026
+
+Stock OUT and New Sales Order display read-only server-assigned order numbers. New
+direct orders use the backend SO-W sequence and exact retries retain their number.
+VAT/LED controls and summary rows are visible only for B2B. Selecting B2C clears
+LED input/snapshots and excludes VAT/LED from totals and submission. The backend
+also strips those charges from new direct B2C orders and generated quotations while
+preserving the original creation request for retry comparison. Existing order and
+accepted quotation snapshots are not rewritten. B2C Stock OUT snapshots exclude
+charges while retaining the source order’s entered item rates.
+
+## Stock OUT sales-entry form — 23 October 2026
+
+Stock → Stock OUT opens the supplied sales-style layout with order/date/customer,
+marketing person, B2B/B2C, requisition, multiple item/quantity/unit/rate/amount rows,
+subtotal, VAT, LED and total. Receptionist/Admin can create a stock-only sale; Store
+can select existing orders. Existing commercial rates/header fields remain locked;
+partial quantities and batches can be selected. New sales save the Sales Order and
+automatic quotation through the existing API before dispatch. Retry retains a saved
+order if dispatch subsequently fails. Delivery challan/destination and batch/date/QC
+checks remain required. Transfers/waste/adjustments use Non-sales Stock OUT.
+
+All selected dispatch lines are checked before publishing any ledger movement, with
+duplicate request/commercial-snapshot protection and no outstanding reservation.
+Commercial snapshots retain the entered header, quantities, prices and tax/LED totals
+on dispatches/movements. Existing order discounts are apportioned by selected value;
+these snapshots are not posted invoices. Inclusive-price LED checks use net-of-VAT
+selling value. The finished dispatch ledger remains session-only and explicitly says
+so in the form; backend dispatch persistence is still outstanding. The Stock OUT form
+does not upgrade that boundary or create manufactured stock.
+
+## Job Card → planned costing → PM approval — 23 October 2026
+
+Every newly allocated workflow Job Card item now stores a plannedCosting draft in
+the same backend transaction, including manual production without an order. The sheet
+uses exact required materials and required process stages; missing prices/rates remain
+incomplete. Sales Order/manual Job Card screens link directly to Job Card Costing.
+Costing editors can save/recalculate in Django; PM/Admin approves each item’s costing
+before Job Card approval. Material/routing corrections create a new costing revision,
+preserve prior approval history and require review again. Job version and costing
+revision checks reject stale saves. Approved/issued jobs lock costing changes.
+
+The sheet supports explicit USD/UGX prices/exchange rates, purchase VAT-inclusive
+prices divided by (1 + rate), separate material/ink lines, per-stage costs, overheads,
+10/15/20/25% markup comparisons, sales VAT and conditional Higher-of-the-Two LED with
+eligible weight, dated USD→UGX rate and declared percentage base. It does not copy
+the reference’s inconsistent overhead totals or fixed 3% waste. Actual wastage remains
+operator-entered; actual final costing is unavailable until actual inputs are recorded.
+Print/Save PDF uses the costing tab. Model save retains production output as its
+default unit; saved model choices display output quantity/unit. Sales entry shows VAT
+and LED separately, with VAT inclusion labeled. Existing approved jobs are preserved;
+legacy pending jobs can explicitly create a costing sheet. No schema migration needed.
+
+Thirty-nine combined backend workflow/quotation tests, Django checks and migration
+drift checks pass on SQLite. Frontend build and costing/sales/quotation checks pass.
+Browser printing, PostgreSQL concurrency and remote deployment remain unverified.
+
+## Automatic Sales Order quotation — 23 October 2026
+
+New workflow Sales Orders create a linked editable quotation draft in the same backend
+transaction. Repeated order requests return the same quotation; quotation-to-order
+conversion retains its original quotation. The order detail provides preview/print
+and review links; the draft is restored in the normal Quotations list. Prices, units,
+currency, VAT basis, discount, customer contacts and LED snapshots come from the saved
+order. Direct entry now explicitly selects VAT-inclusive/exclusive rates. Company
+settings are snapshotted from the form; API-only callers use existing Navapack defaults.
+Template defaults are 14-day validity/delivery, 30-day credit and ±10% quantity wording.
+Approval/sending are separate actions; no stock or extra Job Card is created by quoting.
+Migration quotations/0006 grants Receptionist/Admin quotation view/add and is applied
+locally. Thirty-seven backend workflow/quotation tests pass on SQLite. Frontend build
+and sales/quotation regressions pass; the existing PDF template was rendered and visually
+checked. Remote deployment and browser interaction are unverified.
+
+Product/routing entry no longer asks for predefined waste percentages. Newly saved
+model revisions omit those editor defaults and new costing drafts start without an
+inherited model waste allowance. Actual stage/run waste remains operator-entered;
+existing production persistence limits still apply.
+
+Job Card creation derives its displayed output unit from the selected existing
+product or model production output (legacy batch/default fallback). Model/product
+unit mismatches are reported before submission; Sales Order manufacturing uses the
+same model output precedence. No unit conversion is assumed.
+
+## Manual Job Cards without Sales Orders — 23 October 2026
+
+Job Cards now has a Create Job Card button for Receptionist/Admin. The form accepts
+a manual product or zero-stock existing variant, saved model recipe, quantity, due
+date, specifications and per-job routing. POST production-workflow/jobs/ persists a
+production-for-stock parent and child without creating a Sales Order. UUID retries
+are idempotent; changed retries conflict. PM correction/approval and Store issue reuse
+the shared workflow. Migration 0014 is applied locally. Fourteen backend workflow
+tests, Django checks and migration drift checks pass on SQLite. Later production/QC
+and finished receipts retain their existing browser-state limitations.
+
+## Existing-item Job Card entry — 23 October 2026
+
+Manufacturing entry now explicitly offers manual custom products or existing variants.
+Existing variants require known zero available stock and manufacture the ordered
+quantity. Backend validates persisted stock at creation and deferred allocation.
+Twelve workflow tests pass on SQLite; Django checks and migration drift checks pass.
+Finished-goods browser movements/reservations remain separate from persisted backend
+opening balances and receipts; PostgreSQL concurrency and browser interaction are unverified.
+
+## Sales Order options error reporting — 23 October 2026
+
+Production workflow 404 responses now explain the missing endpoint and API deployment
+configuration instead of displaying server HTML. Other HTML error pages show a concise
+HTTP error; structured validation remains visible. TypeScript/build, sales fulfillment
+and production workflow error checks pass. The local adjacent Backend defines
+`/api/production-workflow/order-options/`; remote availability could not be verified
+because outbound access was blocked. Resolving a deployed 404 still requires checking
+the configured API target and deployed Backend routes.
+
+Local testing temporarily uses http://127.0.0.1:8000/api via frontend/.env.
+The source fallback remains https://35.175.179.96/api; restore that .env value after testing.
 VITE_API_BASE_URL still overrides the default; Vercel overrides must match and require
 a redeploy. This configuration change does not verify remote HTTPS or CORS readiness.
 
