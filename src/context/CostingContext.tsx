@@ -1,8 +1,9 @@
+import { useSharedEntry } from '@/context/SharedEntriesContext';
 import { useInventory } from './InventoryContext';
 import { FINISHED_BY_ID } from '@/lib/finishedGoodsData';
 import { quantitySnapshot, validDate, sellingCostBreakdown, type StockPriceSnapshot } from '@/lib/stockIntelligence';
 import { matchesQuotationCost, type Quotation } from '@/lib/quotations';
-import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
 import { buildEstimateRevision, transitionEstimateLedger, MARKUP_SCENARIOS, type CostingInput, type CostEstimate, type EstimateStatus } from '@/lib/customCosting';
 import { useAuth } from './AuthContext';
 import { useSalesOrders } from './SalesOrdersContext';
@@ -12,10 +13,10 @@ interface State { stockPrices: StockPriceSnapshot[]; saveStockPrice: (draft: Omi
 const Context = createContext<State | undefined>(undefined);
 export function CostingProvider({ children }: { children: ReactNode }) {
   const { conversions } = useInventory();
-  const [stockPrices, setStockPrices] = useState<StockPriceSnapshot[]>([]);
-  const [estimates, setEstimates] = useState<CostEstimate[]>([]); const current = useRef(estimates);
+  const [stockPrices, setStockPrices] = useSharedEntry<StockPriceSnapshot[]>('costing-prices', []);
+  const [estimates, setEstimates] = useSharedEntry<CostEstimate[]>('costing-estimates', []); const current = useRef(estimates); current.current = estimates;
   const { user } = useAuth(); const { orders, getOrders, linkEstimate } = useSalesOrders(); const { versions } = useModels();
-  const publish = (next: CostEstimate[]) => { current.current = next; setEstimates(next); };
+  const publish = (next: CostEstimate[]) => { setEstimates(next); current.current = next; };
   const checkEditor = () => { if (!user || !['admin', 'accounts', 'receptionist', 'production_manager'].includes(user.role)) throw new Error('Your role cannot change costing estimates.'); };
   const change = (id: string, edit: (e: CostEstimate) => CostEstimate) => { checkEditor(); const e = current.current.find(e => e.id === id); if (!e) throw new Error('Estimate not found.'); publish(current.current.map(row => row.id === id ? edit(e) : row)); };
   const snapshotLED=(input:CostingInput,productId:string|undefined,date:string):CostingInput=>{if(!input.led?.applies)return input;const conversion=quantitySnapshot(productId??'',input.quantity,input.unit,date,conversions,input.modelId);return {...input,led:{...input.led,eligibleWeightKG:conversion.convertedKG,conversion}};};

@@ -1,3 +1,4 @@
+import { useConfirmSharedSave } from '@/context/SharedEntriesContext';
 import { useInventory } from '@/context/InventoryContext';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -9,10 +10,11 @@ import { inspectionStatusLabel, QC_REVIEW_ROLES, canRecordQC, qualityReleased, t
 import { InspectionForm, QC_BUTTON } from './InspectionForm';
 
 export function InspectionDetail() {
+  const confirmSave = useConfirmSharedSave();
   const { finishedMovements } = useInventory();
   const { id = '' } = useParams(); const q = useQuality(); const { user } = useAuth(); const navigate = useNavigate();
   const i = q.inspections.find(i => i.id === id); const [error, setError] = useState('');
-  const run = (action: () => void) => { try { action(); setError(''); } catch(e) { setError(e instanceof Error ? e.message : 'Unable to update inspection.'); } };
+  const run = async (action: () => void) => { try { action(); await confirmSave(); setError(''); } catch(e) { setError(e instanceof Error ? e.message : 'Unable to update inspection.'); } };
   if (!i) return <Card>Inspection not found. <Link to="/qc">QC dashboard</Link></Card>;
   const stockAuthorization = q.releases.find(r => r.inspectionId === id && r.purpose === 'finished_stock');
   const received = finishedMovements.filter(m => m.stockApprovalId === stockAuthorization?.id && !!stockAuthorization).reduce((sum, m) => sum + m.quantity, 0);
@@ -27,7 +29,7 @@ export function InspectionDetail() {
     {canRecordQC(user?.role) && ['Failed', 'Reinspection Required', 'Conditionally Accepted'].includes(i.status) && <button className={QC_BUTTON} onClick={() => run(() => navigate(`/qc/inspections/${q.reinspection(id).id}`))}>Create linked reinspection</button>}
     {finalAuthority && i.subject.kind === 'production' && i.subject.isFinishedOutput && qualityReleased(q, i) && !q.releases.some(r => r.inspectionId === id && r.purpose === 'finished_stock') && <form className="grid gap-3 sm:grid-cols-3" onSubmit={e => { e.preventDefault(); const f = new FormData(e.currentTarget); run(() => q.release(id, 'finished_stock', Number(f.get('accepted')), Number(f.get('rejected')))); }}><label>Authorized accepted quantity ({i.subject.unit})<input required type="number" name="accepted" step="any" min="0" max={i.subject.quantity} className={ENTRY_INPUT} /></label><label>Authorized rejected quantity ({i.subject.unit})<input required type="number" name="rejected" step="any" min="0" max={i.subject.quantity} className={ENTRY_INPUT} /></label><button className={QC_BUTTON}>Authorize Finished Goods Stock IN</button></form>}
     {i.approvals.map(a => <p key={a.id} className="text-sm">{a.decision} · {a.user} · {a.at} · {a.remarks}</p>)}{q.releases.filter(r => r.inspectionId === id).map(r => <p key={r.id} className="text-sm">{r.purpose === 'quality' ? 'Quality release' : 'Stock authorization'} · {r.id} · {r.user} · {r.at} {r.purpose === 'finished_stock' && `· Accepted ${r.acceptedQuantity}, rejected ${r.rejectedQuantity} ${r.unit}`}</p>)}</Card>
-    {canRecordQC(user?.role) && i.status !== 'Draft' && <Card><h2 className="font-semibold">Report non-conformance / corrective action</h2><form className="space-y-3" onSubmit={e => { e.preventDefault(); const f = new FormData(e.currentTarget); run(() => q.reportFinding(id, String(f.get('description')), String(f.get('severity')) as QCNonConformance['severity'])); }}><label>Finding / failed checklist item<textarea required name="description" className={ENTRY_INPUT} /></label><label>Severity<select name="severity" className={ENTRY_INPUT}>{['Minor', 'Major', 'Critical'].map(s => <option key={s}>{s}</option>)}</select></label><button className={QC_BUTTON}>Create Non-Conformance</button><Link to="/qc/non-conformances" className="ml-3 underline">Corrective action register</Link></form></Card>}
+    {canRecordQC(user?.role) && i.status !== 'Draft' && <Card><h2 className="font-semibold">Report non-conformance / corrective action</h2><form className="space-y-3 spaced-actions" onSubmit={e => { e.preventDefault(); const f = new FormData(e.currentTarget); run(() => q.reportFinding(id, String(f.get('description')), String(f.get('severity')) as QCNonConformance['severity'])); }}><label>Finding / failed checklist item<textarea required name="description" className={ENTRY_INPUT} /></label><label>Severity<select name="severity" className={ENTRY_INPUT}>{['Minor', 'Major', 'Critical'].map(s => <option key={s}>{s}</option>)}</select></label><button className={QC_BUTTON}>Create Non-Conformance</button><Link to="/qc/non-conformances" className="ml-3 underline">Corrective action register</Link></form></Card>}
     {user?.role === 'admin' && i.status === 'Draft' && <Card><form onSubmit={e => { e.preventDefault(); run(() => q.assign(id, String(new FormData(e.currentTarget).get('userId')))); }}><label>Assigned QC user ID<input required name="userId" defaultValue={i.assignedTo} className={ENTRY_INPUT} /></label><button className={QC_BUTTON}>Assign inspection</button></form></Card>}
     <Card className="space-y-2"><h2 className="font-semibold">QC Activity Timeline</h2>{i.events.map(e => <p key={e.id} className="text-sm">{e.at} · {e.user} · {e.type} · {e.description}</p>)}</Card>{error && <p role="alert" className="text-red-700">{error}</p>}
   </div>;

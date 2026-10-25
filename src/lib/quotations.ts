@@ -26,6 +26,17 @@ export const quotationTotals = (q: Quotation) => {
  return calculateCommercialTotals(q.lines,q.discount,q.taxRate,q.taxMode);
 };
 export function effectiveQuotationStatus(q: Quotation, date = today()): QuotationStatus { return ['Approved', 'Sent', 'Accepted'].includes(q.status) && q.validUntil < date ? 'Expired' : q.status; }
+export function quotationStatusLabel(status: QuotationStatus): string {
+  if (status === 'Pending Internal Approval') return 'Pending';
+  if (status === 'Internally Rejected') return 'Rejected';
+  return status;
+}
+export function quotationStatusClass(status: QuotationStatus): string {
+  if (status === 'Pending Internal Approval') return 'bg-amber-100 text-amber-900';
+  if (status === 'Approved') return 'bg-green-100 text-green-900';
+  if (status === 'Rejected' || status === 'Internally Rejected') return 'bg-red-100 text-red-900';
+  return 'bg-gray-100 text-gray-800';
+}
 export function quotationEvent(user: User, type: string, description: string): QuotationEvent { return { id: crypto.randomUUID(), at: new Date().toISOString(), user: user.name, userId: user.id, type, description }; }
 export function createQuotation(company: CompanySettings, all: Quotation[], user: User): Quotation {
   if (!QUOTATION_EDIT_ROLES.includes(user.role)) throw new Error('Your role cannot create quotations.');

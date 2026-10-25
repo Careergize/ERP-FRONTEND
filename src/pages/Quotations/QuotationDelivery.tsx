@@ -75,7 +75,7 @@ export function QuotationDelivery({ quotation, onClose, canSend }: { quotation: 
           <label className="flex items-center gap-2"><input type="checkbox" checked={useWhatsapp} onChange={e => { setUseWhatsapp(e.target.checked); changed(); }} />WhatsApp PDF</label>
         </fieldset>
         {useEmail && !email.trim() && <p className="text-sm text-amber-700">Enter the customer email address.</p>}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 max-w-full">
           <button type="button" disabled={busy} className={QUOTE_BUTTON} onClick={() => void download()}>Download PDF</button>
 
           <button type="button" disabled={busy} className={QUOTE_BUTTON} onClick={() => void refresh()}>Check Manager Approval / History</button>

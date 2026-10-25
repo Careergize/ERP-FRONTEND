@@ -1,3 +1,4 @@
+import { useSharedEntry, useRefreshSharedEntry } from '@/context/SharedEntriesContext';
 import { useSalesOrders } from './SalesOrdersContext';
 import { api } from '@/lib/api';
 import { FINISHED_GOODS, replaceFinishedCatalog, type FinishedGood } from '@/lib/finishedGoodsData';
@@ -9,7 +10,7 @@ import { rawMaterialBalance } from '@/lib/rawMaterialData';
 import { createContext, useContext, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { fetchRawInventory, postRawMovement, persistRawPlan, inventoryError } from '@/lib/rawInventoryApi';
 import { validatePlan, type ProcurementItem } from '@/lib/procurement';
-import { FINISHED_MOVEMENTS, FINISHED_BY_ID, type FinishedGoodsMovement } from '@/lib/finishedGoodsData';
+import { FINISHED_BY_ID, type FinishedGoodsMovement } from '@/lib/finishedGoodsData';
 import { allocate, confirmDirectDispatch, confirmDispatch, confirmDispatchBatch, reverseDispatch, reserved, physical, batchPhysical, type FulfillmentLedger, type DispatchBatchEntry } from '@/lib/fulfillment';
 import type { SalesOrder, SalesOrderItem } from '@/types';
 import { RAW_MATERIALS, RAW_MOVEMENTS, type RawMaterial, type RawMaterialMovement } from '@/lib/rawMaterialData';
@@ -44,20 +45,21 @@ interface InventoryContextValue {
   rawCanPlan: boolean;
   reloadRaw: () => Promise<void>;
   saveRawPlan: (plan: ProcurementItem) => Promise<void>;
-  addFinishedMovement: (movement: Omit<FinishedGoodsMovement, 'id'>) => void;
+  addFinishedMovement: (movement: Omit<FinishedGoodsMovement, 'id'> & { requestId?: string }) => void;
   addRawMovement: (movement: Omit<RawMaterialMovement, 'id'> & {requestId?: string}) => Promise<void>;
 }
 const InventoryContext = createContext<InventoryContextValue | undefined>(undefined);
 export function InventoryProvider({ children }: { children: ReactNode }) {
+  const refreshSharedEntry = useRefreshSharedEntry();
   const { getOrders } = useSalesOrders();
   const quality = useQuality(); const { user } = useAuth();
-  const [conversions, setConversions] = useState<ProductConversion[]>([]); const conversionRef = useRef(conversions);
-  const [thresholds, setThresholds] = useState<StockThreshold[]>([]);
-  // Same lifecycle as SalesOrdersContext: navigation-safe frontend simulation,
-  // reset on refresh. Replace seed loading and add methods with API adapters later.
-  const [ledger, setLedger] = useState<FulfillmentLedger>({ movements: FINISHED_MOVEMENTS, allocations: [], dispatches: [] });
-  const current = useRef(ledger);
-  const publish = (next: FulfillmentLedger) => { next={...next,movements:snapshotMovements(current.current.movements,next.movements,conversionRef.current)}; current.current=next;setLedger(next); };
+  const [conversions, setConversions] = useSharedEntry<ProductConversion[]>('inventory-conversions', []); const conversionRef = useRef(conversions); conversionRef.current = conversions;
+  const [thresholds, setThresholds] = useSharedEntry<StockThreshold[]>('inventory-thresholds', []);
+  const [storedLedger, setLedger] = useSharedEntry<FulfillmentLedger>('inventory-ledger', { movements: [], allocations: [], dispatches: [] });
+  const [purchaseReceipts, setPurchaseReceipts] = useState<FinishedGoodsMovement[]>([]);
+  const ledger = { ...storedLedger, movements: [...storedLedger.movements, ...purchaseReceipts] };
+  const current = useRef(ledger); current.current = ledger;
+  const publish = (next: FulfillmentLedger) => { next={...next,movements:snapshotMovements(current.current.movements,next.movements,conversionRef.current)}; setLedger({ ...next, movements: next.movements.filter(m => !m.purchaseOrderId && !m.goodsReceivedNoteId) }); current.current=next; };
   const finishedMovements = ledger.movements;
   const postReceipt = (movement: FinishedGoodsMovement) => {
     const existing = current.current.movements.find(m => m.id === movement.id);
@@ -67,7 +69,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     if (!product || movement.type !== 'IN' || !movement.id || !Number.isFinite(Date.parse(movement.date)) || product.unit !== movement.unit || movement.quantity <= 0 || !Number.isFinite(movement.quantity) || movement.date < product.openingDate) throw new Error('Receipt product, unit, quantity or date is invalid.');
     publish({ ...current.current, movements: [...current.current.movements, movement] });
   };
-  const [finishedPieces, setFinishedPieces] = useState<Record<string, number>>({});
+  const [finishedPieces, setFinishedPieces] = useSharedEntry<Record<string, number>>('inventory-pieces', {});
   const updateFinishedPieces = (productId: string, pieces: number) => {
     if (!FINISHED_BY_ID.has(productId) || !Number.isSafeInteger(pieces) || pieces <= 0) throw new Error('Invalid pieces');
     setFinishedPieces(current => ({ ...current, [productId]: pieces }));
@@ -91,19 +93,19 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const { data } = await api.get<{ products: FinishedGood[]; receipts: FinishedGoodsMovement[] }>('/finished-stock/', { timeout: 15000 });
       if (owner.current !== account || finishedSequence.current !== sequence) return;
       replaceFinishedCatalog(data.products); setFinishedProducts(data.products);
+      await refreshSharedEntry('inventory-ledger');
       const next = { ...current.current, movements: [...current.current.movements.filter(m => !m.purchaseOrderId), ...data.receipts] };
-      current.current = next; setLedger(next);
+      current.current = next; setPurchaseReceipts(data.receipts);
     } catch (error) {
       if (owner.current === account && finishedSequence.current === sequence) setFinishedError(inventoryError(error));
     } finally {
       if (owner.current === account && finishedSequence.current === sequence) setFinishedLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, refreshSharedEntry]);
   useEffect(() => {
     finishedSequence.current++;
     replaceFinishedCatalog(); setFinishedProducts(FINISHED_GOODS);
-    const initial = { movements: FINISHED_MOVEMENTS, allocations: [], dispatches: [] };
-    current.current = initial; setLedger(initial); setFinishedError('');
+    setPurchaseReceipts([]); setFinishedError('');
     setFinishedLoading(!!user && !user.id.startsWith('demo-'));
     void reloadFinished();
   }, [reloadFinished]);
@@ -132,6 +134,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     void reloadRaw();
   },[reloadRaw,user?.role]);
   const saveRawPlan=async(plan:ProcurementItem)=>{
+    if (user?.id.startsWith('demo-')) throw new Error('A real backend account is required to save procurement plans.');
     const account=user?.id;
     if(!account||rawLoading||rawError||!rawCanPlan)throw new Error('Load inventory and check your procurement permissions before saving.');
     validatePlan(plan);
@@ -140,16 +143,20 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     const saved=account.startsWith('demo-')?structuredClone(plan):await persistRawPlan(plan).catch(e=>{throw new Error(inventoryError(e));});
     if(owner.current===account){rawSequence.current++;setRawPlans(old=>[...old.filter(p=>p.materialId!==saved.materialId),saved]);}
   };
-  const addFinishedMovement = (movement: Omit<FinishedGoodsMovement, 'id'>) => {
+  const addFinishedMovement = (movement: Omit<FinishedGoodsMovement, 'id'> & { requestId?: string }) => {
+    const { requestId, ...entry } = movement;
+    const repeated = requestId ? current.current.movements.find(row => row.id === requestId) : undefined;
+    if (repeated) { if (Object.entries(entry).some(([key, value]) => (repeated as unknown as Record<string, unknown>)[key] !== value)) throw new Error('This movement request ID was already used with different details.'); return; }
     const product = FINISHED_BY_ID.get(movement.productId);
     if (!product || product.unit !== movement.unit || !Number.isFinite(movement.quantity) || movement.quantity <= 0) throw new Error('Invalid finished goods movement');
     if (movement.type === 'IN') assertManualFinishedINQC(quality.getState(), user?.role, movement.productId);
     if (movement.jobCardId || movement.manufacturingItemId) throw new Error('Use the authorized production receipt workflow for manufactured stock.');
     if (movement.date < product.openingDate) throw new Error('Movement precedes reference opening.');
     if (movement.type === 'OUT') { if (!['admin','store_keeper'].includes(user?.role ?? '') || !['transfer','waste','adjustment'].includes(movement.movementPurpose ?? '') || !movement.reference?.trim() || !movement.remarks?.trim()) throw new Error('Store/Admin records a non-sales OUT purpose, reference and reason; use confirmed dispatch for sales.'); if (movement.movementPurpose==='adjustment' && user?.role!=='admin') throw new Error('Admin must approve and record adjustments.'); const balance = physical(current.current, product.id); if (balance === null || movement.quantity > balance - reserved(current.current, product.id) || movement.quantity > (batchPhysical(current.current, product.id, 'reference-stock') ?? 0) - reserved(current.current, product.id, 'reference-stock')) throw new Error('Stock OUT exceeds known unreserved stock.'); }
-    publish({ ...current.current, movements: [...current.current.movements, { ...movement, batch: 'reference-stock', id: crypto.randomUUID() }] });
+    publish({ ...current.current, movements: [...current.current.movements, { ...entry, batch: 'reference-stock', id: requestId ?? crypto.randomUUID() }] });
   };
   const addRawMovement = async (movement: Omit<RawMaterialMovement, 'id'> & {requestId?: string}) => {
+    if (user?.id.startsWith('demo-')) throw new Error('A real backend account is required to save raw-material movements.');
     const account=user?.id;
     if(!account||rawLoading||rawError||!rawCanPost)throw new Error('Load inventory and check your Stock IN/OUT permissions before posting.');
     const material = rawMaterials.find(m => m.id === movement.materialId);

@@ -4,6 +4,10 @@ import { fileURLToPath } from 'node:url';
 const server = await createServer({ configFile: false, resolve: { alias: { '@': fileURLToPath(new URL('../src', import.meta.url)) } }, optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, hmr: false }, appType: 'custom' });
 try {
   const q = await server.ssrLoadModule('/src/lib/quotations.ts');
+  assert.equal(q.quotationStatusLabel('Pending Internal Approval'), 'Pending');
+  assert.equal(q.quotationStatusLabel('Approved'), 'Approved');
+  assert.equal(q.quotationStatusLabel('Internally Rejected'), 'Rejected');
+  assert.equal(q.quotationStatusLabel('Draft'), 'Draft');
   const pricing = await server.ssrLoadModule('/src/lib/commercialPricing.ts');
   const costing = await server.ssrLoadModule('/src/lib/customCosting.ts');
   const sales = await server.ssrLoadModule('/src/lib/salesOrders.ts');

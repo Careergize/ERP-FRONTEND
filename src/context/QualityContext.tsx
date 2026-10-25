@@ -1,5 +1,6 @@
+import { useSharedEntry } from '@/context/SharedEntriesContext';
 import { generateScheduled, validateSchedule, type QCSchedule } from '@/lib/qualitySchedule';
-import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { QC_TEMPLATES, CLEANING_AREAS } from '@/lib/qualityTemplates';
 import { createInspection, saveInspection, submitInspection, reviewInspection, reinspect, releaseInspection, createNonConformance, updateNonConformance, validateTemplate, type QCState, type QCTemplate, type QCInspection, type QCSubject, type QCApproval, type QCRelease, type QCNonConformance } from '@/lib/quality';
@@ -27,13 +28,13 @@ interface QualityValue extends QCState {
 const Context = createContext<QualityValue | undefined>(undefined);
 export function QualityProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [schedules,setSchedules]=useState<QCSchedule[]>([]); const scheduleRef=useRef(schedules);
-  const [state, setState] = useState<QCState>({ inspections: [], releases: [], nonConformances: [] });
-  const current = useRef(state);
-  const [templates, setTemplates] = useState(QC_TEMPLATES); const templateRef = useRef(templates);
-  const [areas, setAreas] = useState(CLEANING_AREAS);
+  const [schedules,setSchedules]=useSharedEntry<QCSchedule[]>('quality-schedules', []); const scheduleRef=useRef(schedules); scheduleRef.current=schedules;
+  const [state, setState] = useSharedEntry<QCState>('quality-state', { inspections: [], releases: [], nonConformances: [] });
+  const current = useRef(state); current.current = state;
+  const [templates, setTemplates] = useSharedEntry('quality-templates', QC_TEMPLATES); const templateRef = useRef(templates); templateRef.current = templates;
+  const [areas, setAreas] = useSharedEntry('quality-areas', CLEANING_AREAS);
   const actor = () => { if (!user) throw new Error('Sign in to update quality records.'); return user; };
-  const publish = (next: QCState) => { current.current = next; setState(next); };
+  const publish = (next: QCState) => { setState(next); current.current = next; };
   const get = (id: string) => { const i = current.current.inspections.find(i => i.id === id); if (!i) throw new Error('Inspection not found.'); return i; };
   const replace = (i: QCInspection) => publish({ ...current.current, inspections: current.current.inspections.map(row => row.id === i.id ? i : row) });
   return <Context.Provider value={{ schedules,

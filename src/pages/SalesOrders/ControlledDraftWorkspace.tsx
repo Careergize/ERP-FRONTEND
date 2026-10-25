@@ -43,7 +43,7 @@ export function ControlledDraftWorkspace({ orderId, onSaved }: { orderId?: strin
     <div className="flex items-center justify-between"><h2 className="font-semibold text-navy">Controlled Draft test workspace</h2><Link to="/sales-orders" className="underline">Close</Link></div>
     <p className="text-sm text-amber-800">Isolated test API only. Saves Draft demand and revision evidence. No allocation, reservation or stock action is available here.</p>
     {!realUser && <p role="alert">Sign in with a Django test account. Demo accounts cannot persist Drafts.</p>}
-    <div className="flex flex-wrap items-end gap-3"><label>Saved order ID<input className={ENTRY_INPUT} value={openId} placeholder="wf-order-123" onChange={e => setOpenId(e.target.value)} /></label>
+    <div className="flex flex-wrap items-end gap-3 max-w-full"><label>Saved order ID<input className={ENTRY_INPUT} value={openId} placeholder="wf-order-123" onChange={e => setOpenId(e.target.value)} /></label>
       <button type="button" className={button} disabled={!realUser || state.busy || state.pending} onClick={() => void reopen()}>Reopen from backend (discard unsaved edits)</button>
       <Link className="underline" to="/sales-orders?draft=new" reloadDocument>New controlled Draft</Link></div>
     {state.busy && <p role="status">Waiting for backend…</p>}

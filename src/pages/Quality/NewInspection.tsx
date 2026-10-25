@@ -1,3 +1,4 @@
+import { useConfirmSharedSave } from '@/context/SharedEntriesContext';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuality } from '@/context/QualityContext';
@@ -12,12 +13,13 @@ import { ENTRY_INPUT } from '@/components/ui/SearchSelect';
 import { QC_BUTTON } from './InspectionForm';
 
 export function NewInspection({ category }: { category: QCCategory }) {
+  const confirmSave = useConfirmSharedSave();
   const quality = useQuality(); const { rawMovements } = useInventory(); const { cards, load, registerBatch } = useJobCards(); const { machines } = useModels(); const { user } = useAuth(); const navigate = useNavigate();
   const templates = quality.templates.filter(t => t.category === category && t.active && !quality.templates.some(n => n.id === t.id && n.revision > t.revision));
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? ''), [source, setSource] = useState(''), [stageId, setStageId] = useState(''), [error, setError] = useState('');
   useEffect(() => { void load(); }, [load]);
   const items = cards.flatMap(workItems); const selectedItem = items.find(i => i.id === source); const selectedStage = selectedItem?.productionStages?.find(s => s.id === stageId);
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); const f = new FormData(e.currentTarget);
     try {
       const template = templates.find(t => t.id === templateId); if (!template) throw new Error('Select an active template.');
@@ -30,7 +32,7 @@ export function NewInspection({ category }: { category: QCCategory }) {
       }
       if (category === 'machine') { const machine = machines.find(m => m.id === source && m.active); if (!machine) throw new Error('Admin must configure an exact machine in the shared master.'); subject = { kind: category, label: machine.name, machineId: machine.id, machineType: machine.type }; }
       if (category === 'cleaning') { const area = quality.areas.find(a => a.id === source); if (!area) throw new Error('Select a cleaning area.'); subject = { kind: category, label: area.name, areaId: area.id }; }
-      const i = quality.create(template, subject, String(f.get('date')), String(f.get('department')), Number(f.get('samples') ?? 1)); navigate(`/qc/inspections/${i.id}`);
+      const i = quality.create(template, subject, String(f.get('date')), String(f.get('department')), Number(f.get('samples') ?? 1)); await confirmSave(); navigate(`/qc/inspections/${i.id}`);
     } catch(e) { setError(e instanceof Error ? e.message : 'Unable to create inspection.'); }
   };
   if (!canRecordQC(user?.role)) return null;

@@ -1,3 +1,4 @@
+import { useSharedEntry, useConfirmSharedSave } from './SharedEntriesContext';
 import { workflowRequest } from '@/lib/productionWorkflowApi';
 import { appendProductionRun, type ProductionRun } from '@/lib/productionRuns';
 import { useQuality } from './QualityContext';
@@ -5,7 +6,6 @@ import { assertMachineQC, assertProductionQC, finishedAuthorization, rawHeldQuan
 import { rawMaterialBalance } from '@/lib/rawMaterialData';
 import { assertCompleteManufacturingScope, findWorkItem, parentForItem, summarizeParent } from '@/lib/parentJobCards';
 import { createContext, useCallback, useContext, useRef, useState, useEffect, type ReactNode } from 'react';
-import { api } from '@/lib/api';
 import { approveJobCard, issueJobMaterials, updateJobStage, transferJobToStock, editJobCard, toggleJobStage, type StageUpdate, type StockReceiptOptions } from '@/lib/jobCards';
 import { useInventory } from './InventoryContext';
 import { useCosting } from './CostingContext';
@@ -43,6 +43,8 @@ const Context = createContext<JobCardsState | undefined>(undefined);
 const validCard = (value: JobCard) => value && typeof value.id === 'string' && typeof value.jobCardNumber === 'string' && Array.isArray(value.stages);
 export function JobCardsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const [, setTracking] = useSharedEntry<Record<string, { expectedVersion: number; card: JobCard }>>('job-tracking', {});
+  const confirmSave = useConfirmSharedSave();
   const quality = useQuality();
   const { orders, linkJob, linkFinishedProduct } = useSalesOrders();
   const { estimates, invalidate, bindJob } = useCosting();
@@ -73,6 +75,7 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
   }, [user?.id]);
   useEffect(() => { request.current = undefined; publish([]); void load(); }, [load]);
   const remoteAction = async (id: string, action: string, data: object = {}) => {
+    await confirmSave();
     const parent = parentForItem(current.current, id);
     if (!parent?.persistedWorkflow) throw new Error('Shared Job Card not found.');
     const saved = await workflowRequest<JobCard>(`jobs/${parent.workflowKey}/${action}/`, { expectedVersion: parent.workflowVersion, itemId: id, ...data });
@@ -84,16 +87,21 @@ export function JobCardsProvider({ children }: { children: ReactNode }) {
     const card = current.current.find(c => c.id === id) ?? findWorkItem(current.current, id);
     if (!card) throw new Error('Job card not found.');
     const next = change(card);
-    publish(current.current.map(c => c.id === id ? next : c.manufacturingItems?.some(i => i.id === id) ? summarizeParent(c, c.manufacturingItems.map(i => i.id === id ? next : i)) : c));
+    if (next === card) return;
+    const parent = parentForItem(current.current, id);
+    if (!parent?.persistedWorkflow || parent.workflowVersion === undefined) throw new Error('Load a persisted Job Card before saving production tracking.');
+    const updated = current.current.map(c => c.id === id ? next : c.manufacturingItems?.some(i => i.id === id) ? summarizeParent(c, c.manufacturingItems.map(i => i.id === id ? next : i)) : c);
+    const changed = updated.find(c => c.id === parent.id)!;
+    changed.workflowVersion = parent.workflowVersion + 1;
+    setTracking(previous => ({ ...previous, [parent.id]: { expectedVersion: parent.workflowVersion!, card: changed } }));
+    publish(updated);
   };
   const saveSequence = async (id: string) => {
     if (!user || !['admin', 'receptionist', 'production_manager'].includes(user.role)) throw new Error('Your role cannot save stage requirements.');
     const card = findWorkItem(current.current, id);
     if (!card || card.approval || !['Draft', 'PendingApproval'].includes(card.status)) throw new Error('Completed job card stage requirements are locked.');
-    let persisted = false;
-    try { if (!card.estimateId && !card.parentJobCardId) { await api.patch(`/job-cards/${id}/stages/`, { stages: card.stages }); persisted = true; } } catch { /* Existing API fallback stays explicit in the UI. */ }
-    mutate(id, latest => ({ ...latest, activityHistory: [...(latest.activityHistory ?? []), { id: crypto.randomUUID(), timestamp: new Date().toISOString(), action: 'Stage requirements saved', user: user.name, department: 'Production Manager', description: persisted ? 'Existing stage API accepted the request; manufacturing tracking remains frontend-only.' : 'Saved in frontend state only; stage API was unavailable.' }] }));
-    return persisted;
+    await confirmSave();
+    return true;
   };
   const createLinked: JobCardsState['createLinked'] = async (orderId) => {
     if (!user || !['admin', 'receptionist'].includes(user.role)) throw new Error('Only Receptionist/Admin can allocate Job Cards.');

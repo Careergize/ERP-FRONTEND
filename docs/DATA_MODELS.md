@@ -1,5 +1,11 @@
 # Frontend Data Models
 
+## Supporting-record persistence — 25 October 2026
+
+Added SharedEntry (key/content/version/updated actor/time) and append-only EntryRevision (version/content/authenticated actor/server time/command UUID/digest). Quotation workspaces are author-scoped. Operational transaction models are not replaced by these supporting snapshots.
+
+Scope, pending authority proposal, verification and limitations: [persistence status](../../../Backend/PERSISTENCE_STATUS.md).
+
 ## Local workflow and registers update — 23 October 2026
 
 Added separate SpareItem/Consumable masters and an append-only SpareStockMovement ledger with Decimal quantities, explicit unknown opening and no Consumable balance/ledger.

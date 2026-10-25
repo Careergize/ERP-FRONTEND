@@ -72,7 +72,7 @@ export function createInspection(template: QCTemplate, subject: QCSubject, user:
 }
 export function saveInspection(i: QCInspection, draft: Pick<QCInspection, 'time' | 'responses' | 'metadata' | 'comments'>, user: User): QCInspection {
   ensure(canRecordQC(user.role) && (user.id === i.assignedTo || user.role === 'admin') && i.status === 'Draft', 'Only assigned QC staff/Admin can edit a draft. Submitted records are immutable.');
-  return { ...i, ...structuredClone(draft), events: [...i.events, event(user, 'Draft saved', 'Measurements and findings saved in frontend state.')] };
+  return { ...i, ...structuredClone(draft), events: [...i.events, event(user, 'Draft saved', 'Measurements and findings prepared for database saving.')] };
 }
 export function submitInspection(i: QCInspection, user: User): QCInspection {
   ensure(canRecordQC(user.role) && (i.assignedTo === user.id || user.role === 'admin') && i.status === 'Draft', 'Only assigned QC staff/Admin can submit a draft.');

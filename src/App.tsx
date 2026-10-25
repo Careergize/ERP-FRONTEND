@@ -1,4 +1,6 @@
 import { ProcessManager } from '@/pages/Masters/ProcessManager';
+import { ActivityHistory } from '@/pages/ActivityHistory';
+import { SharedEntriesProvider } from '@/context/SharedEntriesContext';
 import { CommercialProvider } from '@/context/CommercialContext';
 import { ProcurementPlanner } from '@/pages/ProcurementPlanner';
 import { PurchaseOrders, PurchaseOrderEditor, PurchaseOrderDetail } from '@/pages/PurchaseOrders';
@@ -93,6 +95,7 @@ function AppRoutes() {
         <Route path="/recycling" element={<RecyclingPage />} />
         <Route path="/costing" element={<CostingPage />} />
         <Route path="/masters" element={<MastersPage />} />
+        <Route path="/activity-history" element={<ActivityHistory />} />
         <Route path="/track-trace" element={<TrackTrace />} />
       </Route>
     </Routes>
@@ -102,7 +105,9 @@ function AppRoutes() {
 export function App() {
   return (
     <AuthProvider>
+      <SharedEntriesProvider>
       <SalesOrdersProvider><ModelsProvider><CommercialProvider><QualityProvider><InventoryProvider><CostingProvider><QuotationsProvider><JobCardsProvider><InvoicesProvider><AppRoutes /></InvoicesProvider></JobCardsProvider></QuotationsProvider></CostingProvider></InventoryProvider></QualityProvider></CommercialProvider></ModelsProvider></SalesOrdersProvider>
+      </SharedEntriesProvider>
     </AuthProvider>
   );
 }

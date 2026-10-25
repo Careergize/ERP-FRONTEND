@@ -1,4 +1,5 @@
 import { QC_VIEW_ROLES, isQCRole } from '@/lib/quality';
+import { useSharedEntriesPending } from '@/context/SharedEntriesContext';
 import { QC_SECTIONS } from '@/pages/Quality/QualityPage';
 import { NavLink, Outlet } from "react-router-dom";
 import {
@@ -25,6 +26,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { to: "/activity-history", label: "Entry History", icon: ClipboardList, roles: ["admin", "project_manager", "production_manager", "accounts"] },
   { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["project_manager", "receptionist", "production_manager", "store_keeper", "production_operator", "recycling_operator", "accounts", "admin"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["admin", "store_keeper", "project_manager", "production_manager", "accounts"] },
   { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["receptionist", "admin"] },
@@ -46,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const FINANCE_NAV_ITEMS: NavItem[] = [
+  { to: "/activity-history", label: "Entry History", icon: ClipboardList, roles: ["accounts"] },
   { to: "/", label: "Finance Dashboard", icon: LayoutDashboard, roles: ["accounts"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["accounts"] },
   { to: "/sales-orders", label: "Sales Orders", icon: FileText, roles: ["accounts"] },
@@ -64,6 +67,7 @@ const FINANCE_NAV_ITEMS: NavItem[] = [
 ];
 
 export function AppShell() {
+  const pendingSaves = useSharedEntriesPending();
   const { user, logout } = useAuth();
   const items: NavItem[] = isQCRole(user?.role) ? [{ to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES }, ...QC_SECTIONS.map(([key, label]) => ({ to: `/qc/${key}`, label, icon: ClipboardList, roles: QC_VIEW_ROLES }))] : user?.role === "accounts" ? FINANCE_NAV_ITEMS : NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
 
@@ -88,13 +92,13 @@ export function AppShell() {
               to={to}
               end={to === "/" || to === "/qc"}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                `sidebar-nav-link transition-colors ${
                   isActive ? "bg-[#b7efbd] text-[#123b29]" : "text-white/65 hover:bg-white/10 hover:text-white"
                 }`
               }
             >
               <Icon size={18} />
-              {label}
+              <span className="min-w-0">{label}</span>
             </NavLink>
           ))}
         </nav>
@@ -108,8 +112,10 @@ export function AppShell() {
             </div>
           </div>
           <button
+            disabled={pendingSaves}
+            title={pendingSaves ? 'Finish or resolve pending database saves before signing out.' : undefined}
             onClick={logout}
-            className="mt-4 flex items-center gap-2 text-xs text-white/45 hover:text-white"
+            className="sidebar-sign-out mt-4 text-white/45 hover:text-white"
           >
             <LogOut size={14} /> Sign out
           </button>
@@ -118,7 +124,7 @@ export function AppShell() {
 
       <main className="min-w-0 flex-1 overflow-y-auto bg-[#f5f8f5]">
         <div className="flex items-center justify-end gap-4 border-b border-[#e6eee8] px-5 py-4 sm:px-8">
-          <button className="relative rounded-full p-2 text-[#668075] hover:bg-white" aria-label="Notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#40bd5b]" /></button>
+          <button data-button-icon className="relative rounded-full p-2 text-[#668075] hover:bg-white" aria-label="Notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#40bd5b]" /></button>
           <div className="h-7 w-px bg-[#dce8df]" />
           <span className="text-xs text-[#668075]">Operations overview</span>
         </div>

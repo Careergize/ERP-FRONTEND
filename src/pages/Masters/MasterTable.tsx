@@ -34,6 +34,7 @@ function renderValue(value: unknown, column: MasterColumn) {
 }
 
 export function MasterTable<T extends MasterRow>({ title, columns, rows, onAdd, onEdit }: MasterTableProps<T>) {
+  const confirmSave = useConfirmSharedSave();
   const [editingRow, setEditingRow] = useState<T | null>(null);
   const [formValues, setFormValues] = useState<Record<string, FormValue>>({});
   const [saving, setSaving] = useState(false), [error, setError] = useState('');
@@ -75,6 +76,7 @@ export function MasterTable<T extends MasterRow>({ title, columns, rows, onAdd, 
     try {
       if (rows.some((row) => row.id === editingRow.id)) await onEdit(saved);
       else await onAdd(saved);
+      await confirmSave();
       closeModal();
     } catch(e) { setError(e instanceof Error ? e.message : 'Unable to save.'); }
     finally { setSaving(false); }
@@ -114,14 +116,14 @@ export function MasterTable<T extends MasterRow>({ title, columns, rows, onAdd, 
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-card bg-white p-5 shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-navy">{rows.some((row) => row.id === editingRow.id) ? "Edit" : "Add"} {title.slice(0, -1)}</h3>
-              <button type="button" onClick={closeModal} className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-navy" aria-label="Close"><X size={18} /></button>
+              <button data-button-icon type="button" onClick={closeModal} className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-navy" aria-label="Close"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="mt-5 space-y-4"><fieldset disabled={saving} className="space-y-4">
               {columns.map((column) => (
                 <label key={column.key} className="block text-sm text-gray-600">
                   {column.label}
                   {column.kind === "stages" ? (
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2 max-w-full">
                       {ALL_MASTER_STAGES.map((stage) => {
                         const active = ((formValues[column.key] as Stage[] | undefined) ?? []).includes(stage);
                         return <button key={stage} type="button" onClick={() => toggleStage(stage)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${active ? "border-green bg-green/10 text-green" : "border-gray-200 text-gray-500 hover:border-navy hover:text-navy"}`}>{stage}</button>;
@@ -132,7 +134,7 @@ export function MasterTable<T extends MasterRow>({ title, columns, rows, onAdd, 
                   )}
                 </label>
               ))}
-              {error && <p role="alert" className="text-sm text-red-700">{error}</p>}<div className="flex justify-end gap-2 pt-2">
+              {error && <p role="alert" className="text-sm text-red-700">{error}</p>}<div className="flex justify-end gap-2 pt-2 flex-wrap max-w-full">
                 <button type="button" onClick={closeModal} className="rounded-card border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:border-navy hover:text-navy">Cancel</button>
                 <button type="submit" className="rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90">Save</button>
               </div>
@@ -143,3 +145,4 @@ export function MasterTable<T extends MasterRow>({ title, columns, rows, onAdd, 
     </section>
   );
 }
+import { useConfirmSharedSave } from '@/context/SharedEntriesContext';

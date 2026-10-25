@@ -80,7 +80,7 @@ export function NewManualJobCard({ onClose }: { onClose: () => void }) {
       <label className="block">Specifications<textarea value={specifications} onChange={e => setSpecifications(e.target.value)} className={ENTRY_INPUT} /></label>
       <RoutingFields stages={stages} onChange={setStages} />
     </fieldset>{error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-      <div className="flex justify-end gap-2"><button type="button" disabled={saving} onClick={onClose} className={JOB_BUTTON}>Cancel</button><button type="submit" disabled={saving || loading || !!optionsError || (mode === 'existing' && (finishedLoading || !!finishedError))} className={JOB_PRIMARY}>{saving ? 'Creating…' : 'Create & Send for Review'}</button></div>
+      <div className="flex justify-end gap-2 flex-wrap max-w-full"><button type="button" disabled={saving} onClick={onClose} className={JOB_BUTTON}>Cancel</button><button type="submit" disabled={saving || loading || !!optionsError || (mode === 'existing' && (finishedLoading || !!finishedError))} className={JOB_PRIMARY}>{saving ? 'Creating…' : 'Create & Send for Review'}</button></div>
     </form>
   </div></div>;
 }

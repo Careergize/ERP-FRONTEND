@@ -1,9 +1,12 @@
+import { useConfirmSharedSave } from '@/context/SharedEntriesContext';
 import { StockIntelligence } from '@/components/StockIntelligence';
 import { CustomCosting } from './CustomCosting';
 import { useSearchParams } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { MOCK_COSTING_RECORDS, MOCK_EXCHANGE_RATES } from "@/lib/mockData";
+import { useSharedEntry } from '@/context/SharedEntriesContext';
+import { useAuth } from '@/context/AuthContext';
+import { useCommercial } from '@/context/CommercialContext';
 import { Card } from "@/components/ui/Card";
 import type { CostingRecord, ExchangeRate } from "@/types";
 
@@ -15,13 +18,17 @@ const formatDate = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
 export function CostingPage() {
+  const confirmSave = useConfirmSharedSave();
   const [params] = useSearchParams();
   const [view, setView] = useState<View>(params.has("orderId") ? "custom" : "costing");
   useEffect(() => { if (params.has("orderId")) setView("custom"); }, [params]);
   const [records, setRecords] = useState<CostingRecord[]>([]);
-  const [rates, setRates] = useState<ExchangeRate[]>([]);
+  const [rates, setRates] = useSharedEntry<ExchangeRate[]>('exchange-rates', []);
+  const { user } = useAuth();
+  const { company } = useCommercial();
+  const [loadError, setLoadError] = useState('');
   const [loadingRecords, setLoadingRecords] = useState(true);
-  const [loadingRates, setLoadingRates] = useState(true);
+  const loadingRates = false;
   const [currency, setCurrency] = useState<Currency>("USD");
   const [rate, setRate] = useState("");
   const [date, setDate] = useState("2026-09-24");
@@ -34,17 +41,9 @@ export function CostingPage() {
         if (!Array.isArray(data)) throw new Error("Costing API returned an invalid response");
         setRecords(data);
       })
-      .catch(() => setRecords(MOCK_COSTING_RECORDS))
+      .catch(() => setLoadError('Unable to load item costing records. No sample records are substituted.'))
       .finally(() => setLoadingRecords(false));
 
-    api
-      .get<ExchangeRate[]>("/costing/exchange-rates/")
-      .then(({ data }) => {
-        if (!Array.isArray(data)) throw new Error("Exchange rates API returned an invalid response");
-        setRates(data);
-      })
-      .catch(() => setRates(MOCK_EXCHANGE_RATES))
-      .finally(() => setLoadingRates(false));
   }, []);
 
   async function handleLogRate(event: FormEvent) {
@@ -55,19 +54,20 @@ export function CostingPage() {
     const newRate: ExchangeRate = {
       id: `fx-${Date.now()}`,
       currency,
+      targetCurrency: company.currency,
       rate: parsedRate,
       date,
-      enteredBy: "Current user (Accounts)",
+      enteredBy: user?.name ?? '',
     };
 
     setSubmitting(true);
     try {
-      await api.post("/costing/exchange-rates/", newRate);
-    } catch {
-      // Demo mode has no backend; the local rate history remains authoritative.
-    } finally {
       setRates((current) => [newRate, ...current]);
+      await confirmSave();
       setRate("");
+    } catch (cause) {
+      setLoadError(cause instanceof Error ? cause.message : 'Unable to save exchange rate.');
+    } finally {
       setSubmitting(false);
     }
   }
@@ -77,7 +77,8 @@ export function CostingPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-navy">Costing</h1>
-      <p role="note" className="mt-2 text-sm text-amber-800">Backend costing and exchange-rate persistence are pending. Fallback records are samples; local calculations and rate entries are session-only and are not confirmed database saves.</p>
+      <p role="note" className="mt-2 text-sm text-gray-500">Saved estimate drafts and exchange-rate entries are shared database records. Check the save status for backend confirmation.</p>
+      {loadError && <p role="alert" className="mt-2 text-sm text-red-700">{loadError}</p>}
       <p className="mt-1 text-sm text-gray-500">Review item costs and maintain the manual exchange rates used by Accounts.</p>
 
       <section aria-label="Costing summary" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -88,12 +89,12 @@ export function CostingPage() {
         <Card className="p-4">
           <p className="text-sm text-gray-500">Latest exchange rate</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-navy">
-            {latestRate ? `1 ${latestRate.currency} = ₦${formatNumber(latestRate.rate)}` : "—"}
+            {latestRate ? `1 ${latestRate.currency} = ${formatNumber(latestRate.rate)} ${latestRate.targetCurrency ?? '(target currency unrecorded)'}` : "—"}
           </p>
         </Card>
       </section>
 
-      <div className="mt-6 inline-flex rounded-full bg-gray-100 p-1" role="tablist" aria-label="Costing views">
+      <div className="mt-6 inline-flex max-w-full flex-wrap items-center gap-3 rounded-card bg-gray-100 p-2" role="tablist" aria-label="Costing views">
         {(["costing", "custom", "rates"] as const).map((tab) => {
           const active = view === tab;
           return (
@@ -141,7 +142,7 @@ export function CostingPage() {
                         <td className="px-4 py-3 text-right tabular-nums">{formatNumber(record.otherCost)}</td>
                         <td className="px-4 py-3">{record.currency}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{formatNumber(record.exchangeRateUsed)}</td>
-                        <td className="px-4 py-3 text-right font-semibold tabular-nums text-navy">₦{formatNumber(record.totalCostLocal)}</td>
+                        <td className="px-4 py-3 text-right font-semibold tabular-nums text-navy">{record.currency} {formatNumber(record.totalCostLocal)}</td>
                         <td className="whitespace-nowrap px-4 py-3">{formatDate(record.lastUpdated)}</td>
                       </tr>
                     ))}

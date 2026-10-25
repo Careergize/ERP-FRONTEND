@@ -9,22 +9,43 @@ import { createQuotation, submitQuotation, approveQuotation, sendQuotation, reco
 import { api } from '@/lib/api';
 import { saveQuotationSnapshot, saveQuotationDraft, loadQuotationDrafts } from '@/lib/quotationApi';
 import { FINISHED_BY_ID } from '@/lib/finishedGoodsData';
+import { useSharedEntry } from './SharedEntriesContext';
+
+function restoreWorkspace(saved: Quotation[], workspace: Quotation[]) {
+  const merged = saved.map(server => {
+    const local = workspace.find(q => q.id === server.id);
+    if (!local) return server;
+    // Only the canonical service supplies approval and fulfillment. Workspace
+    // snapshots retain drafts, correspondence and customer response evidence.
+    const draft = server.status === 'Draft' && local.draftVersion === server.draftVersion ? local : server;
+    const responses = local.responses ?? [];
+    const latest = responses.filter(r => r.revision === server.revision).at(-1);
+    const status = ['Approved', 'Sent'].includes(server.status) && latest && latest.response !== 'Pending' ? latest.response : server.status === 'Approved' && local.status === 'Sent' && local.draftVersion === server.draftVersion ? 'Sent' : server.status;
+    return { ...draft, approval: server.approval, salesOrderId: server.salesOrderId,
+      status, responses, emailDrafts: local.emailDrafts,
+      events: [...new Map([...local.events, ...server.events].map(event => [event.id, event])).values()] } as Quotation;
+  });
+  return [...merged, ...workspace.filter(q => !saved.some(server => server.id === q.id) && !q.draftVersion)];
+}
 interface Value { quotations: Quotation[]; loading: boolean; loadError: string; reload: () => Promise<void>; generateQuotation: (source: { customerId?: string; prospectId?: string; estimateId?: string }) => Quotation; reject: (id: string, remarks: string) => void; saveEmailDraft: (id: string, to: string, cc: string, subject: string, message: string) => void; create: () => Quotation; edit: (draft: Quotation) => Promise<void>; linkEstimate: (id: string, lineId: string, estimateId: string) => void; submit: (id: string) => Promise<void>; approve: (id: string) => void; requestChanges: (id: string, remarks: string) => void; send: (id: string) => void; respond: (id: string, response: Omit<QuotationResponse, 'id' | 'revision'>) => void; revise: (id: string, duplicate?: boolean) => Quotation; convert: (id: string, customerId: string, requiredDate: string) => Promise<string> }
 const Context = createContext<Value | undefined>(undefined);
 export function QuotationsProvider({ children }: { children: ReactNode }) {
+  const [workspace, setWorkspace] = useSharedEntry<Quotation[]>('quotation-workspace', []);
+  const workspaceRef = useRef(workspace); workspaceRef.current = workspace;
   const [quotations, setQuotations] = useState<Quotation[]>([]); const current = useRef(quotations);
   const { user } = useAuth(); const { company, customers, prospects, promoteProspect } = useCommercial(); const { versions } = useModels(); const { estimates, bindQuotationOrder, saveForQuotation } = useCosting(); const { getOrders, createSalesOrder } = useSalesOrders();
-  const publish = (next: Quotation[]) => { current.current = next; setQuotations(next); };
+  const publish = (next: Quotation[]) => { setWorkspace(next); current.current = next; setQuotations(next); };
+  useEffect(() => { if (workspace.length) { current.current = restoreWorkspace(current.current, workspace); setQuotations(current.current); } }, [workspace]);
   const [loading, setLoading] = useState(false), [loadError, setLoadError] = useState('');
   const accountId = useRef(user?.id); accountId.current = user?.id;
   const reload = useCallback(async () => {
     if (!user || user.id.startsWith('demo-')) return;
     const owner = user.id; setLoading(true); setLoadError('');
-    try { const loaded = await loadQuotationDrafts(); if (accountId.current === owner) { const unsaved = current.current.filter(q => !q.draftVersion && !loaded.some(row => row.id === q.id)); publish([...loaded, ...unsaved]); } }
+    try { const loaded = await loadQuotationDrafts(); if (accountId.current === owner) { current.current = restoreWorkspace(loaded, workspaceRef.current); setQuotations(current.current); } }
     catch { if (accountId.current === owner) setLoadError('Unable to load saved quotations. Check the backend connection and quotation view permission.'); }
     finally { if (accountId.current === owner) setLoading(false); }
   }, [user?.id]);
-  useEffect(() => { publish([]); setLoadError(''); setLoading(false); void reload(); }, [reload]);
+  useEffect(() => { current.current = workspaceRef.current; setQuotations(workspaceRef.current); setLoadError(''); setLoading(false); void reload(); }, [reload]);
   const actor = (roles = QUOTATION_EDIT_ROLES) => { if (!user || !roles.includes(user.role)) throw new Error('Your role cannot perform this quotation action.'); return user; };
   const get = (id: string) => { const q = current.current.find(q => q.id === id); if (!q) throw new Error('Quotation not found.'); return q; };
   const replace = (q: Quotation) => publish(current.current.map(row => row.id === q.id ? q : row));

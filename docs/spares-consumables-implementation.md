@@ -1,5 +1,7 @@
 # Spares, Consumables and workflow clarification — 23 October 2026
 
+Spares are independent of Procurement (user clarification, 25 October 2026). Spare stock posting permissions must be defined separately; Procurement approval mapping is not a prerequisite. Posting remains disabled until those spare-specific permissions are confirmed.
+
 Status: PARTIAL; local implementation only. No production readiness claim.
 
 ## Existing versus missing

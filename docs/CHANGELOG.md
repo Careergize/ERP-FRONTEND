@@ -1,5 +1,32 @@
 # Changelog
 
+## Supporting-record persistence — 25 October 2026
+
+Added database-backed supporting records, version conflicts, idempotent retries, visible save failures and management Entry History. This does not complete stock/production/QC-release/invoice backend integration.
+
+Scope, pending authority proposal, verification and limitations: [persistence status](../../../Backend/PERSISTENCE_STATUS.md).
+
+## Action spacing across pages — 25 October 2026
+
+Audited button groups across the frontend. Added missing gaps and wrapping to Stock/Recycling category tabs, page action rows, modal footers, register pagination and quotation controls. Mixed-content QC, quotation and job-card forms now give inline actions consistent separation. Sidebar navigation retains its separate sizing. Validation: TypeScript/build and emitted Tailwind CSS checks; browser visual verification remains outstanding.
+
+## Consistent button sizing — 25 October 2026
+
+Shared screen styles now use 38px minimum action heights, compact 32px table actions, and explicit 36px square icon controls. Action links share button sizing; long labels wrap, form-grid actions avoid stretching, and full-width 48px sign-in controls remain supported. Existing green action colors and print styles are retained. Sidebar navigation uses a separate full-width 44px minimum row size with left-aligned labels and fixed 18px icons; sign-out uses a 40px row.
+
+## Quotation approval creates fulfillment — 25 October 2026
+
+For saved quotation-editor revisions, manager approval now atomically creates an approved Sales Order from the exact reviewed commercial snapshot. Existing-stock lines retain their finished-goods variant and create no Job Card. Custom manufacturing lines create a linked Job Card in PendingApproval, including the saved model recipe, route and planned costing. Mixed orders create manufacturing children only for custom lines. Managers must confirm a delivery date for manufacturing; an active customer master, saved stock variants/model revisions and valid recipe/route are required. Failed preparation rolls back approval and order creation. Retries reuse the same order and Job Card. Approval does not deduct stock, issue material, approve production or send messages. Existing dispatch checks remain in force.
+
+Approval responses expose the linked order and whether a manufacturing delivery date is required; the manager view shows the order link and fulfillment result. Creator lists recover the linked order on reload. Legacy standalone PDF snapshots without an editor draft retain approval-only behavior; order-origin quotations do not create duplicate orders. No historical approvals were backfilled. Customer-response recording remains separate; it is no longer a prerequisite to this approval-triggered order creation path.
+
+Validation: frontend TypeScript/build and quotation/persistence checks; 5 focused approval-fulfillment tests plus 25 existing quotation/draft/account tests on disposable SQLite. PostgreSQL concurrency was not exercised.
+
+
+## Quotation approval submission — 25 October 2026
+
+The primary Save Quotation action saves and submits a completed quotation for manager approval through the existing API. An explicit Save Draft action preserves incomplete work. Lists show status badges including Pending, Approved and Rejected, and existing drafts have Submit for Approval. Existing source/costing validation and manager permissions still apply; failed submissions stay Draft with an error.
+
 ## Local workflow and registers update — 23 October 2026
 
 Added separate API-backed Spares and Consumables registers; reconciled workflow conflicts and disabled unresolved operational transitions. Existing business databases were not migrated.

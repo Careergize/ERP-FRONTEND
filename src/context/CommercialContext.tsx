@@ -1,3 +1,4 @@
+import { useSharedEntry } from '@/context/SharedEntriesContext';
 import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { MOCK_CUSTOMERS } from '@/lib/mockData';
@@ -29,9 +30,9 @@ export function CommercialProvider({ children }: { children: ReactNode }) {
     customerRef.current = rows; setCustomers(rows); setCustomersError(''); setCustomersLoading(false);
     void reloadCustomers();
   }, [reloadCustomers]);
-  const [prospects, setProspects] = useState<CustomerProspect[]>([]); const prospectRef = useRef(prospects);
-  const [company, setCompany] = useState(COMPANY_DEFAULTS); const [termsTemplates, setTermsTemplates] = useState<QuotationTerms[]>([]);
-  const check = () => { if (!user || !QUOTATION_EDIT_ROLES.includes(user.role)) throw new Error('Your role cannot edit customer prospects.'); };
+  const [prospects, setProspects] = useSharedEntry<CustomerProspect[]>('commercial-prospects', []); const prospectRef = useRef(prospects); prospectRef.current = prospects;
+  const [company, setCompany] = useSharedEntry('commercial-company', COMPANY_DEFAULTS); const [termsTemplates, setTermsTemplates] = useSharedEntry<QuotationTerms[]>('commercial-terms', []);
+  const check = () => { if (user?.id.startsWith('demo-')) throw new Error('A real backend account is required to save customer/prospect entries.'); if (!user || !QUOTATION_EDIT_ROLES.includes(user.role)) throw new Error('Your role cannot edit customer prospects.'); };
   return <Context.Provider value={{ customers, customersLoading, customersError, reloadCustomers, prospects, company, termsTemplates,
     createSavedCustomer: async (customer, creationKey) => { check(); if (customersLoading) throw new Error('Wait for the customer list to finish loading.'); const accountId = user?.id; const saved = await createCustomer(customer, creationKey); if (customerSession.current === accountId) publishCustomer(saved); return saved; },
     saveCustomer: async customer => { if (user?.role !== 'admin' || !customer.name.trim()) throw new Error('Admin manages the shared customer master.'); if (customersLoading) throw new Error('Wait for the customer list to finish loading.'); const accountId = user.id; try { const saved = customer.id.startsWith('db:') ? await updateCustomer(customer) : await createCustomer(customer, customer.id.startsWith('master-') ? customer.id.slice(7) : crypto.randomUUID()); if (customerSession.current === accountId) publishCustomer(saved); } catch(e) { throw new Error(customerError(e)); } },

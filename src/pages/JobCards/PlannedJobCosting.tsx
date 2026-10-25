@@ -52,6 +52,6 @@ export function PlannedJobCosting({ card }: { card: JobCard }) {
     {sheet?.approvedBy && <p>PM approved by {sheet.approvedBy} · {sheet.approvedAt}</p>}
     <p className="text-xs text-gray-500">Actual final production cost remains pending until actual consumption, machine costs and operator-recorded wastage are available.</p>
     {error && <p role="alert" className="text-red-700">{error}</p>}
-    <div className="flex flex-wrap gap-3 print:hidden">{editable && sheet && <><button className={JOB_BUTTON} disabled={saving} onClick={() => void save()}>Save & Calculate Planned Costing</button>{canApprove && <button className={JOB_PRIMARY} disabled={saving || dirty || !totals || sheet.status === 'Approved'} onClick={() => void save(true)}>PM Approve Costing</button>}</>}{sheet && <button className={JOB_BUTTON} disabled={dirty || saving} onClick={() => window.print()}>Print Costing Sheet / Save PDF</button>}</div>
+    <div className="flex flex-wrap gap-3 print:hidden max-w-full">{editable && sheet && <><button className={JOB_BUTTON} disabled={saving} onClick={() => void save()}>Save & Calculate Planned Costing</button>{canApprove && <button className={JOB_PRIMARY} disabled={saving || dirty || !totals || sheet.status === 'Approved'} onClick={() => void save(true)}>PM Approve Costing</button>}</>}{sheet && <button className={JOB_BUTTON} disabled={dirty || saving} onClick={() => window.print()}>Print Costing Sheet / Save PDF</button>}</div>
   </Card>;
 }

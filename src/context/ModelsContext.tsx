@@ -36,12 +36,14 @@ export function ModelsProvider({ children }: { children: ReactNode }) {
   }, [user?.id]);
   const models = versions.filter(m => !versions.some(n => n.id === m.id && (n.revision ?? 1) > (m.revision ?? 1)));
   const saveModel = async (model: Model) => {
+    if (user?.id.startsWith('demo-')) throw new Error('A real backend account is required to save models.');
     if (!user || !['admin', 'production_manager', 'receptionist'].includes(user.role)) throw new Error('Your role cannot draft models.');
     const validated = reviseProductModel(model, current.current);
     const next = user.id.startsWith('demo-') ? validated : await workflowRequest<Model>('models/', model);
     current.current = [...current.current, next]; setVersions(current.current); return next;
   };
   const saveProcess = async (process: JobProductionStage) => {
+    if (user?.id.startsWith('demo-')) throw new Error('A real backend account is required to save processes.');
     if (!user || !['admin', 'production_manager', 'receptionist'].includes(user.role)) throw new Error('Your role cannot add production processes.');
     const saved = user.id.startsWith('demo-') ? { ...process, id: crypto.randomUUID() } : await workflowRequest<JobProductionStage>('processes/', process);
     setProcesses(previous => [...previous, saved]); return saved;

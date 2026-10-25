@@ -90,7 +90,7 @@ function JobCardLinks({ order }: { order: SalesOrder }) {
     );
   }
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1.5 max-w-full">
       {order.jobCardIds.map((id, i) => (
         <Link
           key={id}
@@ -203,7 +203,7 @@ export function SalesOrderList() {
           <h1 className="text-2xl font-semibold text-navy">Sales Orders</h1>
           <p className="mt-1 text-sm text-gray-500">Quotation → Sales Order → Production Manager/Admin approval → Job Card → Store issue.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap max-w-full">
           <button
             type="button"
             onClick={() => downloadCsv(filtered)}
@@ -268,7 +268,7 @@ export function SalesOrderList() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 max-w-full">
           {[["all", "All", orders.length] as const, ...statusCounts.map(([s, n]) => [s, s, n] as const)].map(([value, label, count]) => {
             const active = statusFilter === value;
             return (
@@ -386,8 +386,8 @@ export function SalesOrderList() {
             <p aria-live="polite">
               Showing {start + 1}–{Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length}
             </p>
-            <div className="flex items-center gap-1">
-              <button
+            <div className="flex items-center gap-1 flex-wrap max-w-full">
+              <button data-button-icon
                 type="button"
                 onClick={() => setPage(safePage - 1)}
                 disabled={safePage === 1}
@@ -399,7 +399,7 @@ export function SalesOrderList() {
               <span className="px-2 tabular-nums">
                 {safePage} / {pageCount}
               </span>
-              <button
+              <button data-button-icon
                 type="button"
                 onClick={() => setPage(safePage + 1)}
                 disabled={safePage === pageCount}

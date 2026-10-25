@@ -1,5 +1,11 @@
 # Business Rules
 
+## Supporting-record persistence — 25 October 2026
+
+A supporting-record save is confirmed only after the backend accepts it. Conflicts and failures remain explicitly unsaved; management may inspect retained accepted versions. Supporting snapshots cannot authorize stock posting, production/QC releases, quotation delivery or invoice issue.
+
+Scope, pending authority proposal, verification and limitations: [persistence status](../../../Backend/PERSISTENCE_STATUS.md).
+
 ## Local workflow and registers update — 23 October 2026
 
 Quotation is optional. Draft preparation does not authorize production. Order approval and Job Card creation are separate; standalone production requires documented authorization. Consumables are register-only; spare posting awaits Procurement/Stores mapping.

@@ -1,3 +1,4 @@
+import { useSharedEntry } from '@/context/SharedEntriesContext';
 import { UnitsManager } from './UnitsManager';
 import { UsersManager } from './UsersManager';
 import { useSearchParams } from 'react-router-dom';
@@ -7,7 +8,6 @@ import { useModels } from '@/context/ModelsContext';
 import { ModelManager } from './ModelManager';
 import { useState } from "react";
 import { MasterTable, type MasterColumn } from "@/pages/Masters/MasterTable";
-import { MOCK_DEPARTMENTS, MOCK_ITEMS, MOCK_SUPPLIERS, MOCK_USERS } from "@/lib/mockData";
 import type { Customer, Department, Item, MasterUser, Model, Supplier } from "@/types";
 
 type MasterKey = "units" | "items" | "models" | "customers" | "suppliers" | "departments" | "users";
@@ -60,12 +60,11 @@ const CONFIG_COLUMNS: Record<MasterKey, MasterColumn[]> = {
 export function MastersPage() {
   const [params] = useSearchParams();
   const [selected, setSelected] = useState<MasterKey>(params.get("section") === "units" ? "units" : "items");
-  const [items, setItems] = useState<Item[]>(MOCK_ITEMS);
+  const [items, setItems] = useSharedEntry<Item[]>('master-items', []);
   const { models } = useModels();
   const { customers, saveCustomer, customersLoading, customersError } = useCommercial();
-  const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
-  const [departments, setDepartments] = useState<Department[]>(MOCK_DEPARTMENTS);
-  const [users, setUsers] = useState<MasterUser[]>(MOCK_USERS);
+  const [suppliers, setSuppliers] = useSharedEntry<Supplier[]>('master-suppliers', []);
+  const [departments, setDepartments] = useSharedEntry<Department[]>('master-departments', []);
 
   const configs: Record<MasterKey, MasterConfig> = {
     units: { label: "Units", columns: [], rows: [] },
@@ -74,7 +73,7 @@ export function MastersPage() {
     customers: { label: "Customers", columns: CONFIG_COLUMNS.customers, rows: customers },
     suppliers: { label: "Suppliers", columns: CONFIG_COLUMNS.suppliers, rows: suppliers },
     departments: { label: "Departments", columns: CONFIG_COLUMNS.departments, rows: departments },
-    users: { label: "Users", columns: CONFIG_COLUMNS.users, rows: users },
+    users: { label: "Users", columns: CONFIG_COLUMNS.users, rows: [] },
   };
 
   async function addRow(row: MasterData) {
@@ -83,7 +82,6 @@ export function MastersPage() {
     if (selected === "customers") await saveCustomer(row as Customer);
     if (selected === "suppliers") setSuppliers((current) => [...current, row as Supplier]);
     if (selected === "departments") setDepartments((current) => [...current, row as Department]);
-    if (selected === "users") setUsers((current) => [...current, row as MasterUser]);
   }
 
   async function editRow(row: MasterData) {
@@ -92,7 +90,6 @@ export function MastersPage() {
     if (selected === "customers") await saveCustomer(row as Customer);
     if (selected === "suppliers") setSuppliers((current) => current.map((item) => item.id === row.id ? row as Supplier : item));
     if (selected === "departments") setDepartments((current) => current.map((item) => item.id === row.id ? row as Department : item));
-    if (selected === "users") setUsers((current) => current.map((item) => item.id === row.id ? row as MasterUser : item));
   }
 
   const config = configs[selected];

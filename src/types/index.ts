@@ -202,9 +202,9 @@ export interface TraceResult {
 export interface WasteEntry {
   id: string;
   jobCardNumber: string;
-  stage: Stage;
+  stage: string;
   wasteQty: number;
-  unit: "kg";
+  unit: string;
   wasteType: string;
   sentToRecycling: boolean;
   date: string;
@@ -228,13 +228,14 @@ export interface CostingRecord {
   rawMaterialCost: number;
   productionCost: number;
   otherCost: number;
-  currency: "USD" | "NGN" | "GHS" | "ZAR";
+  currency: "USD" | "UGX" | "NGN" | "GHS" | "ZAR";
   exchangeRateUsed: number;
   totalCostLocal: number;
   lastUpdated: string;
 }
 
 export interface ExchangeRate {
+  targetCurrency?: string;
   id: string;
   currency: string;
   rate: number;

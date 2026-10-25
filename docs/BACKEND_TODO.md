@@ -1,5 +1,11 @@
 # Backend Integration TODO
 
+## Supporting-record persistence — 25 October 2026
+
+Supporting-record persistence and management history are implemented locally. Finish dedicated stock movements/dispatch, production runs/QC batches/transfers, invoice issue, QC submission/review/release and costing approval services after confirming operational authority. Canonical purchasing masters remain separate from generic reference entries.
+
+Scope, pending authority proposal, verification and limitations: [persistence status](../../../Backend/PERSISTENCE_STATUS.md).
+
 ## Local workflow and registers update — 23 October 2026
 
 Apply new catalog/graph merge migrations only to an approved environment; assign approved master permissions. Publish authority/policy and source evidence before stock posting or operational approval/release. Complete standalone controlled Job Card authoring without bypassing Task 04/05 gates.

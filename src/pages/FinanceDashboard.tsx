@@ -51,10 +51,10 @@ export function FinanceDashboard() {
       <Link to="/quotations" className="inline-flex items-center gap-2 rounded-lg bg-[#173b2d] px-3 py-2 text-xs font-medium text-white hover:bg-[#24543a]"><FileText size={15} /> View quotations</Link>
     </div>
 
-    <p className="rounded-lg border border-[#dcebe0] bg-white px-3 py-2 text-xs text-[#668075]">Figures use current frontend session records. Sales orders include seeded demo examples; invoices and quotations are session-only. Expenses and payment collections are not recorded here.</p>
+    <p className="rounded-lg border border-[#dcebe0] bg-white px-3 py-2 text-xs text-[#668075]">Figures use the currently loaded database records. Refresh to load other staff updates. Expenses and payment collections are not recorded here.</p>
 
     <section aria-label="Finance summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      <Metric label="Invoiced value" value={totalSales} icon={Banknote} note={invoices.length ? `${invoices.length} recorded invoice${invoices.length === 1 ? "" : "s"}` : "No invoices recorded in this session"} />
+      <Metric label="Invoiced value" value={totalSales} icon={Banknote} note={invoices.length ? `${invoices.length} recorded invoice${invoices.length === 1 ? "" : "s"}` : "No saved invoices recorded"} />
       <Metric label="Total Expenses" value="Unavailable" icon={ArrowDownRight} note="Expense records are not available" />
       <Metric label="Profit / Loss" value="Unavailable" icon={CircleHelp} note="Requires recorded sales and expenses" />
       <Metric label="Outstanding Payments" value="Unavailable" icon={ReceiptText} note="Payment collection status is not recorded" />
@@ -79,7 +79,7 @@ export function FinanceDashboard() {
             <div className="min-w-0"><p className="truncate text-xs font-semibold text-[#254a35]">{activity.title}</p><p className="mt-1 truncate text-[11px] text-[#7b8f83]">{activity.detail}</p></div>
             <time className="shrink-0 text-[10px] text-[#92a198]">{activity.date}</time>
           </Link>)}
-          {!activities.length && <p className="py-8 text-center text-xs text-[#89988f]">No recent finance activity in this session.</p>}
+          {!activities.length && <p className="py-8 text-center text-xs text-[#89988f]">No saved finance activity.</p>}
         </div>
       </Card>
     </section>
@@ -93,4 +93,4 @@ function Metric({ label, value, icon: Icon, note }: { label: string; value: stri
   </Card>;
 }
 
-export function FinanceQualityOverview(){const q=useQuality();return <div className="space-y-4"><h1 className="text-2xl font-semibold text-navy">Finance · Quality summary</h1><p className="text-sm text-gray-500">Read-only session overview. Detailed QC records, inspection entry and quality release retain their existing role permissions.</p><Card><p>Recorded inspections: {q.inspections.length}</p><p>Awaiting review: {q.inspections.filter(i=>i.status==='Submitted').length}</p><p>Failed inspections: {q.inspections.filter(i=>i.status==='Failed').length}</p><p>Open corrective actions: {q.nonConformances.filter(n=>n.status!=='Closed').length}</p></Card><Link to="/" className="underline">Finance Dashboard</Link></div>;}
+export function FinanceQualityOverview(){const q=useQuality();return <div className="space-y-4"><h1 className="text-2xl font-semibold text-navy">Finance · Quality summary</h1><p className="text-sm text-gray-500">Read-only database overview. Detailed QC records, inspection entry and quality release retain their existing role permissions.</p><Card><p>Recorded inspections: {q.inspections.length}</p><p>Awaiting review: {q.inspections.filter(i=>i.status==='Submitted').length}</p><p>Failed inspections: {q.inspections.filter(i=>i.status==='Failed').length}</p><p>Open corrective actions: {q.nonConformances.filter(n=>n.status!=='Closed').length}</p></Card><Link to="/" className="underline">Finance Dashboard</Link></div>;}

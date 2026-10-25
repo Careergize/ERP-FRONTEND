@@ -90,7 +90,7 @@ export function ProcurementPlanEditor({initial,items,date,demo,onSave,onClose}:{
         </div>)}
         <button type="button" className="text-navy underline" onClick={()=>setDraft({...draft,deliveries:[...draft.deliveries,{id:crypto.randomUUID(),supplier:'',date:'',quantity:0}]})}>Add delivery</button>
         {error&&<p role="alert" className="text-red-700">{error}</p>}
-        <div className="flex justify-end gap-3"><button type="button" className="rounded border px-4 py-2" onClick={onClose}>Cancel</button><button type="submit" className="rounded bg-navy px-4 py-2 text-white">{saving?'Saving...':demo?'Apply to demo session':'Save procurement plan'}</button></div>
+        <div className="flex justify-end gap-3 flex-wrap max-w-full"><button type="button" className="rounded border px-4 py-2" onClick={onClose}>Cancel</button><button type="submit" className="rounded bg-navy px-4 py-2 text-white">{saving?'Saving...':demo?'Apply to demo session':'Save procurement plan'}</button></div>
       </fieldset></form>
     </div>
   </div>;

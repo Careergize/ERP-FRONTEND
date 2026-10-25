@@ -3,7 +3,7 @@ import { COMPANY_DEFAULTS, publicQuotation, quotationTotals, type Quotation } fr
 
 export interface SavedDraft {
   id: string; version: number; editor_data: Quotation; created_by: string; created_by_name: string; updated_at: string;
-  review: { id: string; submitted_at: string | null; approved: boolean; approved_at: string | null; rejected_at: string | null; rejection_reason: string; reviewed_by: string | null; deliveries: { status: string }[] } | null;
+  review: { fulfillment?: { sales_order: { id: string } | null }; id: string; submitted_at: string | null; approved: boolean; approved_at: string | null; rejected_at: string | null; rejection_reason: string; reviewed_by: string | null; deliveries: { status: string }[] } | null;
 }
 
 export function quotationFromDraft(record: SavedDraft): Quotation {
@@ -18,6 +18,7 @@ export function quotationFromDraft(record: SavedDraft): Quotation {
     approval: undefined, responses: [], events: [],
   };
   const review = record.review;
+  if (review?.fulfillment?.sales_order) q.salesOrderId = review.fulfillment.sales_order.id;
   if (review?.rejected_at) q.status = 'Rejected';
   else if (review?.approved) {
     q.status = review.deliveries.some(d => d.status === 'accepted') ? 'Sent' : 'Approved';

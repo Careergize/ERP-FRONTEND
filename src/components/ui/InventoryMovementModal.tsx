@@ -1,3 +1,4 @@
+import { useConfirmSharedSave } from '@/context/SharedEntriesContext';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { ENTRY_INPUT, SearchSelect } from './SearchSelect';
@@ -5,10 +6,11 @@ import { ENTRY_INPUT, SearchSelect } from './SearchSelect';
 export interface InventoryOption { id: string; name: string; category: string; unit: string; available: number | null; openingDate?: string; detail?: string; fields?: [string, string][]; pieces?: number | null; customer?: string }
 export interface InventoryEntry { requestId?: string; movementPurpose?: 'transfer' | 'waste' | 'adjustment'; date: string; materialId: string; quantity: number; reference: string; remarks: string; customer?: string; pieces?: number }
 const today = () => new Date().toLocaleDateString('en-CA');
-export function InventoryMovementModal({ direction, title, options, categories, initialCategory, onClose, onSave, finishedGoods = false, saveNotice = 'Frontend simulation. Entries survive navigation and reset on refresh.' }: {
+export function InventoryMovementModal({ direction, title, options, categories, initialCategory, onClose, onSave, finishedGoods = false, saveNotice = 'Entries are saved to the shared backend. Wait for save confirmation.' }: {
   direction: 'IN' | 'OUT'; title: string; options: InventoryOption[]; categories: [string, string][];
   initialCategory: string; onClose: () => void; onSave: (entry: InventoryEntry) => void | Promise<void>; finishedGoods?: boolean; saveNotice?: string;
 }) {
+  const confirmSave = useConfirmSharedSave();
   const [category, setCategory] = useState(initialCategory);
   const [name, setName] = useState('');
   const [materialId, setMaterialId] = useState('');
@@ -57,13 +59,14 @@ export function InventoryMovementModal({ direction, title, options, categories, 
     setSaving(true);setError('');
     try {
       await onSave({ requestId:requestId.current,movementPurpose: finishedGoods && direction==='OUT' ? movementPurpose : undefined, date, materialId, quantity: Number(quantity), reference: reference.trim(), remarks: remarks.trim(), ...(finishedGoods ? { customer: customer.trim(), ...(direction === 'IN' && pieces !== '' ? { pieces: Number(pieces) } : {}) } : {}) });
+      await confirmSave();
       onClose();
     } catch(e) { setError(e instanceof Error?e.message:'Unable to save. Reload the store before retrying.'); }
     finally {locked.current=false;setSaving(false);}
   };
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4" onMouseDown={event => { if (event.target === event.currentTarget&&!locked.current) onClose(); }}>
     <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="inventory-dialog-title" className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-card bg-white shadow-xl">
-      <div className="flex items-center justify-between border-b border-gray-200 p-5"><h2 id="inventory-dialog-title" className="text-lg font-semibold text-navy">{title} — Stock {direction}</h2><button disabled={saving} type="button" aria-label="Close" onClick={onClose}><X size={20} /></button></div>
+      <div className="flex items-center justify-between border-b border-gray-200 p-5"><h2 id="inventory-dialog-title" className="text-lg font-semibold text-navy">{title} — Stock {direction}</h2><button data-button-icon disabled={saving} type="button" aria-label="Close" onClick={onClose}><X size={20} /></button></div>
       <form onSubmit={submit} className="space-y-4 p-5">
         <fieldset disabled={saving} className="space-y-4">
         <p className="text-xs text-gray-500">{saveNotice}</p>
@@ -85,7 +88,7 @@ export function InventoryMovementModal({ direction, title, options, categories, 
         <label className="block text-sm text-gray-600">Reference<input value={reference} onChange={event => setReference(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>
         <label className="block text-sm text-gray-600">Remarks<textarea value={remarks} onChange={event => setRemarks(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-card border border-gray-200 px-4 py-2 text-sm">Cancel</button><button type="submit" className="rounded-card bg-navy px-4 py-2 text-sm font-medium text-white">{saving?'Saving…':`Save Stock ${direction}`}</button></div>
+        <div className="flex justify-end gap-2 flex-wrap max-w-full"><button type="button" onClick={onClose} className="rounded-card border border-gray-200 px-4 py-2 text-sm">Cancel</button><button type="submit" className="rounded-card bg-navy px-4 py-2 text-sm font-medium text-white">{saving?'Saving…':`Save Stock ${direction}`}</button></div>
         </fieldset>
       </form>
     </div>

@@ -66,7 +66,7 @@ export function LegacyTrace() {
         </button>
       </form>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="Example trace IDs">
+      <div className="mt-3 flex flex-wrap items-center gap-2 max-w-full" aria-label="Example trace IDs">
         <span className="text-xs text-gray-500">Try an example:</span>
         {["SO-1042", "JC-2201", "RM-8834", "GB-0501"].map((exampleId) => (
           <button
