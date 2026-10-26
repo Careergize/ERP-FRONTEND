@@ -1,5 +1,9 @@
 # Development Status
 
+## Recycling Module 1 — 25 October 2026
+
+Four-module selector added. Waste Purchases supports user-added backend material names, manual purchases, monthly summaries, corrections/voids and Excel/PDF exports. Modules 2–4 await their distinct workflows. Local checks pass; deployment and PDF browser-download review are pending. See [module scope and validation](recycling-purchases.md).
+
 ## Supporting-record persistence — 25 October 2026
 
 Supporting-record persistence is connected for QC drafts/configuration, costing drafts/policies/rates, commercial settings/prospects, inventory controls, generic reference masters and author-scoped quotation workspaces. Immutable saved versions are available in Entry History. Operational posting remains incomplete.

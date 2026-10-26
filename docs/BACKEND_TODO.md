@@ -1,5 +1,9 @@
 # Backend Integration TODO
 
+## Recycling Module 1 — 25 October 2026
+
+Material catalog, purchase records, management history, monthly summaries and Excel/PDF endpoints are implemented locally. Before rollout, verify on the target PostgreSQL environment, review the PDF visually and deploy both applications. Modules 2–4 need their user-defined workflows. See [details](recycling-purchases.md).
+
 ## Supporting-record persistence — 25 October 2026
 
 Supporting-record persistence and management history are implemented locally. Finish dedicated stock movements/dispatch, production runs/QC batches/transfers, invoice issue, QC submission/review/release and costing approval services after confirming operational authority. Canonical purchasing masters remain separate from generic reference entries.

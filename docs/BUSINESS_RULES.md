@@ -1,5 +1,9 @@
 # Business Rules
 
+## Recycling Module 1 — 25 October 2026
+
+Waste Purchases is the first of four separate recycling workflows. Authorized users can add unique material names for future entries. Purchase summaries use saved entry dates, separate kg/pcs and currencies, and exclude voided entries. Corrections require reasons and preserve management history. Purchase entry does not post stock or payments. See [details](recycling-purchases.md).
+
 ## Supporting-record persistence — 25 October 2026
 
 A supporting-record save is confirmed only after the backend accepts it. Conflicts and failures remain explicitly unsaved; management may inspect retained accepted versions. Supporting snapshots cannot authorize stock posting, production/QC releases, quotation delivery or invoice issue.

@@ -41,7 +41,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/raw-materials", label: "Raw Material", icon: Package, roles: ["store_keeper", "admin"] },
   { to: "/spares", label: "Spares", icon: Package, roles: ["store_keeper", "admin"] },
   { to: "/consumables", label: "Consumables", icon: Package, roles: ["store_keeper", "admin"] },
-  { to: "/recycling", label: "Recycling", icon: Recycle, roles: ["recycling_operator", "admin"] },
+  { to: "/recycling", label: "Recycling", icon: Recycle, roles: ["recycling_operator", "store_keeper", "production_manager", "project_manager", "admin"] },
   { to: "/costing", label: "Costing", icon: Calculator, roles: ["accounts", "admin"] },
   { to: "/track-trace", label: "Track & Trace", icon: Search, roles: ["receptionist", "production_manager", "store_keeper", "production_operator", "recycling_operator", "accounts", "admin"] },
   { to: "/masters", label: "Masters", icon: Settings, roles: ["admin"] },

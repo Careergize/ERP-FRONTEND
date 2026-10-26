@@ -1,5 +1,9 @@
 # Frontend Data Models
 
+## Recycling Module 1 — 25 October 2026
+
+`recycling-materials` stores append-only custom `{id, name}` catalog rows alongside built-in workbook choices. `recycling-purchases` stores `{id, date, material, supplier, quantity, unit, unitPrice, currency, notes, status, correctionReason}`; quantities/prices are decimal strings. Server-calculated amounts and grouped monthly summaries come from the purchase report endpoint. Both keys retain immutable accepted revisions. See [details](recycling-purchases.md).
+
 ## Supporting-record persistence — 25 October 2026
 
 Added SharedEntry (key/content/version/updated actor/time) and append-only EntryRevision (version/content/authenticated actor/server time/command UUID/digest). Quotation workspaces are author-scoped. Operational transaction models are not replaced by these supporting snapshots.

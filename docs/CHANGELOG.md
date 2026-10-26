@@ -1,5 +1,9 @@
 # Changelog
 
+## Recycling Module 1 — 25 October 2026
+
+Added four-module navigation and database-backed Waste Purchases, including an expandable material catalog, kg/pcs and currency choices, monthly summary, retained correction/void history and Excel/PDF downloads. See [details](recycling-purchases.md).
+
 ## Supporting-record persistence — 25 October 2026
 
 Added database-backed supporting records, version conflicts, idempotent retries, visible save failures and management Entry History. This does not complete stock/production/QC-release/invoice backend integration.
