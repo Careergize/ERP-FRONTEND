@@ -6,6 +6,14 @@ body {
 }
 
 /* Sidebar navigation has its own scale, separate from page actions. */
+.sidebar-navigation {
+  scrollbar-width: none;
+}
+
+.sidebar-navigation::-webkit-scrollbar {
+  display: none;
+}
+
 .sidebar-nav-link {
   display: flex;
   align-items: center;

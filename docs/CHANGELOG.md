@@ -1,5 +1,9 @@
 # Changelog
 
+## Manufacturing sidebar navigation — 26 October 2026
+
+Grouped existing navigation into Overview, Configuration, Sales, Procurement, Production, Inventory, and Finance & Tracking in manufacturing workflow order. Preserved role-specific Accounts and QC links, icons, active highlights and sign-out behavior. Navigation scrolls independently above the profile footer, with a stacked layout on small screens.
+
 ## Supporting-record persistence — 25 October 2026
 
 Added database-backed supporting records, version conflicts, idempotent retries, visible save failures and management Entry History. This does not complete stock/production/QC-release/invoice backend integration.

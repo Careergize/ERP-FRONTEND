@@ -1,5 +1,11 @@
 # Development Status
 
+## Manufacturing sidebar navigation — 26 October 2026
+
+Existing sidebar links now follow the requested manufacturing workflow groups. Accounts retains its existing route visibility and finance summary; QC roles retain their specialist section menu. Desktop/tablet navigation scrolls above the profile footer; small screens stack navigation above module content. Routes, permissions and module behavior are unchanged.
+
+Validation: TypeScript/production build, all existing frontend check scripts, and navigation route coverage/uniqueness checks passed. Browser visual verification remains outstanding.
+
 ## Supporting-record persistence — 25 October 2026
 
 Supporting-record persistence is connected for QC drafts/configuration, costing drafts/policies/rates, commercial settings/prospects, inventory controls, generic reference masters and author-scoped quotation workspaces. Immutable saved versions are available in Entry History. Operational posting remains incomplete.

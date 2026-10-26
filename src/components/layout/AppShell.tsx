@@ -100,7 +100,7 @@ export function AppShell() {
           <p className="mt-1 text-xs font-medium text-white/90">{user?.role==='accounts'?'NavaPack Finance':'NavaPack Operations'}</p>
         </div>
 
-        <nav aria-label="Main navigation" className="min-h-0 max-h-[40dvh] flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 pb-4 md:max-h-none">
+        <nav aria-label="Main navigation" className="sidebar-navigation min-h-0 max-h-[40dvh] flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 pb-4 md:max-h-none">
           {groups.map(group => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
               <h2 className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">{group.label}</h2>
