@@ -40,7 +40,7 @@ Vite uses port 5173. Real Django login is the default; set
 are shown on the login screen only when demo mode is enabled. Demo identities remain
 local to the browser and never authenticate backend requests.
 
-`VITE_API_BASE_URL` configures Axios. The default API is https://35.175.179.96/api in development and production. An explicit environment value overrides it; configure the same value in Vercel and rebuild after changes. Backend HTTPS/CORS availability must be verified separately. Do not put secrets in VITE variables.
+`VITE_API_BASE_URL` configures Axios. The default API is `http://127.0.0.1:8000/api` for local testing. Set it to the deployed backend URL in production (including Vercel) and rebuild after changes. Backend availability/CORS must be verified separately. Do not put secrets in VITE variables.
 
 ```powershell
 npm run build

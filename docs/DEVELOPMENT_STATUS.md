@@ -1,5 +1,11 @@
 # Development Status
 
+## Manufacturing sidebar navigation — 26 October 2026
+
+Existing sidebar links now follow the requested manufacturing workflow groups. Accounts retains its existing route visibility and finance summary; QC roles retain their specialist section menu. Desktop/tablet navigation scrolls above the profile footer; small screens stack navigation above module content. Routes, permissions and module behavior are unchanged.
+
+Validation: TypeScript/production build, all existing frontend check scripts, and navigation route coverage/uniqueness checks passed. Browser visual verification remains outstanding.
+
 ## Recycling Module 1 — 25 October 2026
 
 Four-module selector added. Waste Purchases supports user-added backend material names, manual purchases, monthly summaries, corrections/voids and Excel/PDF exports. Modules 2–4 await their distinct workflows. Local checks pass; deployment and PDF browser-download review are pending. See [module scope and validation](recycling-purchases.md).
@@ -184,10 +190,9 @@ and production workflow error checks pass. The local adjacent Backend defines
 because outbound access was blocked. Resolving a deployed 404 still requires checking
 the configured API target and deployed Backend routes.
 
-Local testing temporarily uses http://127.0.0.1:8000/api via frontend/.env.
-The source fallback remains https://35.175.179.96/api; restore that .env value after testing.
-VITE_API_BASE_URL still overrides the default; Vercel overrides must match and require
-a redeploy. This configuration change does not verify remote HTTPS or CORS readiness.
+Local testing uses http://127.0.0.1:8000/api via frontend/.env and the source fallback.
+VITE_API_BASE_URL still overrides the default; production deployments must set their
+own backend URL. This configuration does not verify remote HTTPS or CORS readiness.
 
 ## Manual Job Card workflows and machine master — 21 October 2026
 
