@@ -8,6 +8,10 @@ Grouped existing navigation into Overview, Configuration, Sales, Procurement, Pr
 
 Changed the frontend API fallback and local environment configuration to `http://127.0.0.1:8000/api`; updated local Django run instructions to port 8000. Production API URLs remain configurable through `VITE_API_BASE_URL`.
 
+## Remote API target — 26 October 2026
+
+Changed the frontend API fallback, environment example and setup documentation to use `https://35.175.179.96/api` by default. `VITE_API_BASE_URL` remains available for overrides.
+
 ## Recycling Module 1 — 25 October 2026
 
 Added four-module navigation and database-backed Waste Purchases, including an expandable material catalog, kg/pcs and currency choices, monthly summary, retained correction/void history and Excel/PDF downloads. See [details](recycling-purchases.md).

@@ -190,9 +190,9 @@ and production workflow error checks pass. The local adjacent Backend defines
 because outbound access was blocked. Resolving a deployed 404 still requires checking
 the configured API target and deployed Backend routes.
 
-Local testing uses http://127.0.0.1:8000/api via frontend/.env and the source fallback.
-VITE_API_BASE_URL still overrides the default; production deployments must set their
-own backend URL. This configuration does not verify remote HTTPS or CORS readiness.
+Frontend API configuration now targets https://35.175.179.96/api by default.
+VITE_API_BASE_URL still overrides the default. Remote HTTPS and CORS readiness have
+not been verified by this configuration change.
 
 ## Manual Job Card workflows and machine master — 21 October 2026
 

@@ -91,7 +91,7 @@ Error handling is component try/catch and local notices, list loading flags and 
 
 ## Exhaustive existing HTTP call families
 
-At the time of this audit, calls used `lib/api.ts:api` with development base `http://127.0.0.1:8001/api`; `VITE_API_BASE_URL` overrides it. For current local testing, the frontend targets `http://127.0.0.1:8000/api` by default; production deployments must configure their own API URL. These are client expectations, not verified backend endpoints. GETs expect bare arrays/objects, incompatible with a DRF pagination envelope without an adapter.
+At the time of this audit, calls used `lib/api.ts:api` with development base `http://127.0.0.1:8001/api`; `VITE_API_BASE_URL` overrides it. Subsequent local testing used `http://127.0.0.1:8000/api`; the current frontend default is `https://35.175.179.96/api`. These are client expectations, not verified backend endpoints. GETs expect bare arrays/objects, incompatible with a DRF pagination envelope without an adapter.
 
 | Method / relative path | Consumer | Expected payload/shape | Failure behavior |
 |---|---|---|---|
