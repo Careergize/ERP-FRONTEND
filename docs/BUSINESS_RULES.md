@@ -1,5 +1,21 @@
 # Business Rules
 
+## Accounting — 27 October 2026
+
+Only posted, balanced journals affect statements. Source events post once; quotations
+and purchase orders alone do not create sales/payables. Dispatch quantity moves once,
+with a separate cost-value posting. Allocations retain party/currency/item identity,
+reject excess amounts and expose unapplied advances. Missing costs/FX/LED mapping
+remain in Posting Queue. Closed periods reject dated postings. Reversals preserve
+original evidence. See [implemented rules and limits](../../../Backend/accounting/README.md).
+
+## Recycling Module 2 — 26 October 2026
+
+Whole bags convert at 40 kg/bag, matching the supplied July sheet. Price/kg and
+currency are explicit per entry. Monthly reports exclude voids and separate rates
+and currencies; corrections retain history and require reasons. This register
+does not consume purchases or post raw stock. See [Module 2](recycled-materials.md).
+
 ## Recycling Module 1 — 25 October 2026
 
 Waste Purchases is the first of four separate recycling workflows. Authorized users can add unique material names for future entries. Purchase summaries use saved entry dates, separate kg/pcs and currencies, and exclude voided entries. Corrections require reasons and preserve management history. Purchase entry does not post stock or payments. See [details](recycling-purchases.md).

@@ -1,6 +1,6 @@
 # Recycling — Module 1: Waste Purchases
 
-Implemented locally on 25 October 2026. Four selectable modules are shown; only Module 1 has a defined workflow. Modules 2–4 remain explicitly pending the user's process descriptions. Module selection is retained in the URL. Switching modules preserves the Module 1 form while this page remains mounted. Earlier production-waste/granules reference-view source is retained in RecyclingReferenceViews.tsx; existing records and APIs are unchanged.
+Implemented locally on 25 October 2026. Four selectable modules are shown; Module 2 now has its [bag register](recycled-materials.md). Modules 3–4 remain pending the user's process descriptions. Module selection is retained in the URL. Switching modules preserves the Module 1 form while this page remains mounted. Earlier production-waste/granules reference-view source is retained in RecyclingReferenceViews.tsx; existing records and APIs are unchanged.
 
 Module 1 follows the supplied material purchase workbook: date, material, supplier, quantity, selectable kg/pcs, unit price, currency and notes. Workbook material names are starter choices, not a closed catalog. Authorized staff can add a new material independently of a purchase. The material is saved to shared backend records and remains available across months/accounts. Names must be unique without regard to case. Existing names cannot be renamed/deleted through this module, preserving historical purchase identity.
 

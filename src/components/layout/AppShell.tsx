@@ -26,6 +26,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { to: "/finance", label: "Finance & Accounting", icon: Calculator, roles: ["admin", "accounts", "project_manager", "production_manager"] },
   { to: "/activity-history", label: "Entry History", icon: ClipboardList, roles: ["admin", "project_manager", "production_manager", "accounts"] },
   { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["project_manager", "receptionist", "production_manager", "store_keeper", "production_operator", "recycling_operator", "accounts", "admin"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["admin", "store_keeper", "project_manager", "production_manager", "accounts"] },
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const FINANCE_NAV_ITEMS: NavItem[] = [
+  { to: "/finance", label: "Finance & Accounting", icon: Calculator, roles: ["accounts"] },
   { to: "/activity-history", label: "Entry History", icon: ClipboardList, roles: ["accounts"] },
   { to: "/", label: "Finance Dashboard", icon: LayoutDashboard, roles: ["accounts"] },
   { to: "/purchase-orders", label: "Purchase Orders", icon: FileText, roles: ["accounts"] },
@@ -73,7 +75,7 @@ const NAV_GROUPS = [
   { label: "Procurement", routes: ["/procurement", "/purchase-orders", "/goods-received-notes"] },
   { label: "Production", routes: ["/job-cards", "/qc", "/finance/quality"] },
   { label: "Inventory", routes: ["/stock", "/raw-materials", "/spares", "/consumables", "/recycling"] },
-  { label: "Finance & Tracking", routes: ["/costing", "/track-trace"] },
+  { label: "Finance & Tracking", routes: ["/finance", "/costing", "/track-trace"] },
 ];
 
 export function AppShell() {

@@ -1,5 +1,19 @@
 # Changelog
 
+## 27 October 2026 — Finance and accounting
+
+- Added a backend accounting app and Finance workspace with journals, ledgers,
+  receipts/payments/allocations, supplier billing, expenses, cash/bank, moving-average
+  valuation, statements and date-filtered CSV exports. Operational source hooks retain
+  a visible queue for missing inputs. Deployment/cutover and further workflow limits
+  are documented in the active Backend accounting README.
+
+## 26 October 2026 — Recycling Module 2
+
+- Added Recycled Materials daily bag register with 40 kg/bag calculations, monthly
+  matrix, material additions, confirmed database saves, corrections/void history
+  and Excel reporting. Remote deployment remains pending.
+
 ## Manufacturing sidebar navigation — 26 October 2026
 
 Grouped existing navigation into Overview, Configuration, Sales, Procurement, Production, Inventory, and Finance & Tracking in manufacturing workflow order. Preserved role-specific Accounts and QC links, icons, active highlights and sign-out behavior. Navigation scrolls independently above the profile footer, with a stacked layout on small screens.

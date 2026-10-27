@@ -1,8 +1,24 @@
 # Backend Integration TODO
 
+## Finance and accounting — 27 October 2026
+
+Accounting models/APIs and operational source hooks are implemented in the adjacent
+Backend. Deploy accounting migrations and frontend together; reconcile cutover balances,
+costs, FX and tax mapping. Verify PostgreSQL concurrent allocation/valuation and browser
+workflows. Complete actual production/WIP costing, partial credit/return documents,
+nonrecoverable landed-cost tax and GRNI FX reconciliation. See
+[scope and rollout](../../../Backend/accounting/README.md).
+
+## Recycling Module 2 — 26 October 2026
+
+Bag register, material catalog, audit history and monthly/Excel reporting are implemented
+in the active adjacent Backend. Deploy both applications and verify the remote endpoint,
+browser workflow and PostgreSQL concurrency. Inventory transfers remain undefined.
+See [Module 2](recycled-materials.md).
+
 ## Recycling Module 1 — 25 October 2026
 
-Material catalog, purchase records, management history, monthly summaries and Excel/PDF endpoints are implemented locally. Before rollout, verify on the target PostgreSQL environment, review the PDF visually and deploy both applications. Modules 2–4 need their user-defined workflows. See [details](recycling-purchases.md).
+Material catalog, purchase records, management history, monthly summaries and Excel/PDF endpoints are implemented locally. Before rollout, verify on the target PostgreSQL environment, review the PDF visually and deploy both applications. Modules 3–4 need their user-defined workflows. See [details](recycling-purchases.md).
 
 ## Supporting-record persistence — 25 October 2026
 

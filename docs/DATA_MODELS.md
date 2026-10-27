@@ -1,5 +1,21 @@
 # Frontend Data Models
 
+## Accounting — 27 October 2026
+
+The accounting API supplies Book, Account, Party, Document/DocumentLine, JournalLine,
+Allocation, StockValue/ValueMovement and PostingEvent records. Decimal money is sent
+as strings. Accounting is not stored in shared-entry browser state. Shared invoice
+and stock saves enqueue canonical source events on the backend. See
+[model/API scope](../../../Backend/accounting/README.md).
+
+## Recycling Module 2 — 26 October 2026
+
+`recycled-material-entries` stores `{id, date, material, bags, pricePerKg, currency,
+notes, status, correctionReason}`; numeric inputs are decimal strings. The server
+derives kg/amount and monthly daily summaries. `recycled-material-catalog` stores
+append-only custom `{id, name}` rows. Both retain immutable shared-entry revisions.
+See [contract](recycled-materials.md).
+
 ## Recycling Module 1 — 25 October 2026
 
 `recycling-materials` stores append-only custom `{id, name}` catalog rows alongside built-in workbook choices. `recycling-purchases` stores `{id, date, material, supplier, quantity, unit, unitPrice, currency, notes, status, correctionReason}`; quantities/prices are decimal strings. Server-calculated amounts and grouped monthly summaries come from the purchase report endpoint. Both keys retain immutable accepted revisions. See [details](recycling-purchases.md).

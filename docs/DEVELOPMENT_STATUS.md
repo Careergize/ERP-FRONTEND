@@ -1,5 +1,22 @@
 # Development Status
 
+## Finance and accounting — 27 October 2026
+
+Added `/finance` and the Accounts home workspace backed by the adjacent Backend's
+accounting app: journals, party ledgers, receipts/payments/advances, item allocations,
+PO-matched supplier bills, expenses, cash/bank, valuation, report filters/CSV exports
+and automatic source posting with an explicit missing-input queue. Setup/opening
+balances, deployment and PostgreSQL/browser verification remain pending. Actual
+manufacturing completion costing, partial credits/returns and advanced tax workflows
+remain outside this release. See [implementation](../../../Backend/accounting/README.md).
+
+## Recycling Module 2 — 26 October 2026
+
+Recycled Materials now provides persisted daily bag entries, 40 kg/bag conversion,
+monthly daily matrix, currency-separated values, corrections/voids, custom materials
+and Excel export. Local API/build checks pass; remote deployment and browser review
+remain pending. See [scope and validation](recycled-materials.md).
+
 ## Manufacturing sidebar navigation — 26 October 2026
 
 Existing sidebar links now follow the requested manufacturing workflow groups. Accounts retains its existing route visibility and finance summary; QC roles retain their specialist section menu. Desktop/tablet navigation scrolls above the profile footer; small screens stack navigation above module content. Routes, permissions and module behavior are unchanged.
@@ -8,7 +25,7 @@ Validation: TypeScript/production build, all existing frontend check scripts, an
 
 ## Recycling Module 1 — 25 October 2026
 
-Four-module selector added. Waste Purchases supports user-added backend material names, manual purchases, monthly summaries, corrections/voids and Excel/PDF exports. Modules 2–4 await their distinct workflows. Local checks pass; deployment and PDF browser-download review are pending. See [module scope and validation](recycling-purchases.md).
+Four-module selector added. Waste Purchases supports user-added backend material names, manual purchases, monthly summaries, corrections/voids and Excel/PDF exports. Module 2 is now implemented below its own scope; Modules 3–4 await their workflows. Local checks pass; deployment and PDF browser-download review are pending. See [module scope and validation](recycling-purchases.md).
 
 ## Supporting-record persistence — 25 October 2026
 
