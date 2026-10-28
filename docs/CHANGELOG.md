@@ -1,5 +1,22 @@
 # Changelog
 
+## Catalogue backend integration — 28 October 2026
+
+Connected Consumables Master/Overview/IN/OUT/History/Alerts/Reports/Activity to the backend. Enabled permission-controlled Spares posting, permanent Consumables codes/references, isolated ledgers, retry protection and reusable immutable audit evidence. Shared database rollout is pending. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
+
+## Separate Spares and Consumables — 28 October 2026
+
+Removed duplicate Imported/Local Spare Parts tabs, metrics, selections, code suggestions and part-number entry from Consumables. Preserved legacy records in read-only review and left the dedicated Spares module unchanged. See [scope and verification](consumables-frontend.md#spares--consumables-separation--28-october-2026).
+
+## Consumables auto-code and audit preparation — 28 October 2026
+
+Added Consumables category code suggestions, immutable existing codes, audit metadata displays, local Activity History and provisional IN/OUT references; no backend or accounting postings. See [scope and verification](consumables-frontend.md#auto-code-and-audit-preparation-follow-up--28-october-2026).
+
+## Consumables frontend — 28 October 2026
+
+Added Consumables overview, master, IN/OUT, category views, history, alerts and reports with isolated demonstration data while preserving the saved register. See [scope and validation](consumables-frontend.md).
+
+
 ## 27 October 2026 — Finance and accounting
 
 - Added a backend accounting app and Finance workspace with journals, ledgers,

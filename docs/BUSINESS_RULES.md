@@ -1,5 +1,22 @@
 # Business Rules
 
+## Catalogue backend integration — 28 October 2026
+
+Classified Consumables codes are allocated by the backend and immutable. Catalogue posting needs item-view plus movement-add permission; no role grants are inferred. Openings are explicit, unknown remains unknown, duplicates replay, overdrafts/backdated shortages reject, and code/category edits preserve identity. Ledger labels post no accounting entries. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
+
+## Separate Spares and Consumables — 28 October 2026
+
+Spare-classified demo records cannot be edited, reclassified or posted via Consumables. They remain intact for review and are excluded from Consumables operational totals/reports. Legacy office filters do not rewrite classifications. See [scope and verification](consumables-frontend.md#spares--consumables-separation--28-october-2026).
+
+## Consumables auto-code and audit preparation — 28 October 2026
+
+Existing Consumables codes are immutable in the UI; category changes preserve identities. Provisional allocations are not reused within the retained demo session. Missing audit identities/dates are never inferred; ledger labels remain configurable UI metadata. See [scope and verification](consumables-frontend.md#auto-code-and-audit-preparation-follow-up--28-october-2026).
+
+## Consumables frontend — 28 October 2026
+
+Consumables demo issues cannot exceed stock at any chronological point. Units/openings lock after movement; low stock is positive stock at or below minimum, with zero-stock alerts separate. Ledger mapping is metadata only. See [scope and validation](consumables-frontend.md).
+
+
 ## Accounting — 27 October 2026
 
 Only posted, balanced journals affect statements. Source events post once; quotations
@@ -348,4 +365,3 @@ the-Two LED validation remain explicit. B2C sales do not add VAT or LED. Switchi
 to B2C removes stale charge inputs/snapshots, and the server applies the same rule
 to new direct orders. Existing accepted quotation/order snapshots are not silently
 rewritten. B2C dispatch snapshots retain the saved item rates without adding charges.
-
