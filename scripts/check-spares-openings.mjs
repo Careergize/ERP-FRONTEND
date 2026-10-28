@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+import net from 'node:net';
+import {createServer} from 'vite';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+globalThis.localStorage={getItem(){return null;},setItem(){},removeItem(){}};globalThis.sessionStorage=globalThis.localStorage;globalThis.window=new EventTarget();
+const server=await createServer({configFile:false,resolve:{alias:{'@':fileURLToPath(new URL('../src',import.meta.url))}},optimizeDeps:{noDiscovery:true},server:{middlewareMode:true,hmr:false},appType:'custom'});
+const connect=net.Socket.prototype.connect;net.Socket.prototype.connect=function(){throw new Error('Outbound network blocked');};
+try {
+ const {api}=await server.ssrLoadModule('/src/lib/api.ts');
+ const spare=await server.ssrLoadModule('/src/lib/sparesOpeningApi.ts');
+ const {ItemRegisterPage}=await server.ssrLoadModule('/src/pages/Registers/ItemRegisterPage.tsx');
+ const {SparesPostingForm}=await server.ssrLoadModule('/src/pages/Spares/SparesPostingForm.tsx');
+ const {SparesOpeningPanel}=await server.ssrLoadModule('/src/pages/Spares/SparesOpeningPanel.tsx');
+ const caps={can_post:true,can_create:true,can_edit:true,posting_notice:'',catalogue_version:1,spares_opening_version:1,schema_ready:true,opening_schema_ready:true,can_request_opening:true,can_view_openings:true};
+ const unknown={id:'unknown',code:'UNKNOWN-SPARE',name:'Unknown',category:'LOCAL',unit:'Each',is_active:true,stock:{opening_stock:null,current_stock:null},opening_state:{status:'PENDING'}};
+ const zero={...unknown,id:'zero',code:'ZERO-SPARE',stock:{opening_stock:'0.000000',current_stock:'0.000000'}};
+ const known={...unknown,id:'known',code:'KNOWN-SPARE',stock:{opening_stock:'10.000000',current_stock:'8.000000'}};
+ assert.equal(spare.sparePostingAvailable(caps,[unknown],'IN'),false);
+ assert.equal(spare.sparePostingAvailable(caps,[zero],'IN'),true);assert.equal(spare.sparePostingAvailable(caps,[zero],'OUT'),false);
+ assert.equal(spare.sparePostingAvailable(caps,[known],'OUT'),true);
+ assert.equal(spare.sparePostingAvailable({...caps,can_post:false},[known],'IN'),false);
+ assert.equal(spare.sparePostingAvailable({...caps,schema_ready:false},[known],'IN'),false);
+ assert.equal(spare.sparePostingAvailable({...caps,spares_opening_version:undefined},[known],'IN'),false);
+ assert.equal(spare.sparePostingAvailable({...caps,opening_schema_ready:false},[known],'IN'),true);
+ for(const [status,body,kind] of [[401,{},'authentication'],[403,{},'permission'],[503,{code:'spares_migrations_required'},'schema'],[409,{detail:'Already pending'},'conflict'],[400,{quantity:['Invalid']},'validation'],[404,{},'api'],[500,'<html>private traceback</html>','api']]) {
+  const error=spare.spareFailure({response:{status,data:body}});assert.equal(error.kind,kind);assert.doesNotMatch(error.message,/private traceback|<html>/);
+ }
+ assert.equal(spare.spareFailure(new Error('network')).kind,'network');assert.equal(spare.spareFailure(new Error('network')).uncertain,true);
+ let failList=false,failCaps=false,empty=false;const calls=[];
+ const proposal={id:'proposal',item:'known',submission_id:'stable-submission',quantity:'0',unit:'Each',date:'2026-10-28',can_review:false,payload_digest:'a'.repeat(64),status:'PENDING',decision:null};
+ api.defaults.adapter=async config=>{calls.push(config);const capability=config.url.endsWith('/capabilities/');if((capability&&failCaps)||(!capability&&failList))throw {response:{status:503,data:{code:'spares_migrations_required'}}};return {data:config.method==='post'?(config.url.endsWith('/review/')?{...proposal,status:'APPROVED',decision:{command_id:JSON.parse(config.data).command_id,outcome:'APPROVED',movement:'movement',transaction_reference:'SIN-test'}}:proposal):capability?caps:config.url.includes('opening-requests')?{count:1,results:[proposal]}:{count:empty?0:1,next:null,previous:null,results:empty?[]:[known]},status:200,statusText:'OK',headers:{},config};};
+ let result=await spare.loadSparesRegister({category:'LOCAL'},1);assert.equal(result.listLoaded,true);assert.equal(result.data.count,1);assert.equal(result.error,'');
+ failCaps=true;result=await spare.loadSparesRegister({},1);assert.equal(result.data.count,1);assert.equal(result.listLoaded,true);assert.equal(result.caps,null);assert.match(result.error,/Capabilities request/);
+ failCaps=false;failList=true;result=await spare.loadSparesRegister({},1);assert.equal(result.listLoaded,false);assert.equal(result.caps.can_post,true);assert.match(result.error,/migrations/);
+ failList=false;empty=true;result=await spare.loadSparesRegister({},1);assert.equal(result.listLoaded,true);assert.equal(result.data.count,0);assert.equal(result.error,'');
+ const request={submission_id:'stable-submission',quantity:'0',unit:'Each',date:'2026-10-28',remarks:'Count evidence'};
+ await spare.spareOpeningApi.request('known',request);assert.equal(calls.at(-1).url,'/spares/known/opening-requests/');assert.equal(JSON.parse(calls.at(-1).data).submission_id,request.submission_id);
+ const decision={command_id:'stable-decision',outcome:'APPROVED',expected_digest:'a'.repeat(64),remarks:'Independent review'};
+ await spare.spareOpeningApi.review('proposal',decision);assert.equal(calls.at(-1).url,'/spares/opening-requests/proposal/review/');assert.deepEqual(JSON.parse(calls.at(-1).data),decision);
+ await spare.spareOpeningApi.list('PENDING',2);assert.equal(calls.at(-1).url,'/spares/opening-requests/');assert.equal(calls.at(-1).params.page,2);
+ api.defaults.adapter=async config=>({data:'<html>Wrong API origin</html>',status:200,statusText:'OK',headers:{},config});
+ result=await spare.loadSparesRegister({},1);assert.equal(result.listLoaded,false);assert.equal(result.caps,null);assert.match(result.error,/not confirmed|unconfirmed|unexpected/i);
+ await assert.rejects(spare.spareOpeningApi.request('known',request));await assert.rejects(spare.spareOpeningApi.review('proposal',decision));await assert.rejects(spare.spareOpeningApi.list('PENDING',1));
+ const html=renderToStaticMarkup(React.createElement(SparesPostingForm,{items:[unknown,zero,known],type:'IN',onSaved(){},onCancel(){}}));
+ assert.match(html,/KNOWN-SPARE/);assert.match(html,/ZERO-SPARE/);assert.doesNotMatch(html,/UNKNOWN-SPARE|type="checkbox"/);assert.match(html,/Unknown balances remain null/);
+ const panel=renderToStaticMarkup(React.createElement(SparesOpeningPanel,{caps,items:[{...unknown,opening_state:{status:'UNKNOWN'}}],revision:0,onChanged(){}}));assert.match(panel,/Submit for independent approval/);assert.match(panel,/Proposed opening quantity/);assert.match(panel,/value=""/);assert.match(panel,/including superusers/);
+ const noGrant=renderToStaticMarkup(React.createElement(SparesOpeningPanel,{caps:{...caps,can_view_openings:false},items:[unknown],revision:0,onChanged(){}}));assert.doesNotMatch(noGrant,/Submit for independent approval/);assert.match(noGrant,/permission is required/);
+ const register=renderToStaticMarkup(React.createElement(ItemRegisterPage,{kind:'spares'}));assert.match(register,/Stock IN/);assert.match(register,/Stock OUT/);assert.match(register,/capabilities are unavailable/);assert.match(register,/remain null/);
+ const consumables=renderToStaticMarkup(React.createElement(ItemRegisterPage,{kind:'consumables'}));assert.doesNotMatch(consumables,/Opening requests \/ approvals|spares_opening_version|superuser status/);
+ console.log('PASS: Spares capability/initialized-stock gating, partial API failures versus empty data, schema/auth/permission/conflict errors, request/review transport IDs and snapshot hashes, no direct-opening control, approval UI and unaffected Consumables register SSR. Browser interaction is not covered.');
+}finally{net.Socket.prototype.connect=connect;await server.close();}

@@ -1,5 +1,21 @@
 # Changelog
 
+## Sales sidebar and internal tabs — 28 October 2026
+
+Moved Sales child navigation into green horizontal page tabs and retained one active Sales sidebar link. Preserved deep links, section-specific filters and existing modules; added an unsaved-dialog tab-switch guard. See [Sales layout](sales-management.md#sales-sidebar-and-tabs-layout-update).
+
+## Sales approval, QC and print continuation — 28 October 2026
+
+Completed Sales approval/QC/PDF continuation: independent contributor checks, QC-only return access and inspections, reason in ledger/export, company-complete credit-note print view, explicit example reviewer handoff and truthful disabled official issuance. No backend, stock or existing quotation/invoice workflow changes.
+
+## Sales Management frontend — 28 October 2026
+
+Added nested Sales navigation, three dashboard charts, filtered/customer ledger with CSV, session-only return/credit drafts and role-permitted preview transitions, read-only tax allocations, history and print preview. Existing sales/quotation/invoice/dispatch/customer locations remain. See [implementation and verification](sales-management.md).
+
+## Spares independent opening approval — 28 October 2026
+
+Added Spares-only opening request/review UI and backend approval guards, preserving imported/local masters and ordinary transactions. Improved Spares schema/permission/API/empty-state diagnostics. No operational migration, permission grant or deployment. See [implementation, exact files and verification](../../backend/inventory/SPARES_OPENING_APPROVAL.md).
+
 ## Catalogue backend integration — 28 October 2026
 
 Connected Consumables Master/Overview/IN/OUT/History/Alerts/Reports/Activity to the backend. Enabled permission-controlled Spares posting, permanent Consumables codes/references, isolated ledgers, retry protection and reusable immutable audit evidence. Shared database rollout is pending. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).

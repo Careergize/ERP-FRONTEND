@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import type { Role } from "@/types";
+import { SalesNavigation } from '@/pages/Sales/SalesNavigation';
 
 interface NavItem {
   to: string;
@@ -83,7 +84,7 @@ export function AppShell() {
   const { user, logout } = useAuth();
   const items: NavItem[] = isQCRole(user?.role) ? [{ to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES }, ...QC_SECTIONS.map(([key, label]) => ({ to: `/qc/${key}`, label, icon: ClipboardList, roles: QC_VIEW_ROLES }))] : user?.role === "accounts" ? FINANCE_NAV_ITEMS : NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
   const groups = isQCRole(user?.role)
-    ? [{ label: "Quality Control", items }]
+    ? [{ label: "Quality Control", items }, { label: "Sales", items: [] }]
     : NAV_GROUPS.map(group => ({
       label: group.label,
       items: group.routes.flatMap(route => items.filter(item => item.to === route)),
@@ -105,7 +106,7 @@ export function AppShell() {
         <nav aria-label="Main navigation" className="sidebar-navigation min-h-0 max-h-[40dvh] flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 pb-4 md:max-h-none">
           {groups.map(group => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
-              <h2 className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">{group.label}</h2>
+              {group.label === 'Sales' ? <SalesNavigation role={user?.role} /> : <h2 className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">{group.label}</h2>}
           {group.items.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}

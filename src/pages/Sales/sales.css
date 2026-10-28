@@ -1,0 +1,13 @@
+@media print {
+  body:has(.sales-print-sheet) * { visibility: hidden; }
+  body:has(.sales-print-sheet) .sales-print-sheet,
+  body:has(.sales-print-sheet) .sales-print-sheet * { visibility: visible; }
+  body:has(.sales-print-sheet) .sales-dialog { position: absolute; inset: 0; max-height: none; width: 100%; max-width: none; overflow: visible; margin: 0; border: 0; padding: 0; }
+  body:has(.sales-print-sheet) .sales-print-sheet { width: 100%; margin: 0; padding: 12mm; }
+  body:has(.sales-print-sheet) .print\:hidden { display: none !important; }
+  body:has(.sales-print-sheet) .sales-credit-details { display: none !important; }
+  body:has(.sales-print-sheet) table { width: 100%; border-collapse: collapse; }
+  body:has(.sales-print-sheet) thead { display: table-header-group; }
+  body:has(.sales-print-sheet) tr { break-inside: avoid; }
+  body:has(.sales-print-sheet) .overflow-x-auto { overflow: visible; }
+}

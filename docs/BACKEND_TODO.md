@@ -1,5 +1,17 @@
 # Backend Integration TODO
 
+## Sales approval, QC and print continuation — 28 October 2026
+
+Sales UI now includes independent review guards and QC findings. Backend enforcement, shared cross-user business-document persistence, inspection/disposition integration, permanent issuance and official PDFs remain pending. Existing PDF infrastructure is browser print only; no programmatic generator/dependency was added.
+
+## Sales Management frontend — 28 October 2026
+
+Sales return/credit persistence, authoritative references, approval permissions, QC disposition, invoice issuance status, payment/opening balances and confirmed jurisdictional tax adjustments require future approved backend work. No endpoints, schemas, postings or stock changes were added for this frontend task. See [Sales boundaries](sales-management.md).
+
+## Spares independent opening approval — 28 October 2026
+
+Before Spares rollout, verify actual API origin/revisions, review inventory 0011 dependency and 0012 opening migration, approve explicit requester/reviewer grants and run browser/target-database acceptance. No grants or operational migrations were performed. See [implementation, exact files and verification](../../backend/inventory/SPARES_OPENING_APPROVAL.md).
+
 ## Catalogue backend integration — 28 October 2026
 
 Catalogue integration is implemented and isolated-tested. Before rollout, approve the target, verify existing ERP audit tables, review/apply inventory 0011 only with its plan, assign catalogue permissions and verify browser/target-engine behavior. Do not run unrestricted shared migrations or import demo/spare records automatically. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).

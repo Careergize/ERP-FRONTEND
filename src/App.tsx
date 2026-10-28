@@ -41,6 +41,7 @@ import { CostingPage } from "@/pages/Costing/CostingPage";
 import { MastersPage } from "@/pages/Masters/MastersPage";
 import { FinanceQualityOverview } from "@/pages/FinanceDashboard";
 import { AccountingPage } from '@/pages/Accounting';
+import { SalesLayout, SalesDashboard, SalesLedgerPage, SalesDocumentsPage } from '@/pages/Sales/SalesWorkspace';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading, sessionError, retrySession } = useAuth();
@@ -48,7 +49,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   if (loading) return <p role="status" className="p-8">Restoring your session…</p>;
   if (sessionError) return <div className="space-y-3 p-8"><p role="alert">{sessionError}</p><button className="rounded border px-4 py-2" onClick={retrySession}>Retry</button></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (isQCRole(user.role) && location.pathname !== "/" && !location.pathname.startsWith("/qc") && !location.pathname.startsWith("/job-cards")) return <Navigate to="/qc" replace />;
+  if (isQCRole(user.role) && location.pathname !== "/" && location.pathname !== "/sales" && location.pathname !== "/sales/returns" && !location.pathname.startsWith("/qc") && !location.pathname.startsWith("/job-cards")) return <Navigate to="/qc" replace />;
   return children;
 }
 
@@ -77,6 +78,12 @@ function AppRoutes() {
         <Route path="/quotations/:id" element={<QuotationsGuard><QuotationDetail /></QuotationsGuard>} />
         <Route path="/quotations/:id/edit" element={<QuotationsGuard><QuotationEditor /></QuotationsGuard>} />
         <Route path="/sales-orders" element={<SalesOrderList />} />
+        <Route path="/sales" element={<SalesLayout />}>
+          <Route index element={<SalesDashboard />} />
+          <Route path="ledger" element={<SalesLedgerPage />} />
+          <Route path="returns" element={<SalesDocumentsPage key="returns" kind="return" />} />
+          <Route path="credit-notes" element={<SalesDocumentsPage key="credits" kind="credit" />} />
+        </Route>
         <Route path="/production-models" element={<ModelManager />} />
         <Route path="/production-processes" element={<ProcessManager />} />
         <Route path="/purchase-orders" element={<PurchaseOrders />} />

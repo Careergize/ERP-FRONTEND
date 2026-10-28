@@ -1,5 +1,17 @@
 # Business Rules
 
+## Sales approval, QC and print continuation — 28 October 2026
+
+No user, including Admin, may review their own created/edited/submitted Sales preview. QC roles record Pass/Fail/Hold and inspected quantities; full QC pass still requires separate stock authorization. Draft/pending credit-note prints carry DRAFT; approved session previews cannot be issued as official documents.
+
+## Sales Management frontend — 28 October 2026
+
+Sales returns must select an invoiced line and fit remaining approved-return quantity; approval rechecks capacity. Rejected/cancelled documents have no financial effect. Approved returns reduce sales once; their credit notes add no duplicate adjustment. Units/currencies remain separate, balances exclude receivables and no stock is restocked. See [Sales rules](sales-management.md).
+
+## Spares independent opening approval — 28 October 2026
+
+Spares opening stock requires an explicit request and a different explicitly authorized reviewer, including for superusers. Direct openings and master opening_stock bypasses are rejected. Pending/rejected balances remain null; explicit zero is posted only on approval. Existing initialized movements retain existing rules. See [implementation, exact files and verification](../../backend/inventory/SPARES_OPENING_APPROVAL.md).
+
 ## Catalogue backend integration — 28 October 2026
 
 Classified Consumables codes are allocated by the backend and immutable. Catalogue posting needs item-view plus movement-add permission; no role grants are inferred. Openings are explicit, unknown remains unknown, duplicates replay, overdrafts/backdated shortages reject, and code/category edits preserve identity. Ledger labels post no accounting entries. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).

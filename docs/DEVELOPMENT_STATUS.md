@@ -1,5 +1,21 @@
 # Development Status
 
+## Sales sidebar and internal tabs — 28 October 2026
+
+Sales now has one sidebar entry and internal Dashboard/Ledger/Returns/Credit Notes tabs. Existing deep links, role limits and workspace state remain. Common and status filters persist per tab. No Sales business calculations or backend changes. See [layout verification](sales-management.md#sales-sidebar-and-tabs-layout-update).
+
+## Sales approval, QC and print continuation — 28 October 2026
+
+Sales continuation: contributor-based independent review now applies even to Admin; QC profiles can inspect returns without financial approval or stock posting. Credit-note documents reuse browser Print / Save as PDF with DRAFT/approved-preview labels; official issuance remains disabled. See [Sales module](sales-management.md).
+
+## Sales Management frontend — 28 October 2026
+
+Added a frontend-only Sales workspace at /sales with dashboard, ledger, sales returns and credit notes. Saved invoices are read-only inputs; new adjustment documents/approvals are explicitly session-only previews. Explicit examples are opt-in. Receivables and automated PDF remain pending. See [Sales module](sales-management.md).
+
+## Spares independent opening approval — 28 October 2026
+
+Spares independent opening approval is implemented on the isolated feature branch. Pending proposals leave stock unknown; a different explicitly authorized user must approve. Production rollout, migration and permission assignments remain unapproved. See [implementation, exact files and verification](../../backend/inventory/SPARES_OPENING_APPROVAL.md).
+
 ## Catalogue backend integration — 28 October 2026
 
 Consumables production views now use catalogue APIs; Spares IN/OUT uses its existing endpoint with model-permission checks. Backend/JWT/migration/concurrency and frontend checks pass in isolation. Shared migration, role grants, deployment and browser acceptance remain pending. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).

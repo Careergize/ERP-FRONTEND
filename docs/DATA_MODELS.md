@@ -1,5 +1,17 @@
 # Frontend Data Models
 
+## Sales approval, QC and print continuation — 28 October 2026
+
+Sales return snapshots now include append-only inspection previews. Review eligibility excludes all creator/editor/submitter profile IDs, including Admin. Invoice company details are frozen for credit-note print projections. Only explicit example state can be handed off across profiles in the same tab; saved-invoice preview data stays account-scoped.
+
+## Sales Management frontend — 28 October 2026
+
+SalesManagement projects existing invoice snapshots into stable invoice-line identities with currency and net/VAT/LED allocations. Returns freeze their source invoice/line, status and browser activity; linked credit notes document the same adjustment. Per-source preview state is isolated from existing shared entries. See [models and calculations](sales-management.md).
+
+## Spares independent opening approval — 28 October 2026
+
+Spares adds immutable opening proposals and independent decisions with submission/command UUIDs, snapshot digest, server actors/times and protected movement linkage. Item responses expose opening_state; capability responses distinguish catalogue versus opening schema readiness. See [implementation, exact files and verification](../../backend/inventory/SPARES_OPENING_APPROVAL.md).
+
 ## Catalogue backend integration — 28 October 2026
 
 Catalogue UUID masters retain existing identities and gain optional metadata and request identities. ConsumableStockMovement is separate from SpareStockMovement, raw and finished ledgers. Stock/openings/purchase dates derive from movements; persistent counters/reservations allocate codes, and existing EntryRevision stores audit evidence. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
