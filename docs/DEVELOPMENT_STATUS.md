@@ -1,5 +1,22 @@
 # Development Status
 
+## Catalogue backend integration — 28 October 2026
+
+Consumables production views now use catalogue APIs; Spares IN/OUT uses its existing endpoint with model-permission checks. Backend/JWT/migration/concurrency and frontend checks pass in isolation. Shared migration, role grants, deployment and browser acceptance remain pending. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
+
+## Separate Spares and Consumables — 28 October 2026
+
+Separated active Consumables categories/views from Spares. Two existing demo spare records remain read-only for migration review; the dedicated Spares register is untouched. See [scope and verification](consumables-frontend.md#spares--consumables-separation--28-october-2026).
+
+## Consumables auto-code and audit preparation — 28 October 2026
+
+Added provisional category codes, read-only identities, movement references and local Activity History; all 24 frontend checks passed. Saved Register creation retains its existing API contract. See [scope and verification](consumables-frontend.md#auto-code-and-audit-preparation-follow-up--28-october-2026).
+
+## Consumables frontend — 28 October 2026
+
+Consumables retains the saved API register and adds ten isolated demonstration views. Build and all 24 frontend checks pass; browser verification remains pending. See [scope and validation](consumables-frontend.md).
+
+
 ## Finance and accounting — 27 October 2026
 
 Added `/finance` and the Accounts home workspace backed by the adjacent Backend's

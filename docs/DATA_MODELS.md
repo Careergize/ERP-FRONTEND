@@ -1,5 +1,22 @@
 # Frontend Data Models
 
+## Catalogue backend integration — 28 October 2026
+
+Catalogue UUID masters retain existing identities and gain optional metadata and request identities. ConsumableStockMovement is separate from SpareStockMovement, raw and finished ledgers. Stock/openings/purchase dates derive from movements; persistent counters/reservations allocate codes, and existing EntryRevision stores audit evidence. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
+
+## Separate Spares and Consumables — 28 October 2026
+
+Consumables offers seven new-entry categories while retaining legacy office/spare classifications in existing records. Spare-classified demo records stay in state with linked history and are exposed read-only for review; API contracts are unchanged. See [scope and verification](consumables-frontend.md#spares--consumables-separation--28-october-2026).
+
+## Consumables auto-code and audit preparation — 28 October 2026
+
+DemoItem has optional create/update metadata; DemoMovement has a provisional reference. DemoState retains used codes/references and typed DemoActivity records locally. Persisted API payloads are unchanged. See [scope and verification](consumables-frontend.md#auto-code-and-audit-preparation-follow-up--28-october-2026).
+
+## Consumables frontend — 28 October 2026
+
+Consumables DemoItem and DemoMovement are isolated page-session types in lib/consumablesDemo.ts. They do not extend the persisted RegisterItem API contract. See [scope and validation](consumables-frontend.md).
+
+
 ## Accounting — 27 October 2026
 
 The accounting API supplies Book, Account, Party, Document/DocumentLine, JournalLine,
@@ -295,4 +312,3 @@ document ID/order number, customer/type, marketing/requisition, currency/tax bas
 subtotal/discount/VAT/LED/total and exact selected item/product/quantity/unit/rate/
 amount/LED snapshots. This metadata shares the existing session ledger lifecycle;
 it is not a new persisted invoice or dispatch model.
-

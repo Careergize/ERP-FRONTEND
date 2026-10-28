@@ -1,5 +1,22 @@
 # Backend Integration TODO
 
+## Catalogue backend integration — 28 October 2026
+
+Catalogue integration is implemented and isolated-tested. Before rollout, approve the target, verify existing ERP audit tables, review/apply inventory 0011 only with its plan, assign catalogue permissions and verify browser/target-engine behavior. Do not run unrestricted shared migrations or import demo/spare records automatically. See [implementation and validation](../../backend/inventory/CATALOGUE_INTEGRATION.md).
+
+## Separate Spares and Consumables — 28 October 2026
+
+Review real misplaced spare-classified Consumables before any approved migration. Preserve IDs/codes/history; frontend flags two local demo samples only and performs no transfer. Permanent allocation, persistence and audit integration remain pending. See [scope and verification](consumables-frontend.md#spares--consumables-separation--28-october-2026).
+
+## Consumables auto-code and audit preparation — 28 October 2026
+
+Backend must allocate permanent Consumables codes/references atomically, enforce uniqueness and persist authoritative audit metadata/history. Frontend suggestions and activity remain session-only. See [scope and verification](consumables-frontend.md#auto-code-and-audit-preparation-follow-up--28-october-2026).
+
+## Consumables frontend — 28 October 2026
+
+Future approved contracts are needed for enhanced consumable fields, categories, movements, reports and expense metadata. Existing APIs remain unchanged; demo data is never synchronized. See [scope and validation](consumables-frontend.md).
+
+
 ## Finance and accounting — 27 October 2026
 
 Accounting models/APIs and operational source hooks are implemented in the adjacent
@@ -312,4 +329,3 @@ post all lines atomically, preserve request IDs and commercial snapshots, rechec
 permissions/current and dated batch balances/QC/order remainder, and make failed
 network retries recoverable without losing or duplicating Stock OUT. No new dispatch
 endpoint was introduced by the form change.
-
