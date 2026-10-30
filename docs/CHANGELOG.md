@@ -373,3 +373,23 @@ This baseline does not assign release dates or reconstruct feature history. Exis
 ## 2026-10-09 — Custom costing and routing
 
 Added shared revisioned custom models, per-line USD/UGX costing and markup comparisons, printable redacted estimates, separate approval/customer response, linked draft jobs and PM-controlled dynamic routing/reapproval. Added QC-prepared receipt mapping and explicit unavailable actual costing. Workbook ambiguities stay configurable. New regression checks cover costing/model/estimate/routing behavior; existing stock/sales checks remain passing. See [implementation notes](custom-costing-routing.md).
+
+### 30 October 2026 — Finance Analysis
+
+Added day book and voucher registers with party/search filters, posted voucher details, CSV export, activity summaries and direct ledger navigation in Finance & Accounting → Analysis. Reuses existing reporting/posting APIs. Customer-level profit allocation and order commitment reporting remain pending.
+
+### 30 October 2026 — Analysis home reference
+
+Added a Tally-inspired Analysis home dashboard with net sales/purchase trends, trading details, cash flow, receivables/payables, assets/liabilities and top account links. Existing voucher registers remain in Day book & registers. Missing overdue, gross-profit and ratio inputs are explicit.
+
+### 30 October 2026 — Finance workflow completion
+
+Redesigned Finance with responsive dashboard cards, neutral navigation and dedicated customer profitability and uninvoiced-order screens. Added actual customer cost assignment/reconciliation, automatic customer dispatch costs, partial order billing reports, and cash/bank/mobile-money voucher journal drilldown. Backend migration 0005_costassignment is required.
+
+### 30 October 2026 — Accounting masters
+
+Added Finance Masters for groups/subgroups, ledger creation/membership, voucher-level cost categories, currencies and custom voucher types. Voucher selection and grouped/category reports are connected to persisted backend masters. Added balanced Journal vouchers. Requires backend migration 0006_finance_masters.
+
+### 30 October 2026 — Finance errors
+
+Added an authenticated accounting schema-readiness guard with actionable HTTP 503 and readable frontend error messages in place of raw server HTML. Database migration remains an explicit server deployment step.

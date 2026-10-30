@@ -324,3 +324,35 @@ document ID/order number, customer/type, marketing/requisition, currency/tax bas
 subtotal/discount/VAT/LED/total and exact selected item/product/quantity/unit/rate/
 amount/LED snapshots. This metadata shares the existing session ledger lifecycle;
 it is not a new persisted invoice or dispatch model.
+
+
+## 29 October 2026 — Labour Job
+
+Labour Job entries: id, date, direction (IN/OUT), customer, material, color, quantity (kg decimal string), notes, status and correctionReason. Persisted as `labour-job-entries`; report balances group exact customer/material/colour values.
+
+
+### 29 October 2026 - Labour Job options
+
+Labour Job options use labour-job-options: list of {id, kind (material/color), name}, immutable after save. Names are unique per kind ignoring case.
+
+
+## 29 October 2026 - In-house waste delivery
+
+Added inhouse-waste-entries (date, eight kg fields, notes/status/reason) and inhouse-waste-rates (month, currency, four rates, reason), using versioned SharedEntry storage. See [scope](inhouse-waste.md).
+
+
+### 29 October 2026 - Custom waste items
+
+Module 4 adds inhouse-waste-items ({id,name}), optional entry.extraQuantities and rate.customRates maps keyed by item ID. Legacy shapes remain valid.
+
+### Finance analysis contract — 30 October 2026
+
+The active Backend adds immutable CostAssignment(document one-to-one, source JournalLine FK, positive reporting-currency amount). JournalLine.party carries optional customer income/cost attribution. Reversal journals preserve tags. Document projections include journal {id,account,accountName,cash,party,partyName,debit,credit} and optional costSource {line,document}.
+
+Accounting Report adds customerProfit {rows,details,unassignedIncome,unassignedCosts,unassignedNet,companyNetProfit}, assignableCosts [{line,document,date,account,remaining}], and orderCommitments {asOf,sales,purchases,totals,issues,basis}. All additions come from actual saved records. Frontend view models are in FinanceInsights.tsx; accounting persistence is in the adjacent Backend, not frontend local storage.
+
+### Accounting master models — 30 October 2026
+
+Added AccountGroup(name,kind,parent), CostCategory(name), Currency(code PK,name,symbol) and VoucherType(name,base_kind). Group/category/type names have database case-insensitive uniqueness. Account and Party have nullable protected group references; Document has nullable protected voucher_type/cost_category references. No master rename/delete endpoints exist; ledger group membership is the only mutable classification command.
+
+Bootstrap adds groups/costCategories/currencies/voucherTypes and group_id on ledgers/parties. Command payloads accept optional voucherType/costCategory IDs. Reports add groupSummary, partyGroupSummary, costCategorySummary, and custom names/categories on document/ledger/transaction projections. Frontend authoring lives in FinanceMasters.tsx. Backend migration 0006 seeds existing ledger classifications, base voucher definitions and historical currency codes without changing journals.

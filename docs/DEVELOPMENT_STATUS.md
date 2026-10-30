@@ -508,3 +508,62 @@ Final clean reload rendered Job Cards correctly. Development hot updates briefly
 ## Custom costing and routing — 2026-10-09
 
 Implemented and connected frontend custom lines, versioned models, recipe/process costing, USD/UGX snapshots, markup scenarios, estimate revision/approval/printing/customer response, linked draft Job Cards, dynamic PM routing and approved-stage tracking. Store issue remains local tracking; unmapped QC output retains prepared receipts. Actual Cost/Variance are unavailable. TypeScript, build and all five workflow checks passed; browser UI/printing validation remains unavailable and Vite reports a large-bundle warning. No backend/dependencies/contracts changed. See [changed files, formulas, assumptions and remaining integration](custom-costing-routing.md).
+
+
+## 29 October 2026 — Labour Job
+
+Recycling Module 3 (Labour Job) now supports persisted customer material IN/OUT, monthly recorded balances, corrections/voids and Excel export. See [scope and validation](labour-jobs.md).
+
+
+### Labour Job register usability — 29 October 2026
+
+Added customer/material/colour filters, saved-name suggestions and empty-result messages. Frontend build, Module 2/3 static checks and 18 recycling API tests pass (SQLite). See [Labour Job](labour-jobs.md).
+
+
+### 29 October 2026 - Labour Job options
+
+Module 3 now includes Add material and Add colour in a side panel, persisted reusable options and automatic selection in the open form. Build/static check and 19 recycling API tests pass (SQLite).
+
+
+## 29 October 2026 - In-house waste delivery
+
+Recycling Module 4 now implements in-house waste daily entries, totals, monthly rates/valuation, corrections/voids and Excel export. Build, Module 3/4 static checks and 23 recycling API tests pass (SQLite). See [scope](inhouse-waste.md).
+
+
+### 29 October 2026 - Custom waste items
+
+Module 4 Add waste item is implemented with reusable names, daily kg fields, monthly rates, totals and Excel output. Frontend build/static check and 24 recycling API tests pass (SQLite).
+
+### Finance Analysis — 30 October 2026
+
+Finance & Accounting now includes Analysis: a dated day book, sales/purchase/receipt/payment/expense/contra/reversal registers, customer/supplier filtering, voucher search, original-currency amounts, reporting-currency summary cards, voucher item/allocation details, CSV export and direct party-ledger navigation. Create voucher reuses the existing posting form and its authorization. Data uses the existing accounting reports API; no sample records or fallback persistence are introduced.
+
+Summary cards exclude reversed originals and reversal documents. This is active-document activity, not period P&L; financial statements continue to use signed journal movements, including dated reversals. Company P&L remains in Reports. Customer profit allocation, uninvoiced order commitments and full Tally parity remain outstanding. Customer sales/purchases/collections alone cannot establish customer net profit. Voucher detail does not yet expose the cash/bank journal counterpart; cash/mobile-money/bank selection is available during existing receipt/payment creation.
+
+Validation: TypeScript/production build and accounting SSR screen checks (ten sections), LED/finance regressions. Interactive browser and live API validation remain outstanding.
+
+### Analysis home dashboard — 30 October 2026
+
+Analysis opens a three-column home dashboard based on the supplied Tally reference. Tiles provide monthly net sales/purchase trends, company P&L totals, cash/bank/mobile-money balances, total assets/liabilities/equity, cash inflows/outflows, closing customer/supplier control balances and top cash-account ledger links. Tile actions open existing reports; Day book & registers remains available as the second Analysis view. All figures use the selected reporting dates and reporting currency. Trend data uses signed transaction baseNet amounts, including dated reversals. Missing inflow/outflow detail is shown as unavailable rather than zero.
+
+Gross-profit classification, overdue due dates and ratio inputs remain unavailable and are identified in the dashboard. No screenshot figures are copied into live data. Build, ten-section SSR checks, dashboard tile rendering, signed/reordered monthly trend calculation and missing-cash-detail checks pass. Browser interaction and live accounting transport are not verified.
+
+### Finance interface and complete analysis workflows — 30 October 2026
+
+Finance has a redesigned responsive dashboard/navigation and dedicated Customer profit / Uninvoiced orders workspaces. Customer profit consumes actual tagged journals, exposes unassigned cost reconciliation and a cost-assignment form with dated audit evidence; new dispatch COGS auto-links canonical customers. Orders report line-level unbilled quantities/values with per-currency summaries and partial billing. Voucher drilldown displays actual cash/bank/mobile-money journal counterparts and links to account ledgers.
+
+Requires active adjacent Backend accounting migration 0005_costassignment. Historical costs require reviewed assignment, not a data backfill. Assignment journals change customer classification on their posting date without changing company profit or cash. Commitments use current order scope and invoicing through the report end; values precede discounts/tax/levies and do not create accounting postings. See [backend accounting contract and validation](../../../Backend/accounting/README.md#finance-completion-and-interface-refresh--30-october-2026).
+
+Validated with production build/typecheck, twelve-section SSR, CSS/LED regressions, 50 SQLite API/regression tests, and desktop/mobile Chromium fixture navigation plus assignment submission. Synthetic screenshots were visually reviewed. PostgreSQL concurrency, remote deployment and real client-data reconciliation remain pending.
+
+### Accounting master creation — 30 October 2026
+
+Finance → Masters now creates groups/subgroups, general/cash/bank and customer/supplier ledgers, cost categories, currency definitions and custom voucher types. Existing ledgers can be placed in compatible groups. Voucher forms use saved categories/types/currencies; Journal entries are supported with balanced reporting-currency lines. Reports include general-ledger groups, party groups and voucher cost categories. Custom type names/categories appear in registers/detail and exports.
+
+Requires adjacent Backend migration 0006_finance_masters. Admin configures chart/group/category/currency/type masters; Accounts can create customer/supplier ledgers. Names/behavior are create-only; membership changes are explicit and apply across report periods. Currency definitions do not set FX or change the fixed book currency/two-decimal precision. See [accounting master API/semantics](../../../Backend/accounting/README.md#accounting-masters--30-october-2026).
+
+Verified: 55 SQLite API/regression tests, Django check/drift, frontend typecheck/build, thirteen-section SSR, CSS/LED regressions, and Chromium desktop/mobile fixture master-creation/posting flows. No deployed database migration or real client-data change performed.
+
+### Finance server-error handling — 30 October 2026
+
+Accounting endpoints now return an actionable 503 if accounting migrations are missing, after checking access. Finance error messages show the HTTP status/request path and preserve JSON errors without dumping raw HTML. No automatic migration or database change is performed. 32 accounting tests, frontend typecheck/build and SSR/error-format checks pass, plus Django check/drift. Local accounting schema was found unmigrated; configured frontend targets a separate remote server whose schema state was not verified.

@@ -341,3 +341,31 @@ post all lines atomically, preserve request IDs and commercial snapshots, rechec
 permissions/current and dated batch balances/QC/order remainder, and make failed
 network retries recoverable without losing or duplicating Stock OUT. No new dispatch
 endpoint was introduced by the form change.
+
+
+## 29 October 2026 — Labour Job
+
+Labour Job Module 3 is integrated with versioned shared entries and `/api/recycling/labour-jobs/report/`; no migration required. PostgreSQL concurrency and deployment verification remain pending. Billing and stock posting are outside the supplied reference.
+
+
+### 29 October 2026 - Labour Job options
+
+Labour Job reusable material/colour catalog integrated through labour-job-options. No migration required; PostgreSQL concurrency remains unverified.
+
+
+## 29 October 2026 - In-house waste delivery
+
+Module 4 report and shared-entry integration implemented; no migration required. PostgreSQL concurrency, browser interaction and deployment verification remain pending. See [scope](inhouse-waste.md).
+
+
+### 29 October 2026 - Custom waste items
+
+Module 4 custom waste catalog, quantity/rate maps and export are integrated with existing shared-entry permissions. No migration; PostgreSQL/browser verification pending.
+
+### Finance Analysis integration — 30 October 2026
+
+Completed locally on 30 October: actual journal-based customer profitability, bounded/audited customer expense assignment, automatic canonical customer dispatch COGS, uninvoiced sales/purchase commitments and voucher journal payment-account detail. Apply accounting migration 0005_costassignment when deploying. Remaining operational work: PostgreSQL concurrency verification and real client-data reconciliation/cost allocation. Commitments use current order scope; fully historical order revision reconstruction and general production completion costing remain separate workflows.
+
+### Accounting masters integration — 30 October 2026
+
+Implemented adjacent Backend persistence and frontend selection for groups, ledgers, cost categories, currency definitions and custom voucher types, including controlled existing-ledger group membership and grouped/category reports. Deployment requires 0006_finance_masters after 0005. Outstanding operational verification remains PostgreSQL concurrency, actual server rollout and client-data reconciliation. Arbitrary new posting behaviors, variable currency precision, automatic voucher numbering, per-line cost-centre allocations and master rename/delete are not part of this create-master workflow.

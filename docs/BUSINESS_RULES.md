@@ -377,3 +377,35 @@ the-Two LED validation remain explicit. B2C sales do not add VAT or LED. Switchi
 to B2C removes stale charge inputs/snapshots, and the server applies the same rule
 to new direct orders. Existing accepted quotation/order snapshots are not silently
 rewritten. B2C dispatch snapshots retain the saved item rates without adding charges.
+
+
+## 29 October 2026 — Labour Job
+
+Labour Job: record customer-owned material IN and OUT in kg. Active entries alone affect recorded balances; retain voided detail and revision history. Require reasons for correction/void; prohibit deletion. Do not infer charges or company stock postings. See [Labour Job](labour-jobs.md).
+
+
+### 29 October 2026 - Labour Job options
+
+Authorized Labour Job writers can add shared material and colour options without a movement. Saved names cannot be renamed/deleted; existing free-text movement names remain valid.
+
+
+## 29 October 2026 - In-house waste delivery
+
+In-house waste totals sum recorded active quantities; one active daily sheet per date. Monthly rates require currency confirmation; missing rates leave valuation unavailable. Corrections require reasons, voids are retained, deletion is prohibited. No automatic stock/accounting posting. See [scope](inhouse-waste.md).
+
+
+### 29 October 2026 - Custom waste items
+
+Custom Module 4 items have separate quantity and monthly rate fields. They contribute to all-waste totals and separate valuation rows; missing rates on positive quantities leave monetary totals unavailable. Saved item identities cannot be renamed/deleted.
+
+### Customer profit and unbilled commitments — 30 October 2026
+
+Customer profit uses posted reporting-currency income and actual attributed expense journals. A collection is not revenue, and a purchase is not necessarily COGS. Untagged income/costs remain an explicit company reconciliation bucket. Cost assignment reclassifies a bounded original expense amount on its posting date with balanced same-account entries; it does not repeat cash, cost, inventory or receivables. Assignments must follow source/prior assignment dates, respect period locks and be reversed before their source expense. New dispatch costs use the canonical order customer; existing unlinked costs need reviewed assignment.
+
+Uninvoiced orders show current scope less source sales invoices / financial purchase bills dated through the report end. Quantities retain exact lines/units and money retains separate currencies. Commitment values use saved line rates before discounts, tax and levies. They are not posted income/payables or full historical order snapshots.
+
+### Accounting groups and voucher masters — 30 October 2026
+
+Group and ledger classifications must match; customer groups are assets and supplier groups liabilities. Parent group totals include descendants. GL controls and customer/supplier subledgers are reported separately to avoid double counting. Membership changes apply to all report periods without changing posted amounts.
+
+Custom voucher types inherit a supported posting behavior and cannot bypass validation or permissions. Cost categories tag whole vouchers; they are separate from expense ledger accounts and customer cost assignment. Reversals preserve the original category. Journal vouchers must balance in reporting currency; controls require the correct party and inventory must use valuation commands. Currency masters do not supply FX or change the fixed reporting currency/two-decimal precision.
