@@ -63,3 +63,23 @@ Valuation selects stock items and automatically uses their read-only unit. Ctn/c
 ### 31 October 2026 - Currency creation fields
 
 Added reference-style currency display/words settings and live previews under Finance Masters. Settings persist with currencies; existing report/posting precision is unchanged. Requires accounting migration 0007_currency_display_fields.
+
+
+### 31 October 2026 - Detailed Profit & Loss
+
+Added company/customer P&L with trading and operating sections, group/ledger/voucher drill-down, cash/credit sales breakdown, supporting stock/purchase schedules and detailed CSV. Admin can classify direct/indirect expenses in Masters. Requires accounting migration 0008_account_pnl_section.
+
+
+### 31 October 2026 - Day Book voucher popup
+
+View voucher now opens visible modal details instead of rendering below the register. Supports close/Escape and existing journal/account navigation.
+
+
+### 31 October 2026 - Download accounting voucher PDF
+
+Day Book voucher details can download a backend-generated PDF with journal lines, items, allocations and as-of balances. Existing Finance permissions apply; downloads do not change accounting records.
+
+
+### 31 October 2026 - Admin ledger row actions
+
+Added visible Edit/Delete buttons beside existing ledgers at the top of Finance Masters. Editing focuses the existing form; deletion retains confirmation and all backend history protections.

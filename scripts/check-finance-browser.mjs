@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'vite';
 import {spawn} from 'node:child_process';
-import {mkdtemp, rm, writeFile} from 'node:fs/promises';
+import {mkdtemp, rm, writeFile, readdir, readFile, mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join, dirname, resolve} from 'node:path';
 
@@ -26,13 +26,18 @@ function profitFixture(customer){
   purchases:scoped?null:{total:'300',rows:[{document:99,number:'PL-PURCHASE',date:'2026-10-10',supplier:'Supplier Beta',amount:'300'}]},
   companyUnassigned:{income:'0',expenses:'100'},pendingEvents:[],warnings:scoped?['Customer P&L includes attributed entries only. Company stock is not allocated to this customer.']:[],basis:'Posted journals only. Supporting stock and purchases are not added to expenses again.'};
 }
-const commands=[];
+const commands=[];const voucherDownloads=[];let failVoucherDownload=false;
 const server=await createServer({server:{port:0,host:'127.0.0.1'},define:{'import.meta.env.VITE_API_BASE_URL':JSON.stringify('/__finance-api')},plugins:[{
   name:'finance-browser-fixtures',
   resolveId(id){if(id==='/__finance-check-entry.tsx')return '\0finance-check-entry.tsx';},
   load(id){if(id==='\0finance-check-entry.tsx')return `import React from 'react';import {createRoot} from 'react-dom/client';import {AccountingPage} from '/src/pages/Accounting.tsx';import '/src/index.css';createRoot(document.getElementById('root')).render(React.createElement(AccountingPage));`;},
   configureServer(vite){vite.middlewares.use(async(req,res,next)=>{
     if(req.url?.startsWith('/__finance-api/')){
+      if(req.url.includes('/vouchers/')&&req.url.includes('/pdf/')){
+        voucherDownloads.push(req.url);
+        if(failVoucherDownload){res.statusCode=403;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({detail:'Voucher download is not permitted.'}));return;}
+        res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename="RCPT-001.pdf"');res.end(Buffer.from('%PDF-1.4\nSynthetic voucher download fixture\n%%EOF'));return;
+      }
       let data=report;
       if(req.method==='POST') {let body='';for await(const chunk of req)body+=chunk;const payload=JSON.parse(body);commands.push(payload);data=document;
         const kind=req.url.split('/masters/')[1]?.split('/')[0];
@@ -42,6 +47,8 @@ const server=await createServer({server:{port:0,host:'127.0.0.1'},define:{'impor
         if(kind==='cost-categories')bootstrap.costCategories.push({id,name:payload.name});
         if(kind==='currencies')bootstrap.currencies.push(payload);
         if(kind==='voucher-types')bootstrap.voucherTypes.push({id,name:payload.name,base_kind:payload.baseKind});
+        if(kind==='ledger-update'){const row=(payload.ledgerType==='account'?bootstrap.accounts:bootstrap.parties).find(r=>String(payload.ledgerType==='account'?r.code:r.id)===String(payload.ledger));if(row){row.name=payload.name;row.group_id=payload.group;}}
+        if(kind==='ledger-delete'){if(payload.ledgerType==='account')bootstrap.accounts=bootstrap.accounts.filter(r=>r.code!==payload.ledger);else bootstrap.parties=bootstrap.parties.filter(r=>r.id!==payload.ledger);}
         if(kind==='pnl-classification'){const account=bootstrap.accounts.find(a=>a.code===payload.account);if(account)account.pnl_section=payload.section;}
         if(kind==='group-membership'){const ledger=bootstrap.accounts.find(a=>a.code===payload.ledger);if(ledger)ledger.group_id=payload.group;}
         if(kind)data={id};}
@@ -89,7 +96,23 @@ try{
  await click('Customer profit');await wait(`document.body?.innerText.includes('Attributed net profit')`);assert.ok(await evaluate(`document.body?.innerText.includes('370,000.00')`));
  if(process.env.FINANCE_SCREENSHOT)await writeFile(process.env.FINANCE_SCREENSHOT.replace('.png','-customer.png'),Buffer.from((await cdp('Page.captureScreenshot',{captureBeyondViewport:true})).data,'base64'));
  await click('Uninvoiced orders');await wait(`document.body?.innerText.includes('SO-001')`);await click('Purchase orders');await wait(`document.body?.innerText.includes('No records for this selection.')`);
- await click('Day book');await wait(`document.body?.innerText.includes('RCPT-001')`);await click('View voucher');await wait(`document.body?.innerText.includes('Payment accounts & journal')`);await click('Open MTN Mobile Money ledger');await wait(`document.body?.innerText.includes('Opening:')`);
+ report.documents.push(...Array.from({length:60},(_,i)=>({...document,id:100+i,number:'HISTORY-'+i})));
+ await click('Day book');await wait(`document.body?.innerText.includes('RCPT-001')`);await click('View voucher');await wait(`!!document.querySelector('dialog[open]')`);
+ assert.ok(await evaluate(`document.querySelector('dialog[open]').innerText.includes('Payment accounts & journal')`));
+ assert.ok(await evaluate(`document.querySelector('dialog[open]').innerText.includes('RCPT-001')`));
+ const downloadPath=join(profile,'downloads');await mkdir(downloadPath,{recursive:true});
+ await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath});
+ await click('Download voucher PDF');await wait(`[...document.querySelectorAll('dialog[open] button')].some(b=>b.textContent.trim()==='Download voucher PDF'&&!b.disabled)`);
+ const downloadDeadline=Date.now()+5000;while(!(await readdir(downloadPath)).includes('RCPT-001.pdf')&&Date.now()<downloadDeadline)await new Promise(r=>setTimeout(r,50));
+ assert.ok((await readFile(join(downloadPath,'RCPT-001.pdf'))).toString().startsWith('%PDF-'));
+ assert.ok(voucherDownloads[0].includes('/vouchers/1/pdf/'));assert.ok(voucherDownloads[0].includes('asOf='));
+ failVoucherDownload=true;await click('Download voucher PDF');await wait(`document.querySelector('dialog[open]')?.innerText.includes('Voucher download is not permitted.')`);failVoucherDownload=false;
+
+ assert.equal(await evaluate(`(()=>{const r=document.querySelector('dialog[open]').getBoundingClientRect();return r.top>=0&&r.top<innerHeight&&r.bottom<=innerHeight;})()`),true,'Voucher details must open visibly even for a long register');
+ await click('Close voucher');await wait(`!document.querySelector('dialog[open]')`);
+ await click('View voucher');await wait(`!!document.querySelector('dialog[open]')`);
+ await cdp('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await wait(`!document.querySelector('dialog[open]')`);
+ await click('View voucher');await wait(`!!document.querySelector('dialog[open]')`);await click('Open MTN Mobile Money ledger');await wait(`document.body?.innerText.includes('Opening:')`);
  await click('New voucher');await wait(`document.body?.innerText.includes('Post a financial transaction')`);
  await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await click('Dashboard');await wait(`document.body?.innerText.includes('Analysis home')`);
  assert.equal(await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),true,'Mobile page must not overflow horizontally');
@@ -107,9 +130,21 @@ try{
  const officeGroup=bootstrap.groups.find(g=>g.name==='Office costs');assert.ok(officeGroup);
  await masterTab('Ledgers');await wait(`document.body?.innerText.includes('Create ledger')`);
  await setFields({'Ledger name':'Office rent','Ledger code':'6150','Under group':String(officeGroup.id)});await click('Create ledger');await wait(`document.body?.innerText.includes('Office rent')&&document.querySelector('.finance-table')?.innerText.includes('6150')`);
+ await evaluate(`document.querySelector('[aria-label="Edit ledger 6150"]').click()`);
+ await wait(`document.querySelector('#finance-ledger-name')?.value==='Office rent'`);
+ await setFields({'Updated ledger name':'Updated transport ledger','Updated group':'10'});await click('Save ledger changes');
+ await wait(`document.querySelector('.finance-table')?.innerText.includes('Updated transport ledger')`);
+ assert.equal(bootstrap.accounts.find(a=>a.code==='6150').name,'Updated transport ledger');
  await setFields({'Existing ledger':'account:6150','Place in group':'10'});await click('Update group');await wait(`document.body?.innerText.includes('Accounting master saved.')`);
  assert.equal(bootstrap.accounts.find(a=>a.code==='6150').group_id,10);
  await setFields({'Income / expense ledger':'6150','P&L section':'indirect_expense'});await click('Save P&L classification');await wait(`document.body?.innerText.includes('Accounting master saved.')`);assert.equal(bootstrap.accounts.find(a=>a.code==='6150').pnl_section,'indirect_expense');
+ const beforeDelete=commands.length;
+ await evaluate(`window.confirm=()=>false;document.querySelector('[aria-label="Delete ledger 6150"]').click()`);assert.equal(commands.length,beforeDelete);
+ await evaluate(`window.confirm=()=>true;document.querySelector('[aria-label="Delete ledger 6150"]').click()`);
+ await wait(`!document.querySelector('[aria-label="Edit ledger 6150"]')`);
+ assert.equal(bootstrap.accounts.some(a=>a.code==='6150'),false);
+ assert.equal(commands.at(-1).ledgerType,'account');assert.equal(commands.at(-1).expectedName,'Updated transport ledger');
+
  await masterTab('Cost categories');await setFields({'Category name':'Administration'});await click('Create cost category');await wait(`document.querySelector('.finance-table')?.innerText.includes('Administration')`);
  await masterTab('Currencies');await setFields({'ISO Currency Code':'USD','Formal name':'US Dollar','Symbol':'$','Number of decimal places':'2','Show amount in millions':'no','Suffix symbol to amount':'yes','Add space between amount and symbol':'yes','Word representing amount after decimal':'cents','No. of decimal places for amount in words':'2'});await click('Create currency');await wait(`document.querySelector('.finance-table')?.innerText.includes('US Dollar')`);
  assert.equal(bootstrap.currencies.find(c=>c.code==='USD').suffix_symbol,true);assert.equal(bootstrap.currencies.find(c=>c.code==='USD').decimal_word,'cents');
@@ -130,7 +165,7 @@ try{
  assert.equal(commands.at(-1).item,'finished:fixture-cartons');assert.equal(commands.at(-1).unit,'ctn');
  await setFields({'Stock item':'raw:fixture-material'});
  await wait(`[...document.querySelectorAll('label')].find(l=>l.textContent.startsWith('Unit (from item)'))?.querySelector('input')?.value==='kg'`);
- console.log('PASS: Chromium finance desktop/mobile layout, customer profit, order filters, voucher/ledger navigation, cost assignment, group and ledger creation/membership, cost categories, currencies, custom voucher types, voucher posting, detailed company/customer P&L, ledger/voucher drill-down, P&L classification and automatic read-only valuation units (ctn/kg). Synthetic API fixtures only.');
+ console.log('PASS: Chromium finance desktop/mobile layout, customer profit, order filters, voucher/ledger navigation, PDF download/filename/as-of/error handling, cost assignment, group and ledger creation/membership, row-level ledger edit/delete/cancel confirmation, cost categories, currencies, custom voucher types, voucher posting, detailed company/customer P&L, ledger/voucher drill-down, P&L classification and automatic read-only valuation units (ctn/kg). Synthetic API fixtures only.');
 } finally {ws?.close();chrome?.kill();await server.close();await new Promise(r=>setTimeout(r,300));assert.equal(resolve(dirname(profile)),resolve(tmpdir()));await rm(profile,{recursive:true,force:true,maxRetries:5,retryDelay:200}).catch(()=>{});}
 
 

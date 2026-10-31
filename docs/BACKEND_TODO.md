@@ -389,3 +389,13 @@ Implemented Finance valuation item choices and catalog-unit validation, with cas
 ### Currency display metadata — 31 October 2026
 
 Implemented creation validation/persistence/bootstrap fields and tested migration accounting.0007_currency_display_fields on disposable SQLite. Live migration/deployment and any future application to report/PDF formatting remain separate pending work.
+
+
+### Detailed P&L — 31 October 2026
+
+Implemented posted-journal company/customer detailed P&L API, stock/purchase supporting schedules, payment-type split and Admin account-section classification. Tests/UI checks pass. Remaining: deploy accounting.0008_account_pnl_section, PostgreSQL concurrency and live client reconciliation/classification. No automatic common-cost allocation or customer inventory ownership was added.
+
+
+### Posted voucher PDF — 31 October 2026
+
+Implemented permission-checked read-only PDF download for posted accounting documents, including date-consistent balances and allocations. API/UI/layout checks pass; deployment and live download acceptance remain pending. No new migration or dependency.

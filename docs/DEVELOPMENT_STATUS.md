@@ -1,5 +1,43 @@
 # Development Status
 
+## Visible Admin ledger actions — 31 October 2026
+
+Finance → Masters → Ledgers now places Existing ledgers at the top with per-row Edit and Delete buttons for Admin. Edit fills the existing name/group editor, scrolls to it and focuses the name field. Delete requires confirmation and uses the existing saved name/group concurrency checks; cancel sends no request. Linked parties have Delete disabled. Other roles see the read-only list without action buttons. Existing backend guards still prevent deletion of built-in/used/linked ledgers and protect journal history. No backend authority or schema changes.
+
+Validation: frontend TypeScript/build, Finance SSR including Admin/read-only ledger lists, and synthetic Chromium checks for row editing, name/group save, deletion cancellation/confirmation and refreshed list. Existing API lifecycle guards were not changed. Deployment/live behavior remains unverified.
+
+
+## Voucher PDF download — 31 October 2026
+
+Day Book → View voucher includes Download voucher PDF, pending/error state and a safe voucher-number filename. Authenticated GET accounting/vouchers/<id>/pdf/ renders the posted backend document using the existing ReportLab dependency and the same Finance read/schema checks. It returns a private no-store PDF attachment; unauthorized, missing or future-as-of records are rejected. The Day Book Through date is sent as asOf, keeping outstanding/unallocated amounts, allocations and reversal status consistent with the selected view. Current company/party/account labels are disclosed as such. Downloads never create or repost a voucher.
+
+The PDF includes company, voucher type/number/date/status, party, cost category, transaction currency/FX, journal debit/credit totals in reporting currency, applicable items/rates/taxes, payment allocations, narration and source/audit references. Tables repeat headings across pages; text is escaped and wrapped, fonts are bundled where available, and page numbers are included. No dependency or database migration was added.
+
+Validation: 61 accounting tests on disposable SQLite, including real PDF response/header/read-only checks, as-of allocation/reversal checks and access/not-found guards; Django check/drift; frontend TypeScript/build and Finance SSR. Synthetic Chromium checks download and inspect fixture PDF bytes/filename/asOf and exercise JSON-blob permission failures. A two-page backend-generated stress sample was rendered with Poppler, all pages visually inspected, and text checked with pypdf. Live downloads/deployment and PostgreSQL concurrency remain unverified. No live records changed.
+
+
+## Day Book voucher visibility — 31 October 2026
+
+View voucher opens a wide, scrollable native modal instead of placing details below the full register. The selected ID is compared as a string and resolved from the document collection. Voucher header, journal/payment accounts, items and allocations remain read-only. The shared confirmation component retains its normal defaults and adds an optional wide layout with a top close control; native modal focus/Escape behavior is preserved. No backend or financial changes.
+
+Validation: frontend TypeScript/build and Finance rendering checks; Chromium synthetic Finance regression with a 61-row register verifies visible modal bounds, selected voucher/journal content, close/reopen, actual Escape key dismissal and payment-account-ledger navigation. Live deployed behavior remains unverified.
+
+
+## Detailed company/customer Profit & Loss — 31 October 2026
+
+Finance → Reports → Profit & Loss now offers Overall company or an exact customer ledger ID, uses the selected date range, and presents side-by-side trading/gross-profit and operating/net-profit sections. Groups expand into ledgers and their posted voucher/date/customer/cost-category amounts. Detailed CSV includes sections, account totals, voucher rows, warnings and supporting stock/purchase schedules. Mobile columns stack and inner voucher tables scroll.
+
+GET accounting/detailed-profit-loss/ computes period income, cost of goods sold, direct expenses, indirect income/expenses, unclassified amounts, gross profit and net profit from posted JournalLine evidence, including dated reversals and cost assignments. Gross/net and section/group totals use Decimal on the server. Customer attribution matches the existing customer-profit rules (expense line parties; income line parties with document-customer fallback), preserving unassigned reclassification credits. Customer scope excludes company costs without customer attribution and exposes company-wide unassigned totals rather than allocating them implicitly. Same-name customer ledgers remain separate by ID. VAT/receivable opening balances are not P&L income. Foreign entries use posted reporting-currency values, not current FX.
+
+Cash/credit sales breakdown uses only recorded dispatchPayment metadata tied to source invoices; older/unspecified sales remain explicitly unclassified. It is never inferred from current outstanding balances. Pending company posting events in the period warn that missing accounting entries are excluded. Classification/group/name changes affect presentation across all selected periods; journals remain unchanged.
+
+The company report includes supporting posted stock opening/receipts/issues/closing schedules (by exact item and unit) and net posted purchase bills/reversals at saved FX. Perpetual-inventory COGS is already expensed, so these schedules are not added to profit again. No company stock or supplier bill balances are represented as customer-owned stock. Only posted valuation evidence is shown; unknown physical opening costs are not invented.
+
+Apply accounting migration 0008_account_pnl_section after 0007. It adds optional Account.pnl_section metadata without rewriting financial amounts. Admin can classify income/expense accounts via Masters → Ledgers → Profit & Loss ledger classification. Standard 4100 sales and 5100 cost-of-goods-sold keep their fixed purpose; 4200 defaults to indirect income; other unclassified accounts remain visible with a gross-margin warning. Updates require an expected current classification and reject incompatible account kinds/stale updates. No new financial posting or role grants.
+
+Validation: 58 accounting tests on disposable SQLite, including company/customer reconciliation to existing reports, FX/tax exclusion, group/voucher detail, opening/closing stock, non-double-counted purchases/COGS, reversals, cash/credit/unknown sale types, exact customer identity, partial cost assignment and classification authority; Django checks and migration drift; frontend TypeScript/build and Finance SSR. Synthetic Chromium checks cover company/customer P&L, voucher expansion, mobile overflow, classification save and existing Finance regressions. Synthetic layout screenshot visually inspected. Live migration/deployment, client-data reconciliation and PostgreSQL concurrency remain unverified. No live records changed.
+
+
 ## Currency creation display fields — 31 October 2026
 
 Finance → Masters → Currencies follows the supplied field reference: Symbol, Formal name, ISO Currency Code, Number of decimal places, Show amount in millions, Suffix symbol to amount, Add space between amount and symbol, Word representing amount after decimal, and No. of decimal places for amount in words. The form previews numeric/words output and the register displays saved settings. Display and words precision are independent integers 0–6. Flags require booleans; decimal word is optional, up to 100 characters. Admin-only creation authority and duplicate ISO-code rejection remain.

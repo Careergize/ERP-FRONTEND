@@ -43,6 +43,13 @@ try{
   assert.ok(htmlError.includes('HTTP 500'));assert.ok(htmlError.includes('/accounting/setup/'));assert.ok(!htmlError.includes('<html>'));assert.ok(!htmlError.includes('private'));
   assert.ok(financeErrorMessage({response:{status:503,data:{detail:'Accounting database update required. Run python manage.py migrate accounting.'}}}).includes('migrate accounting'));
   assert.equal(financeErrorMessage({response:{status:400,data:{amount:['Must be positive.']}}}),'{"amount":["Must be positive."]}');
+  const {FinanceLedgerList}=await server.ssrLoadModule('/src/pages/FinanceLedgerList.tsx');
+  const ledgerRows=[{key:'account:6150',code:'6150',name:'Custom expense',type:'expense',group:'Expenses',linked:false},{key:'party:1',code:'P-1',name:'Linked customer',type:'customer',group:'Assets',linked:true}];
+  const ledgerProps={rows:ledgerRows,filter:'',onFilter:()=>{},busy:false,onEdit:()=>{},onDelete:()=>{}};
+  const adminList=renderToStaticMarkup(React.createElement(FinanceLedgerList,{...ledgerProps,canConfigure:true}));
+  assert.ok(adminList.includes('Edit ledger 6150'));assert.ok(adminList.includes('Delete ledger 6150'));assert.ok(adminList.includes('ERP-linked ledgers cannot be deleted'));
+  const readOnlyList=renderToStaticMarkup(React.createElement(FinanceLedgerList,{...ledgerProps,canConfigure:false}));
+  assert.ok(!readOnlyList.includes('Edit ledger 6150'));assert.ok(!readOnlyList.includes('Delete ledger 6150'));
   console.log('PASS: all thirteen accounting sections render with configured API-shaped fixtures. Browser interaction, API transport and financial calculations are separate checks.');
 }finally{await server.close();}
 

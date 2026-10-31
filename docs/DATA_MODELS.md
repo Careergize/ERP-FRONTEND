@@ -366,3 +366,8 @@ StockSaleSnapshot.payment optionally stores cash/credit, explicit FX, cash-accou
 ## Currency display metadata — 31 October 2026
 
 Currency adds decimal_places (0–6, default 2), show_in_millions/suffix_symbol/space_between (default false), decimal_word (up to 100 chars, optional) and words_decimal_places (0–6, default 2). Existing code/name/symbol identities remain. Migration accounting.0007_currency_display_fields adds defaults without changing posted journal values. Display metadata is separate from FX and the fixed two-decimal posting engine.
+
+
+## P&L account classification — 31 October 2026
+
+Account.pnl_section is optional presentation metadata (sales, cost_of_sales, direct_expense, indirect_expense, other_income, or unclassified blank), added by accounting.0008_account_pnl_section. Standard posting-purpose accounts retain fixed report classification. No journal amounts or party references change. Detailed P&L reads existing immutable journals, valuation movements, supplier bills and dispatch invoice payment metadata.

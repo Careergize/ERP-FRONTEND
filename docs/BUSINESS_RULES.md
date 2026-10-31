@@ -424,3 +424,8 @@ Sales Management owns the Stock OUT entry action for sales. Stock provides Stock
 ## Currency creation preferences — 31 October 2026
 
 Admin can create currency display preferences matching the supplied reference. Numeric and amount-in-words previews use separate precision; millions is a preview scale only. These settings do not alter posting precision, FX, the company reporting currency or existing report/document output.
+
+
+## Detailed P&L basis — 31 October 2026
+
+Net profit is posted income less posted expenses for the selected period/customer ID. Gross profit uses sales less classified COGS/direct expense; unclassified ledgers remain separately disclosed. Customer income/costs require explicit attribution; common costs and inventory ownership are not guessed. Cash/credit splits require recorded sale payment type. Perpetual inventory is already reflected in COGS: supporting opening stock, receipts/purchases and closing stock must not be added as another expense calculation. Pending postings can leave statements incomplete.
