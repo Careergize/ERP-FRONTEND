@@ -369,3 +369,23 @@ Completed locally on 30 October: actual journal-based customer profitability, bo
 ### Accounting masters integration — 30 October 2026
 
 Implemented adjacent Backend persistence and frontend selection for groups, ledgers, cost categories, currency definitions and custom voucher types, including controlled existing-ledger group membership and grouped/category reports. Deployment requires 0006_finance_masters after 0005. Outstanding operational verification remains PostgreSQL concurrency, actual server rollout and client-data reconciliation. Arbitrary new posting behaviors, variable currency precision, automatic voucher numbering, per-line cost-centre allocations and master rename/delete are not part of this create-master workflow.
+
+
+## Approved dispatch settlement — 31 October 2026
+
+Implemented customer-balance/options read and atomic cash/credit invoice/receipt posting through the existing inventory shared-entry save in the adjacent Backend. UI refreshes server-created invoice state. Remaining validation: PostgreSQL concurrent dispatch/invoice writers and deployed-server acceptance with reconciled accounting setup. This does not add direct sales or role grants.
+
+
+### Quotation ledger selection — 31 October 2026
+
+Implemented permission-scoped customer ledger identity choices and reused accounting customer-link for explicit selection in quotations. Backend and frontend checks pass; deployed acceptance and PostgreSQL concurrency remain pending.
+
+
+### Valuation item units — 31 October 2026
+
+Implemented Finance valuation item choices and catalog-unit validation, with case/whitespace compatibility and independent date errors. SQLite/API/frontend/fixture-browser checks pass; PostgreSQL concurrency and live reconciliation remain pending.
+
+
+### Currency display metadata — 31 October 2026
+
+Implemented creation validation/persistence/bootstrap fields and tested migration accounting.0007_currency_display_fields on disposable SQLite. Live migration/deployment and any future application to report/PDF formatting remain separate pending work.

@@ -63,3 +63,16 @@
 @media(max-width:640px) { .finance-hero { align-items:flex-start; flex-direction:column; padding:23px; } .finance-hero h1 { font-size:24px; } .finance-hero-actions { flex-direction:row; align-items:center; width:100%; justify-content:space-between; } .finance-navigation { flex-wrap:nowrap; overflow-x:auto; } .finance-navigation button { flex-shrink:0; } .finance-metrics { grid-template-columns:1fr; } .finance-form-grid { grid-template-columns:1fr; } .finance-filter-row label { flex:1 1 140px; } .finance-filter-row input,.finance-filter-row select { width:100%; } .finance-section-heading { align-items:flex-start; flex-direction:column; } }
 
 .finance-master-count { border-radius:5px; padding:0 5px; font-size:10px; background:#91a99b22; font-variant-numeric:tabular-nums; }
+
+/* Detailed ledger P&L: independent columns stack on narrow screens. */
+.pnl-sheet { border:1px solid #d8e1db; border-radius:10px; overflow:hidden; background:white; }
+.pnl-caption { padding:12px 16px; background:#edf4ef; font-weight:600; color:#173e2b; }
+.pnl-columns { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+.pnl-column { min-width:0; padding:16px; }
+.pnl-column+.pnl-column { border-left:1px solid #d8e1db; }
+.pnl-column-title { border-bottom:1px solid #d8e1db; padding-bottom:8px; margin-bottom:14px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; }
+.pnl-section { padding:8px 0 14px; }
+.pnl-line { display:flex; justify-content:space-between; align-items:baseline; gap:16px; }
+.pnl-line>span:last-child,.pnl-line>strong:last-child { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.pnl-balance { border-top:1px solid #d8e1db; padding-top:10px; margin-top:14px; }
+@media(max-width:760px) { .pnl-columns { grid-template-columns:minmax(0,1fr); } .pnl-column+.pnl-column { border-left:0; border-top:1px solid #d8e1db; } }

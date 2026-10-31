@@ -71,7 +71,7 @@ export function projectSalesInvoices(invoices: Invoice[], orders: SalesOrder[] =
       const weights=invoice.items.map(l=>l.amount), nets=allocate(net,weights), vats=allocate(invoice.tax,weights), leds=allocate(invoice.led??0,weights);
       const order=orders.find(o=>o.id===invoice.orderId);
       // Never merge unrelated buyers solely because their display names happen to match.
-      const customerKey=order?.customerId?`customer:${order.customerId}`:`unlinked:${invoice.id}`;
+      const customerKey=order?.customerId?`customer:${String(order.customerId).replace(/^db:/,'')}`:`unlinked:${invoice.id}`;
       projected.push({id:invoice.id,number:invoice.number,date:invoice.date,customerKey,customer:invoice.buyer,linkedCustomer:!!order?.customerId,
         orderId:invoice.orderId,orderNumber:invoice.orderNumber,currency:invoice.currency.trim().toUpperCase(),status:'Recorded',taxMode:invoice.taxMode??'exclusive',
         net,vat:salesMoney(invoice.tax),led:salesMoney(invoice.led??0),total:salesMoney(invoice.total),

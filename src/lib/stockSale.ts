@@ -5,6 +5,7 @@ export function stockSalePricing(customerType: string, items: SalesOrderItem[], 
   return { items: items.map(({ led: _led, ledSnapshot: _snapshot, ...item }) => item), taxRate: 0, taxMode: 'exclusive' as const };
 }
 export interface StockSaleSnapshot {
+  payment?: { kind: 'cash' | 'credit'; fx: string; cashAccount?: string; seller: string; sellerAddress: string; sellerTax: string; email: string; contact: string; billingAddress: string; buyerTax: string };
   id: string; orderNumber: string; customerName: string; customerType: string;
   marketingPersonName: string; requisitionOrder: string; currency: string;
   taxRate: number; taxMode: 'inclusive' | 'exclusive'; subtotal: number; discount: number;

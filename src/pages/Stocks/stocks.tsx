@@ -1,4 +1,4 @@
-import { StockOutSaleModal } from './StockOutSaleModal';
+import { useSharedEntryAccess } from '@/context/SharedEntriesContext';
 import { StockIntelligence } from '@/components/StockIntelligence';
 import { useAuth } from '@/context/AuthContext';
 import { findWorkItem } from '@/lib/parentJobCards';
@@ -6,7 +6,7 @@ import { useJobCards } from '@/context/JobCardsContext';
 import { Link } from 'react-router-dom';
 import { reserved } from '@/lib/fulfillment';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { ArrowDownToLine, ArrowUpFromLine, ChevronDown, Download, Printer, Search } from 'lucide-react';
+import { ArrowDownToLine, ChevronDown, Download, Printer, Search } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { ENTRY_INPUT } from '@/components/ui/SearchSelect';
 import { InventoryMovementModal } from '@/components/ui/InventoryMovementModal';
@@ -48,8 +48,9 @@ function downloadCsv(filename: string, lines: (string | number | null)[][]) {
 }
 
 export function StockPage() {
-  const [salesOut, setSalesOut] = useState(false);
   const { user } = useAuth();
+  const stockAccess=useSharedEntryAccess('inventory-ledger');
+  const stockSaveBlocked=user?.id.startsWith('demo-')?'Sign in with a real backend account to record Stock IN.':stockAccess.error?`Stock IN is unavailable: ${stockAccess.error}`:!stockAccess.loaded?'Loading shared stock records. Stock IN will be available after loading finishes.':!stockAccess.writable?'Your backend account does not have permission to save the stock ledger.':'';
   const { ledger, finishedMovements, addFinishedMovement, finishedPieces, updateFinishedPieces, finishedProducts: FINISHED_GOODS, finishedLoading, finishedError, reloadFinished } = useInventory();
   const { cards, load } = useJobCards();
   useEffect(() => { void load(); }, [load]);
@@ -65,7 +66,7 @@ export function StockPage() {
   const [movementType, setMovementType] = useState('all');
   const [limit, setLimit] = useState(25);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [direction, setDirection] = useState<'IN' | 'OUT' | null>(null);
+  const [direction, setDirection] = useState<'IN' | null>(null);
   const [notice, setNotice] = useState('');
   const balances = useMemo(() => new Map(FINISHED_GOODS.map(product => [product.id, finishedBalance(product, finishedMovements)])), [FINISHED_GOODS, finishedMovements]);
   const report = useMemo(() => new Map(FINISHED_GOODS.map(product => [product.id, from && to ? finishedRangeBalance(product, finishedMovements, from, to) : finishedBalance(product, finishedMovements, month)])), [FINISHED_GOODS, finishedMovements, month, from, to]);
@@ -96,10 +97,10 @@ export function StockPage() {
   if (finishedError) return <Card><p role="alert" className="text-red-700">{finishedError}</p><button className="mt-3 underline" onClick={() => void reloadFinished()}>Reload stock</button></Card>;
   return <div className="space-y-6"><Card><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-medium text-navy">Purchase receipts</p><p className="text-sm text-slate-500">GRNs add received quantities after excluding damaged goods. Immediate purchase receipts are also included.</p></div><div className="flex gap-4 flex-wrap max-w-full"><Link to="/purchase-orders" className="text-sm underline">Purchase Orders</Link><button className="text-sm underline" onClick={() => void reloadFinished()}>Reload stock</button></div></div></Card><Card><p className="text-sm text-navy">Manufactured Stock IN requires independent QC release and final manager authorization, then an exact batch receipt from Job Cards.</p><p className="text-xs text-gray-500">Manual unbatched reference imports are restricted to Admin and cannot bypass an active product QC hold.</p><Link to="/job-cards" className="text-sm underline">Approved Job Card receipts</Link></Card>
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
-      <div><h1 className="text-2xl font-semibold text-navy">Stock</h1><p className="mt-1 text-sm text-gray-500">Finished goods inventory, stock movements and monthly reports.</p></div>
-      <div className="flex items-center gap-2 flex-wrap max-w-full">{user?.role === "admin" ? <button type="button" onClick={() => setDirection('IN')} className={BUTTON}><ArrowDownToLine size={16} />Stock IN</button> : <Link to="/job-cards" className={BUTTON}><ArrowDownToLine size={16} />Receive Approved Batch</Link>}<button type="button" onClick={() => setSalesOut(true)} className="flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-navy"><ArrowUpFromLine size={16} />Stock OUT</button>{["admin", "store_keeper"].includes(user?.role ?? "") && <button type="button" onClick={() => setDirection('OUT')} className={BUTTON}>Non-sales Stock OUT</button>}</div>
+      <div><h1 className="text-2xl font-semibold text-navy">Stock</h1><p className="mt-1 text-sm text-gray-500">Receive finished goods and review stock levels, movements and monthly reports. Sales dispatch is in Sales Management.</p></div>
+      <div className="flex items-center gap-2 flex-wrap max-w-full">{user?.role === "admin" ? <button type="button" disabled={!!stockSaveBlocked} onClick={() => setDirection('IN')} className={BUTTON+' disabled:opacity-50'}><ArrowDownToLine size={16} />Stock IN</button> : <Link to="/job-cards" className={BUTTON}><ArrowDownToLine size={16} />Receive Approved Batch</Link>}</div>
     </header>
-    {salesOut && <StockOutSaleModal onClose={() => setSalesOut(false)} onRecorded={order => setNotice(`Dispatch confirmed for ${order.orderNumber}. Stock OUT recorded in this browser session.`)} />}
+    {stockSaveBlocked&&<Card><p role={stockAccess.error?'alert':'status'}>{stockSaveBlocked}</p>{stockAccess.error&&stockAccess.retry&&<button type="button" className="mt-2 underline" onClick={stockAccess.retry}>Retry loading stock records</button>}</Card>}
     <section aria-label="Stock summary" className="grid grid-cols-2 gap-4 lg:grid-cols-4 print:hidden">{kpis.map(card => <Card key={card.label}><p className="text-sm text-gray-500">{card.label}</p><p className="mt-1 text-2xl font-semibold text-navy">{card.value}</p><p className="mt-1 text-xs text-gray-500">{card.hint}</p></Card>)}</section>
     {notice && <p role="status" className="rounded-card bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}
     <details className="rounded-card border bg-white p-4"><summary className="cursor-pointer font-semibold text-navy">Stock alerts, product conversions & costing summary</summary><StockIntelligence/></details>
@@ -142,14 +143,15 @@ export function StockPage() {
       </div>
     </div>
     <p className="text-xs text-gray-500">Entries are saved in the shared database with retained history. Unrecorded opening balances remain unknown; sales orders do not deduct physical stock.</p>
-    {direction && <InventoryMovementModal finishedGoods direction={direction} title="Finished Goods" categories={CATEGORIES} initialCategory={category === 'all' ? 'carrier-bags' : category}
+    {direction && <InventoryMovementModal finishedGoods saveBlockedReason={stockSaveBlocked} direction={direction} title="Finished Goods" categories={CATEGORIES} initialCategory={category === 'all' ? 'carrier-bags' : category}
       options={FINISHED_GOODS.map(product => ({ id: product.id, name: finishedGoodLabel(product), category: product.category, unit: product.unit, openingDate: product.openingDate, available: balances.get(product.id)!.currentStock === null ? null : balances.get(product.id)!.currentStock! - reserved(ledger, product.id),
         pieces: finishedPieces[product.id] ?? product.pieces, customer: product.customer,
         fields: [['Size', product.size || '—'], ['Brand', product.brand || '—'], ['Packaging', product.packingSize || '—'], ['Customer', product.customer || '—'], ['Opening Stock', fmt(balances.get(product.id)!.openingStock)], ['Stock IN', fmt(balances.get(product.id)!.stockIn)], ['Stock OUT', fmt(balances.get(product.id)!.stockOut)], ['Status', balances.get(product.id)!.currentStock === null ? 'Not recorded' : balances.get(product.id)!.currentStock! < 0 ? 'Negative balance' : balances.get(product.id)!.currentStock === 0 ? 'Out of stock' : 'In Stock']],
         detail: `${FINISHED_CATEGORY_LABEL[product.category]} · ${product.subgroup} · Source row ${product.sourceRow}` }))}
       onClose={() => setDirection(null)} onSave={entry => {
+        if(stockSaveBlocked)throw new Error(stockSaveBlocked);
         const product = FINISHED_BY_ID.get(entry.materialId)!;
-        addFinishedMovement({ requestId: entry.requestId, productId: product.id, date: entry.date, type: direction, quantity: entry.quantity, unit: product.unit, reference: entry.reference, remarks: entry.remarks, movementPurpose: direction==='OUT'?entry.movementPurpose:'receipt', customer: entry.customer });
+        addFinishedMovement({ requestId: entry.requestId, productId: product.id, date: entry.date, type: direction, quantity: entry.quantity, unit: product.unit, reference: entry.reference, remarks: entry.remarks, movementPurpose: 'receipt', customer: entry.customer });
         if (direction === 'IN' && entry.pieces !== undefined) updateFinishedPieces(product.id, entry.pieces);
         setNotice(`Stock ${direction} recorded: ${fmt(entry.quantity)} ${product.unit} · ${finishedGoodLabel(product)}.`);
       }} />}

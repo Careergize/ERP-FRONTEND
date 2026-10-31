@@ -13,6 +13,7 @@ export class SharedEntryStore {
   writable = new Set<string>();
   pending: Pending[] = [];
   error = '';
+  errorStatus: number | null = null;
   running = false;
   disposed = false;
   revision = 0;
@@ -45,7 +46,7 @@ export class SharedEntryStore {
   }
   async pump() {
     if (this.running || this.disposed) return;
-    this.running = true; this.error = ''; this.emit();
+    this.running = true; this.error = ''; this.errorStatus = null; this.emit();
     try {
       while (this.pending.length && !this.disposed) {
         const batch = this.pending.slice(0, 50), versions = new Map(this.versions);
@@ -60,6 +61,7 @@ export class SharedEntryStore {
         this.pending.splice(0, batch.length);
       }
     } catch (cause) {
+      this.errorStatus = (cause as {response?:{status?:number}}).response?.status ?? null;
       const detail = (cause as { response?: { data?: unknown } }).response?.data;
       this.error = typeof detail === 'object' && detail && 'detail' in detail ? String(detail.detail) :
         detail ? JSON.stringify(detail) : cause instanceof Error ? cause.message : 'The database save failed.';
@@ -71,7 +73,7 @@ export class SharedEntryStore {
     if (this.disposed) return;
     this.values = fresh.values; this.versions = fresh.versions;
     this.readable = fresh.readable; this.writable = fresh.writable;
-    this.pending = []; this.error = ''; this.emit();
+    this.pending = []; this.error = ''; this.errorStatus = null; this.emit();
   }
   async refreshKey(key: string) {
     await this.confirm();

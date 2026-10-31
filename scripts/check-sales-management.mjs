@@ -66,6 +66,7 @@ try{
  const inclusive=m.returnAmounts(invoices[1].lines[0],0,10);assert.deepEqual(inclusive,{net:100,vat:18,led:0,total:118});
  const raw={id:'raw',number:'INV-raw',orderId:'order',orderNumber:'SO-raw',buyer:'Same name',date:'2026-10-01',currency:'USD',taxMode:'inclusive',total:118,tax:18,led:0,items:[{itemId:'line',description:'Product',quantity:3,unit:'Pieces',rate:39.333333,amount:118}]};
  let projection=m.projectSalesInvoices([raw,{...raw,id:'raw2'}]);assert.equal(projection.invoices.length,2);assert.notEqual(projection.invoices[0].customerKey,projection.invoices[1].customerKey);assert.equal(projection.invoices[0].status,'Recorded');
+ projection=m.projectSalesInvoices([raw],[{id:'order',customerId:'db:42'}]);assert.equal(projection.invoices[0].customerKey,'customer:42');
  projection=m.projectSalesInvoices([raw],[{id:'order',customerId:'stable-customer'}]);assert.equal(projection.invoices[0].customerKey,'customer:stable-customer');assert.equal(projection.invoices[0].lines[0].net,100);
  const split={...raw,id:'split',total:0.05,tax:0.01,items:[{...raw.items[0],amount:1},{...raw.items[0],amount:1}]};const splitInvoice=m.projectSalesInvoices([split]).invoices[0];assert.equal(m.salesMoney(splitInvoice.lines.reduce((n,l)=>n+l.total,0)),0.05);assert.notEqual(splitInvoice.lines[0].key,splitInvoice.lines[1].key);
  assert.equal(m.projectSalesInvoices([{...raw,date:'bad'}]).issues.length,1);assert.equal(m.projectSalesInvoices([{...raw,tax:1000}]).invoices.length,0);

@@ -18,7 +18,7 @@ const server=await createServer({configFile:false,plugins:[{name:'accounting-scr
     .replace("useState('Overview')",`useState(${JSON.stringify(tab)})`);
 }}],resolve:{alias:{'@':fileURLToPath(new URL('../src',import.meta.url))}},optimizeDeps:{noDiscovery:true},server:{middlewareMode:true,hmr:false},appType:'custom'});
 try{
-  for(const [screen,expected] of [['Overview','Net profit / loss'],['Analysis','Analysis home'],['Profitability','Customer profitability'],['Orders','Uninvoiced orders'],['Transactions','Post a financial transaction'],['Apply Advances','Apply an existing receipt / payment'],['Purchase Bills','Supplier bill from saved purchase'],['Ledgers','Items and prices for this party'],['Reports','Export report CSV'],['Inventory','Inventory valuation'],['Posting Queue','Capture existing operational records since cutover'],['Masters','Organise your books'],['Setup','LED account mapping']]){
+  for(const [screen,expected] of [['Overview','Net profit / loss'],['Analysis','Analysis home'],['Profitability','Customer profitability'],['Orders','Uninvoiced orders'],['Transactions','Post a financial transaction'],['Apply Advances','Apply an existing receipt / payment'],['Purchase Bills','Supplier bill from saved purchase'],['Ledgers','Items and prices for this party'],['Reports','Overall company'],['Inventory','Inventory valuation'],['Posting Queue','Capture existing operational records since cutover'],['Masters','Organise your books'],['Setup','LED account mapping']]){
     // Separate query IDs prevent fixture modules from sharing cached initial state.
     const {AccountingPage}=await server.ssrLoadModule('/src/pages/Accounting.tsx?screen='+encodeURIComponent(screen));
     const html=renderToStaticMarkup(React.createElement(AccountingPage));

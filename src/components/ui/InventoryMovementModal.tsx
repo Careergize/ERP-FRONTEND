@@ -6,9 +6,9 @@ import { ENTRY_INPUT, SearchSelect } from './SearchSelect';
 export interface InventoryOption { id: string; name: string; category: string; unit: string; available: number | null; openingDate?: string; detail?: string; fields?: [string, string][]; pieces?: number | null; customer?: string }
 export interface InventoryEntry { requestId?: string; movementPurpose?: 'transfer' | 'waste' | 'adjustment'; date: string; materialId: string; quantity: number; reference: string; remarks: string; customer?: string; pieces?: number }
 const today = () => new Date().toLocaleDateString('en-CA');
-export function InventoryMovementModal({ direction, title, options, categories, initialCategory, onClose, onSave, finishedGoods = false, saveNotice = 'Entries are saved to the shared backend. Wait for save confirmation.' }: {
+export function InventoryMovementModal({ direction, title, options, categories, initialCategory, onClose, onSave, finishedGoods = false, saveBlockedReason = '', saveNotice = 'Entries are saved to the shared backend. Wait for save confirmation.' }: {
   direction: 'IN' | 'OUT'; title: string; options: InventoryOption[]; categories: [string, string][];
-  initialCategory: string; onClose: () => void; onSave: (entry: InventoryEntry) => void | Promise<void>; finishedGoods?: boolean; saveNotice?: string;
+  initialCategory: string; onClose: () => void; onSave: (entry: InventoryEntry) => void | Promise<void>; finishedGoods?: boolean; saveNotice?: string; saveBlockedReason?: string;
 }) {
   const confirmSave = useConfirmSharedSave();
   const [category, setCategory] = useState(initialCategory);
@@ -50,6 +50,7 @@ export function InventoryMovementModal({ direction, title, options, categories, 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (locked.current) return;
+    if(saveBlockedReason){setError(saveBlockedReason);return;}
     if (!selected || !date || !Number.isFinite(Number(quantity)) || Number(quantity) <= 0) {
       setError(`Select a ${finishedGoods ? 'product' : 'material'}, a date and a quantity greater than zero.`); return;
     }
@@ -87,8 +88,8 @@ export function InventoryMovementModal({ direction, title, options, categories, 
         {finishedGoods&&direction==='OUT'&&<label className="block text-sm">Non-sales Stock OUT purpose<select className={ENTRY_INPUT} value={movementPurpose} onChange={e=>setMovementPurpose(e.target.value as typeof movementPurpose)}><option value="transfer">Transfer</option><option value="waste">Waste</option><option value="adjustment">Approved adjustment (Admin confirmation)</option></select><span className="text-xs">Customer sales must use confirmed Sales Order dispatch. Adjustments require Admin approval, reference and reason.</span></label>}
         <label className="block text-sm text-gray-600">Reference<input value={reference} onChange={event => setReference(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>
         <label className="block text-sm text-gray-600">Remarks<textarea value={remarks} onChange={event => setRemarks(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <div className="flex justify-end gap-2 flex-wrap max-w-full"><button type="button" onClick={onClose} className="rounded-card border border-gray-200 px-4 py-2 text-sm">Cancel</button><button type="submit" className="rounded-card bg-navy px-4 py-2 text-sm font-medium text-white">{saving?'Saving…':`Save Stock ${direction}`}</button></div>
+        {saveBlockedReason&&<p role="status" className="text-sm text-amber-800">{saveBlockedReason}</p>}{error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        <div className="flex justify-end gap-2 flex-wrap max-w-full"><button type="button" onClick={onClose} className="rounded-card border border-gray-200 px-4 py-2 text-sm">Cancel</button><button type="submit" disabled={saving||!!saveBlockedReason} className="rounded-card bg-navy px-4 py-2 text-sm font-medium text-white">{saving?'Saving…':`Save Stock ${direction}`}</button></div>
         </fieldset>
       </form>
     </div>

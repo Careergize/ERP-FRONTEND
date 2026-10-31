@@ -356,3 +356,13 @@ Accounting Report adds customerProfit {rows,details,unassignedIncome,unassignedC
 Added AccountGroup(name,kind,parent), CostCategory(name), Currency(code PK,name,symbol) and VoucherType(name,base_kind). Group/category/type names have database case-insensitive uniqueness. Account and Party have nullable protected group references; Document has nullable protected voucher_type/cost_category references. No master rename/delete endpoints exist; ledger group membership is the only mutable classification command.
 
 Bootstrap adds groups/costCategories/currencies/voucherTypes and group_id on ledgers/parties. Command payloads accept optional voucherType/costCategory IDs. Reports add groupSummary, partyGroupSummary, costCategorySummary, and custom names/categories on document/ledger/transaction projections. Frontend authoring lives in FinanceMasters.tsx. Backend migration 0006 seeds existing ledger classifications, base voucher definitions and historical currency codes without changing journals.
+
+
+## Dispatch settlement snapshots — 31 October 2026
+
+StockSaleSnapshot.payment optionally stores cash/credit, explicit FX, cash-account code and invoice header/billing inputs. Successful settlement creates a retained shared Invoice with dispatchPayment metadata (kind, FX and receiptId for Cash), linked dispatch IDs and server-calculated commercial values. Existing accounting Document/JournalLine/Allocation and shared EntryRevision tables retain the invoice, receipt, allocation and evidence; no model migration. Customer identity is derived from the approved WorkflowOrder.customerId rather than submitted display names.
+
+
+## Currency display metadata — 31 October 2026
+
+Currency adds decimal_places (0–6, default 2), show_in_millions/suffix_symbol/space_between (default false), decimal_word (up to 100 chars, optional) and words_decimal_places (0–6, default 2). Existing code/name/symbol identities remain. Migration accounting.0007_currency_display_fields adds defaults without changing posted journal values. Display metadata is separate from FX and the fixed two-decimal posting engine.

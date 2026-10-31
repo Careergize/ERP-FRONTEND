@@ -41,5 +41,15 @@ try {
   assert.equal(responses.at(-1).method, 'patch');
   assert.equal(edited.email, 'changed@example.com');
   await assert.rejects(customers.updateCustomer({ ...saved, id: 'mock-7' }), /saved backend customer/);
+  const ledgerRequests=[];
+  api.defaults.adapter=async config=>{
+    ledgerRequests.push(config);
+    const data=config.url==='/customers/ledger-options/'?{ledgers:[{id:42,name:'Finance customer'}],canLink:true}:config.method==='post'?{source:'customer:7'}:record;
+    return {data,status:200,statusText:'OK',headers:{},config};
+  };
+  assert.equal((await customers.loadCustomerLedgers()).ledgers[0].id,42);
+  const linked=await customers.linkLedgerCustomer(42,key,'B2B');
+  assert.equal(linked.id,'db:7');assert.equal(ledgerRequests.at(-1).url,'/customers/7/');
+  assert.deepEqual(JSON.parse(ledgerRequests.find(r=>r.method==='post').data),{party:42,creationKey:key,customerType:'B2B'});
   console.log('Passed: customer creation payload and retry key, stable backend identity, all-page loading, master update and explicit demo-save rejection.');
 } finally { await server.close(); }

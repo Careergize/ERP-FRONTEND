@@ -409,3 +409,18 @@ Uninvoiced orders show current scope less source sales invoices / financial purc
 Group and ledger classifications must match; customer groups are assets and supplier groups liabilities. Parent group totals include descendants. GL controls and customer/supplier subledgers are reported separately to avoid double counting. Membership changes apply to all report periods without changing posted amounts.
 
 Custom voucher types inherit a supported posting behavior and cannot bypass validation or permissions. Cost categories tag whole vouchers; they are separate from expense ledger accounts and customer cost assignment. Reversals preserve the original category. Journal vouchers must balance in reporting currency; controls require the correct party and inventory must use valuation commands. Currency masters do not supply FX or change the fixed reporting currency/two-decimal precision.
+
+
+## Cash/credit dispatch — 31 October 2026
+
+For approved orders, Admin/receptionist can choose Cash (full payment now) or Credit at Stock OUT. Both reduce physical quantity once. The invoice uses approved prices and the stable ERP customer link; Cash additionally posts an allocated receipt to the selected cash/bank/mobile-money account. Invalid settlement rolls back stock and financial changes together. Previous customer balances are not automatically settled. Quotation/approval and existing Store-only dispatch authority remain.
+
+
+## Stock entry placement — 31 October 2026
+
+Sales Management owns the Stock OUT entry action for sales. Stock provides Stock IN/approved receipts and read-only stock/movement reports, with no sales or non-sales Stock OUT creation controls. Existing outbound history is retained. The relocation does not grant additional dispatch or financial permissions.
+
+
+## Currency creation preferences — 31 October 2026
+
+Admin can create currency display preferences matching the supplied reference. Numeric and amount-in-words previews use separate precision; millions is a preview scale only. These settings do not alter posting precision, FX, the company reporting currency or existing report/document output.

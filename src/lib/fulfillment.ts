@@ -17,7 +17,9 @@ export function allocate(state: FulfillmentLedger, order: SalesOrder, item: Sale
   check(product && product.unit === item.unit && !['Completed', 'Cancelled'].includes(order.status) && order.items?.some(i => i.id === item.id && i.itemId === item.itemId) && !!item.fulfillmentSource, 'Select a valid product with the order unit.');
   check(Number.isFinite(quantity) && quantity > 0 && batch, 'Enter a positive quantity and select a batch.');
   const balance = physical(state, product!.id), batchBalance = batchPhysical(state, product!.id, batch);
-  check(balance !== null && batchBalance !== null && quantity <= balance - reserved(state, product!.id) && quantity <= batchBalance - reserved(state, product!.id, batch), 'Allocation exceeds known unreserved stock.');
+  check(balance !== null && batchBalance !== null, `${item.itemName}: stock balance is not recorded. Confirm the opening balance or record the approved Stock IN before dispatch.`);
+  const available = balance! - reserved(state, product!.id), batchAvailable = batchBalance! - reserved(state, product!.id, batch);
+  check(quantity <= available && quantity <= batchAvailable, `${item.itemName}: requested ${quantity} ${item.unit}; available after reservations: ${available} ${item.unit} overall, ${batchAvailable} ${item.unit} in batch "${batch}". Reduce the dispatch quantity, choose a batch with stock, or record the missing approved Stock IN.`);
   const committed = state.allocations.filter(a => a.orderId === order.id && a.itemId === item.id).reduce((sum, a) => sum + (a.released ? a.dispatched : a.quantity), 0);
   check(quantity <= item.quantity - committed, 'Allocation exceeds the unallocated order balance.');
   return { ...state, allocations: [...state.allocations, { id: requestId, orderId: order.id, itemId: item.id, productId: product!.id, batch, quantity, dispatched: 0, released: false }] };

@@ -1,5 +1,82 @@
 # Development Status
 
+## Currency creation display fields — 31 October 2026
+
+Finance → Masters → Currencies follows the supplied field reference: Symbol, Formal name, ISO Currency Code, Number of decimal places, Show amount in millions, Suffix symbol to amount, Add space between amount and symbol, Word representing amount after decimal, and No. of decimal places for amount in words. The form previews numeric/words output and the register displays saved settings. Display and words precision are independent integers 0–6. Flags require booleans; decimal word is optional, up to 100 characters. Admin-only creation authority and duplicate ISO-code rejection remain.
+
+Currency stores decimal_places, show_in_millions, suffix_symbol, space_between, decimal_word and words_decimal_places. Apply accounting migration 0007_currency_display_fields before serving the updated Finance APIs. Existing currencies get two decimals, prefix/no-space/no-millions and blank decimal-word defaults. No financial documents, balances, FX rates or reporting currency are rewritten. Preferences currently affect the master preview/register only; existing reports, PDFs and posting calculations retain their existing behavior/two-decimal precision. Changing report presentation is separate scope.
+
+Validation: 53 accounting tests on disposable SQLite, including roundtrip/defaults/invalid types/ranges/authority and unchanged journals/book currency; Django checks and migration drift; frontend TypeScript/build, Finance SSR, currency-display helper checks and synthetic Chromium Finance checks covering all creation inputs and saved settings. Migration was tested on disposable databases only; deployment, live migration and PostgreSQL concurrency remain unverified.
+
+
+## Automatic valuation units and case compatibility — 31 October 2026
+
+Finance → Valuation selects a saved finished-good/raw-material item (or an existing legacy valuation identity), shows its exact ID, automatically fills a read-only unit, and displays the latest valued movement date. GET accounting/valuation-items/ uses existing Finance read authority and exposes catalog unit versus stored valuation unit. Server valuation checks enforce known catalog units. Unit comparisons ignore surrounding whitespace and capitalization only (Ctn/ctn); they do not convert or equate different units. Existing StockValue.unit labels, journals and quantities are not rewritten. Genuine mismatches require reconciliation. Date validation now reports its own message and latest date, separately from unit mismatch.
+
+Validation: 51 accounting tests on disposable SQLite, including queued Ctn/ctn dispatch, repeat-post protection, wrong-unit rejection, unchanged physical stock, historical-unit preservation and separate date errors; Django checks/drift; frontend TypeScript/build and Finance SSR; Chromium synthetic desktop/mobile Finance checks including automatic read-only ctn/kg and posting the selected unit. No migration needed. PostgreSQL concurrency and live deployment remain unverified. No operational balances or historical records changed.
+
+
+## Stock IN readiness — 31 October 2026
+
+Stock IN waits for the shared inventory ledger to hydrate and be writable. The Stock page exposes shared-load failures and a retry action; the modal also blocks submission while its save prerequisite is unavailable, retaining entered form values. Demo profiles get a real-account requirement. This prevents the form from reaching an uninitialized shared setter; it does not claim to repair an unavailable remote service. Frontend TypeScript/build and shared-entry checks pass. Live backend loading remains unverified.
+
+
+## Stock IN role consistency — 31 October 2026
+
+Legacy active superusers with no assigned role and the default receptionist role now resolve to Admin in User.effective_role, matching the pre-existing login/profile display. Explicit assigned roles, including inactive role denial, take precedence. This resolves the reproducible case where the UI offered Admin Stock IN but operational checks saw Receptionist. No database role assignments, ordinary-user permissions or operational role mappings are changed; no migration required.
+
+Operational permission errors now identify the effective role and action. Shared-save state retains HTTP status so a 403 explains permission recovery instead of displaying the 409 conflict instructions. Pending entries remain exportable and are not silently discarded.
+
+Validation: 78 accounts/operational/shared-entry/accounting tests on disposable SQLite, including legacy-superuser Stock IN and assigned-role/inactive-role denial; Django checks/drift; frontend TypeScript/build, shared-save failure/status/export/reload checks and auth checks pass. Deployed account diagnosis and PostgreSQL concurrency remain unverified. No live account or stock records changed.
+
+
+## Dispatch stock availability messages — 31 October 2026
+
+Sales dispatch now shows overall and selected-batch stock after reservations. Allocation failures identify the product, requested quantity, overall availability and batch availability; unknown balances have a separate message. Existing quantity, reservation and dispatch guards remain unchanged. Frontend TypeScript/build and fulfillment checks pass.
+
+
+## Quotation customer ledger choices — 31 October 2026
+
+Quotation Customer / prospect now refreshes saved ERP customers on editor mount and has Refresh Customers & Ledgers. Linked ledger customers use the existing ERP customer list. Finance-only customer ledgers appear separately by ledger ID. Admin/Accounts users with ERP customer creation permission can explicitly Link ledger & select customer, preserving the original accounting party/history and attaching its new canonical customer ID to the quotation. Other customer-view users can see ledger identity and request linking from Finance. No name matching or automatic linking on read. Saving is blocked until a selected finance-only ledger is linked or replaced with a saved customer/prospect.
+
+GET customers/ledger-options/ requires ERP customer view permission and returns unlinked customer ledger IDs/names and a canLink flag, never balances. The link operation reuses the existing accounting customer-link authority and UUID retry behavior. Inactive linked customers remain excluded by the active ERP customer query. Ledger choices load independently: a ledger-read failure does not remove saved customer options. No new database model/migration or role grants.
+
+Validation: 47 accounting tests including ledger-choice permissions, explicit linking, same-name separation and existing settlement tests; Django check/drift; frontend TypeScript/build and customer/quotation/persistence scripts pass. Browser interaction, PostgreSQL concurrency and deployment remain unverified for this change. No live client records changed.
+
+
+## Sales dispatch location — 31 October 2026
+
+Moved the sales dispatch dialog and Stock OUT entry point to Sales Management. It defaults to approved existing orders and retains balance/cash-credit settlement. Stock only offers Stock IN/approved batch receipt actions; sales and non-sales OUT entry buttons are removed. Historical OUT movements remain visible in stock reports. Real dispatch is separate from Sales return/credit previews and disabled in the example workspace. Frontend build, Sales checks and synthetic Chromium settlement checks pass. No backend authority changes or deployment.
+
+
+## Cash/credit at approved-order dispatch — 31 October 2026
+
+Stock OUT now shows the approved order customer's current posted balance and cash/credit choices for Admin/receptionist. Stable customer IDs map the invoice and receipt to the correct ledger. Dispatch, operational invoice and accounting settlement save atomically; Cash records a full receipt, Credit leaves the invoice outstanding. Existing quotation/approval and role limits remain. 69 backend regressions, frontend build/fulfillment and synthetic Chromium form checks pass; PostgreSQL concurrency and deployment remain unverified. See the adjacent Backend/accounting/README.md for scope.
+
+
+## Sales navigation icon — 31 October 2026
+
+Added a shopping-cart icon beside the Sales sidebar label, matching the size and alignment of other navigation items. Frontend TypeScript/build and Sales checks pass.
+
+
+## Ledger editing and deletion — 31 October 2026
+
+Finance → Masters → Ledgers has an Admin-only editor for ledger name and compatible group. Ledger code/ID, accounting classification, cash/control behavior and ERP source link cannot be edited here. A linked ledger rename changes its accounting label only; it does not rename the ERP customer/supplier. Name/group changes affect report presentation across periods without rewriting journal rows. Requests include the previously read name/group and reject stale edits.
+
+Admin can delete unused custom general ledgers and unlinked customer/supplier ledgers after confirmation. Protected financial references block deletion even for zero balances. Built-in/control accounts, the configured LED account and ERP-linked parties cannot be deleted. An unresolved posting queue blocks deletion because queued payloads may reference a ledger. No automatic deletion of customer masters, transactions or balances is provided.
+
+Existing POST masters routes accept ledger-update and ledger-delete; both enforce Admin authority. No migration is required. Validation: 38 accounting tests on disposable SQLite, Django checks and migration drift, frontend TypeScript/production build and thirteen-section Finance rendering check. PostgreSQL concurrency, browser interaction and deployed-server behavior remain unverified. No deployment or operational database changes performed.
+
+
+## Finance customers in Sales — 30 October 2026
+
+Finance → Masters → Ledgers can create a linked ERP customer alongside a new customer ledger (requires customer creation permission). Existing finance-only customer ledgers can link to a selected active ERP customer by ID, or create one. Links preserve the ledger and journal history; conflicting existing links are rejected. Existing ERP customer selection requires customer view permission. Creation retries use a UUID to avoid duplicate customers.
+
+Sales’ customer filter now includes active ERP customers without invoices and offers Refresh customers. Sales Orders and quotation customer choices should be reloaded after linking. Invoice projections normalize `db:` customer IDs to the same stable filter key.
+
+Validation: 35 accounting tests on disposable SQLite, Django check/migration drift, frontend TypeScript/production build and Finance/Sales scripts pass. PostgreSQL concurrency and deployed-server behavior remain unverified. No deployment or operational database changes were performed.
+
+
 ## Sales sidebar and internal tabs — 28 October 2026
 
 Sales now has one sidebar entry and internal Dashboard/Ledger/Returns/Credit Notes tabs. Existing deep links, role limits and workspace state remain. Common and status filters persist per tab. No Sales business calculations or backend changes. See [layout verification](sales-management.md#sales-sidebar-and-tabs-layout-update).

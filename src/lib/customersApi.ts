@@ -57,3 +57,15 @@ export function customerError(error: unknown): string {
   }
   return error instanceof Error ? error.message : 'Unable to save customer.';
 }
+
+export interface CustomerLedgerChoices { ledgers: {id:number;name:string}[]; canLink:boolean }
+export async function loadCustomerLedgers(): Promise<CustomerLedgerChoices> {
+  requireBackendLogin();
+  return (await api.get<CustomerLedgerChoices>('/customers/ledger-options/')).data;
+}
+export async function linkLedgerCustomer(party:number, creationKey:string, customerType:'B2B'|'B2C'): Promise<Customer> {
+  requireBackendLogin();
+  const {data}=await api.post<{source:string}>('/accounting/masters/customer-link/',{party,creationKey,customerType});
+  if(!/^customer:\d+$/.test(data.source))throw new Error('The customer ledger link was not returned. Refresh customers before continuing.');
+  return customerFromApi((await api.get<CustomerRecord>(`/customers/${data.source.slice(9)}/`)).data);
+}

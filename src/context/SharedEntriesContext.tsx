@@ -3,11 +3,13 @@ import { loadSharedEntries, SharedEntryStore } from '@/lib/sharedEntryStore';
 import { useAuth } from './AuthContext';
 
 const Context = createContext<SharedEntryStore | null>(null);
+const LoadingContext=createContext<{error:string;retry?:()=>void}>({error:''});
 
 export function useSharedEntryAccess(key: string) {
   const store = useContext(Context);
   useSyncExternalStore(store?.subscribe ?? (() => () => {}), store?.snapshot ?? (() => 0));
-  return { loaded: !!store, writable: !!store?.writable.has(key) };
+  const loading=useContext(LoadingContext);
+  return { loaded: !!store, writable: !!store?.writable.has(key), error:loading.error, retry:loading.retry };
 }
 
 export function useSharedEntry<T>(key: string, initial: T | (() => T)): [T, (update: SetStateAction<T>) => void] {
@@ -42,7 +44,7 @@ function SaveStatus({ store }: { store: SharedEntryStore }) {
   return <div className="fixed bottom-4 right-4 z-[100] w-[calc(100%-2rem)] max-w-xl rounded-xl border bg-white p-5 shadow-xl" aria-label="Database save status">
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">{store.error ? 'Entry has not been saved' : 'Saving entry to the database…'}</h2>
-      {store.error ? <><p role="alert" className="text-sm text-red-700">{store.error}</p><p className="text-sm">Keep this page open. A conflict requires exporting your pending entry, reloading the saved records, and reapplying the change.</p><div className="flex flex-wrap gap-3"><button onClick={() => void store.pump()}>Retry save</button><button onClick={download}>Export pending entries</button><button onClick={() => void reload()}>Discard pending changes and reload</button></div></> : <p role="status" className="text-sm">Wait for backend confirmation before continuing.</p>}
+      {store.error ? <><p role="alert" className="text-sm text-red-700">{store.error}</p><p className="text-sm">{store.errorStatus===403?'Permission denied: this entry remains unsaved. Export pending entries before signing out or reloading. Ask an administrator to check the assigned backend role; retry after that is corrected.':store.errorStatus===409?'Another user changed this record. Export pending entries, reload the saved records, and reapply the change.':'Keep this page open. Export pending entries before reloading so you can reapply any unsaved changes.'}</p><div className="flex flex-wrap gap-3"><button onClick={() => void store.pump()}>Retry save</button><button onClick={download}>Export pending entries</button><button onClick={() => void reload()}>Discard pending changes and reload</button></div></> : <p role="status" className="text-sm">Wait for backend confirmation before continuing.</p>}
     </div>
   </div>;
 }
@@ -57,7 +59,7 @@ function AccountEntries({ children }: { children: ReactNode }) {
       .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Unable to load shared records.'); });
     return () => { active = false; loaded?.dispose(); };
   }, [attempt]);
-  return <Context.Provider value={store}>{children}{store ? <SaveStatus store={store} /> : <div className="fixed bottom-4 right-4 z-[100] max-w-lg rounded-xl border bg-white p-4 shadow-lg"><p role={error ? 'alert' : 'status'}>{error ? `Shared records could not be loaded; affected entry forms cannot save. ${error}` : 'Loading shared records; affected entry forms will become available when loading finishes.'}</p>{error && <button onClick={() => setAttempt(n => n + 1)}>Retry loading records</button>}</div>}</Context.Provider>;
+  return <LoadingContext.Provider value={{error,retry:()=>setAttempt(n=>n+1)}}><Context.Provider value={store}>{children}{store ? <SaveStatus store={store} /> : <div className="fixed bottom-4 right-4 z-[100] max-w-lg rounded-xl border bg-white p-4 shadow-lg"><p role={error ? 'alert' : 'status'}>{error ? `Shared records could not be loaded; affected entry forms cannot save. ${error}` : 'Loading shared records; affected entry forms will become available when loading finishes.'}</p>{error && <button onClick={() => setAttempt(n => n + 1)}>Retry loading records</button>}</div>}</Context.Provider></LoadingContext.Provider>;
 }
 
 export function SharedEntriesProvider({ children }: { children: ReactNode }) {

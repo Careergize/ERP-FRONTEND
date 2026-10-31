@@ -58,11 +58,21 @@ try {
   await new Promise(resolve => setImmediate(resolve));
   while (store.running) await new Promise(resolve => setImmediate(resolve));
   assert.match(store.error, /Another user/);
+  assert.equal(store.errorStatus,409);
   assert.equal(store.pending.length, 1);
   api.defaults.adapter = async config => ({ data: { ...bootstrap(), entries: [{ key: 'exchange-rates', version: 4, content: [{ id: 'other-account-rate' }] }] }, status: 200, statusText: 'OK', headers: {}, config });
   await store.discardAndReload();
   assert.equal(store.pending.length, 0);
   assert.equal(store.get('exchange-rates', [])[0].id, 'other-account-rate');
+  assert.equal(store.errorStatus,null);
+  api.defaults.adapter=async()=>{throw {response:{status:403,data:{detail:'Your backend role cannot record Stock IN'}}};};
+  store.set('exchange-rates',[],[{id:'permission-test'}]);
+  await new Promise(resolve=>setImmediate(resolve));
+  while(store.running)await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(store.errorStatus,403);assert.equal(store.pending.length,1);
+  assert.match(store.exportPending(),/permission-test/);
+  api.defaults.adapter=async config=>({data:{...bootstrap(),entries:[{key:'exchange-rates',version:4,content:[{id:'other-account-rate'}]}]},status:200,statusText:'OK',headers:{},config});
+  await store.discardAndReload();assert.equal(store.errorStatus,null);
   const reloaded = await loadSharedEntries();
   assert.equal(reloaded.get('exchange-rates', [])[0].id, 'other-account-rate');
 

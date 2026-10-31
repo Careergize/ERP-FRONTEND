@@ -1,5 +1,8 @@
+import { ArrowUpFromLine } from 'lucide-react';
+import { StockOutSaleModal } from './StockOutSaleModal';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Navigate, Outlet, useOutletContext, useLocation } from 'react-router-dom';
+import { loadCustomers, customerError } from '@/lib/customersApi';
 import { Card } from '@/components/ui/Card';
 import { ENTRY_INPUT } from '@/components/ui/SearchSelect';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +17,16 @@ interface FilterContext { filters:SalesFilters;rows:SalesLedgerRow[];currency:st
 export function SalesLayout(){const {user}=useAuth();const {pathname}=useLocation();if(!user||!SALES_VIEW_ROLES.includes(user.role))return <Navigate to="/" replace/>;if(SALES_QC_ROLES.includes(user.role)&&pathname!=='/sales/returns')return <Navigate to="/sales/returns" replace/>;return <SalesManagementProvider key={user.id}><SalesFrame/></SalesManagementProvider>;}
 function SalesFrame(){
   const store=useSalesManagement();const {user}=useAuth();const {pathname}=useLocation();
+  const [salesOut,setSalesOut]=useState(false),[dispatchNotice,setDispatchNotice]=useState('');
+  const canDispatch=['admin','receptionist'].includes(user?.role??'')&&!user?.id.startsWith('demo-');
+  const [masterCustomers,setMasterCustomers]=useState<{key:string;name:string}[]>([]);
+  const [customerLoadError,setCustomerLoadError]=useState('');
+  const [customerRevision,setCustomerRevision]=useState(0);
+  useEffect(()=>{let live=true;setMasterCustomers([]);setCustomerLoadError('');
+    if(store.source!=='saved'||!user||user.id.startsWith('demo-'))return;
+    void loadCustomers().then(rows=>{if(live)setMasterCustomers(rows.map(c=>({key:'customer:'+c.id.replace(/^db:/,''),name:c.name})));}).catch(error=>{if(live)setCustomerLoadError(customerError(error));});
+    return()=>{live=false;};
+  },[user?.id,store.source,customerRevision]);
   const [sectionFilters,setSectionFilters]=useState<Record<string,SalesFilters>>({});
   const [sectionStatuses,setSectionStatuses]=useState<Record<string,string>>({});
   const filters=sectionFilters[pathname]??emptySalesFilters();
@@ -21,23 +34,26 @@ function SalesFrame(){
   useEffect(()=>{setSectionFilters({});setSectionStatuses({});},[store.source]);
   const currencies=[...new Set([...store.invoices.map(i=>i.currency),...store.state.returns.map(r=>r.invoice.currency)])].sort();
   const currency=filters.currency||currencies[0]||'',effective={...filters,currency};
-  const customers=new Map(store.invoices.map(i=>[i.customerKey,`${i.customer}${i.linkedCustomer?'':` · ${i.number} (unlinked customer)`}`]));
+  const customers=new Map([...masterCustomers.map(c=>[c.key,c.name] as const),...store.invoices.map(i=>[i.customerKey,`${i.customer}${i.linkedCustomer?'':` · ${i.number} (unlinked customer)`}`] as const)]);
   const products=new Map(store.invoices.flatMap(i=>i.lines.map(l=>[l.productId,l.product] as const)));
   const rows=filterSalesLedger(salesLedger(store.invoices,store.state),store.invoices,effective);
   const change=(key:keyof SalesFilters,value:string)=>setFilters(f=>({...f,[key]:value}));
   const invalidRange=!!filters.from&&!!filters.to&&filters.from>filters.to;
   return <div className="space-y-5">
     <header><h1 className="text-2xl font-semibold text-navy">Sales Management</h1><p className="text-sm text-gray-500">Customer sales, return previews and credit-note previews</p></header>
+    {canDispatch&&<Card><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold text-navy">Sales dispatch · Stock OUT</h2><p className="mt-1 text-sm text-gray-600">Dispatch an approved Sales Order, view the customer ledger balance, and choose cash or credit. Confirmation saves Stock OUT, the invoice and any cash receipt.</p></div><button type="button" className="flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm text-white disabled:opacity-50" disabled={store.source!=='saved'} onClick={()=>setSalesOut(true)}><ArrowUpFromLine size={18} aria-hidden="true"/>Stock OUT</button></div>{store.source==='demo'&&<p className="mt-2 text-sm text-gray-500">Choose Saved invoice snapshots to dispatch real orders.</p>}</Card>}
+    {salesOut&&canDispatch&&<StockOutSaleModal onClose={()=>setSalesOut(false)} onRecorded={order=>{setDispatchNotice(`Dispatch saved for ${order.orderNumber}. Stock, customer invoice and payment treatment updated.`);store.refresh();}}/>}
+    {dispatchNotice&&<p role="status" className="rounded-card bg-emerald-50 p-3 text-sm text-emerald-900">{dispatchNotice}</p>}
     <SalesTabs role={user?.role}/>
     <label className="block max-w-sm text-sm">Data source<select className={ENTRY_INPUT} value={store.source} onChange={e=>store.setSource(e.target.value as 'saved'|'demo')}><option value="saved">Saved invoice snapshots</option><option value="demo">Explicit example workspace</option></select></label>
-    <div role="note" className="rounded-card border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>{store.source==='demo'?'Example data — not business transactions.':'Read-only saved invoice snapshots.'}</strong> All new returns, inspections, credit notes and approvals are frontend previews. Saved-invoice previews are lost when leaving this workspace. Explicit examples remain in this tab’s memory so a different signed-in profile can review them; a refresh clears them. No server save, inventory restocking or accounting posting occurs. Creators, editors and submitters cannot review their own documents, including Admins. UI roles are preview controls, not server authorization.</div>
+    <div role="note" className="rounded-card border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><strong>{store.source==='demo'?'Example data — not business transactions.':'Read-only saved invoice snapshots.'}</strong> All new returns, inspections, credit notes and approvals are frontend previews. Saved-invoice previews are lost when leaving this workspace. Explicit examples remain in this tab’s memory so a different signed-in profile can review them; a refresh clears them. Return and credit-note previews do not save to the server, restock inventory or post accounting. The separate Sales dispatch action above saves real transactions. Creators, editors and submitters cannot review their own documents, including Admins. UI roles are preview controls, not server authorization.</div>
     {store.notice&&<p role="status" className="rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">{store.notice}</p>}
     {store.source==='saved'&&<p className="text-sm text-gray-600">Existing invoice records have no authoritative issuance/payment status; shown as “Recorded”. Unlinked customer identities remain invoice-specific to avoid merging different customers by name. <button className={SALES_BUTTON} onClick={store.refresh} disabled={store.loading}>Refresh invoice snapshots</button></p>}
     {store.loading?<p role="status">Loading existing invoice records…</p>:store.error?<Card><p role="alert" className="text-red-700">{store.error}</p><button className={SALES_BUTTON} onClick={store.refresh}>Retry invoice read</button></Card>:<>
       {store.issues.length>0&&<details className="rounded border border-amber-200 p-3"><summary>{store.issues.length} invalid invoice snapshot(s) excluded; totals are incomplete</summary><ul className="list-disc pl-5">{store.issues.map((issue,i)=><li key={i}>{issue}</li>)}</ul></details>}
       <Card><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <label className="text-sm">From<input aria-label="From date" className={ENTRY_INPUT} type="date" value={filters.from} onChange={e=>change('from',e.target.value)}/></label><label className="text-sm">To<input aria-label="To date" className={ENTRY_INPUT} type="date" value={filters.to} onChange={e=>change('to',e.target.value)}/></label>
-        <label className="text-sm">Customer<select className={ENTRY_INPUT} value={filters.customer} onChange={e=>change('customer',e.target.value)}><option value="">All customers</option>{[...customers].map(([key,name])=><option key={key} value={key}>{name}</option>)}</select></label>
+        <label className="text-sm">Customer<select className={ENTRY_INPUT} value={filters.customer} onChange={e=>change('customer',e.target.value)}><option value="">All customers</option>{[...customers].map(([key,name])=><option key={key} value={key}>{name}</option>)}</select><button type="button" className={SALES_BUTTON+' mt-2'} onClick={()=>setCustomerRevision(v=>v+1)}>Refresh customers</button>{customerLoadError&&<span role="alert" className="mt-2 block text-xs text-red-700">{customerLoadError}</span>}</label>
         <label className="text-sm">Item / Product<select className={ENTRY_INPUT} value={filters.product} onChange={e=>change('product',e.target.value)}><option value="">All invoiced products</option>{[...products].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
         <label className="text-sm">Invoice status<select className={ENTRY_INPUT} value={filters.invoiceStatus} onChange={e=>change('invoiceStatus',e.target.value)}><option value="">All invoice statuses</option>{['Recorded','Issued','Draft','Cancelled'].map(s=><option key={s}>{s}</option>)}</select></label>
         <label className="text-sm">Currency<select className={ENTRY_INPUT} value={currency} onChange={e=>change('currency',e.target.value)}>{!currencies.length&&<option value="">No invoices</option>}{currencies.map(c=><option key={c}>{c}</option>)}</select></label>
