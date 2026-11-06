@@ -1,3 +1,4 @@
+import { AppShellFrame } from './AppShellFrame';
 import { QC_VIEW_ROLES, isQCRole } from '@/lib/quality';
 import { useSharedEntriesPending } from '@/context/SharedEntriesContext';
 import { QC_SECTIONS } from '@/pages/Quality/QualityPage';
@@ -12,12 +13,11 @@ import {
   Calculator,
   Search,
   Settings,
-  LogOut,
-  Bell,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import type { Role } from "@/types";
 import { SalesNavigation } from '@/pages/Sales/SalesNavigation';
+import { useFinanceAccess } from '@/context/FinanceAccessContext';
 
 interface NavItem {
   to: string;
@@ -82,6 +82,7 @@ const NAV_GROUPS = [
 export function AppShell() {
   const pendingSaves = useSharedEntriesPending();
   const { user, logout } = useAuth();
+  const finance = useFinanceAccess();
   const items: NavItem[] = isQCRole(user?.role) ? [{ to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES }, ...QC_SECTIONS.map(([key, label]) => ({ to: `/qc/${key}`, label, icon: ClipboardList, roles: QC_VIEW_ROLES }))] : user?.role === "accounts" ? FINANCE_NAV_ITEMS : NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
   const groups = isQCRole(user?.role)
     ? [{ label: "Quality Control", items }, { label: "Sales", items: [] }]
@@ -89,22 +90,12 @@ export function AppShell() {
       label: group.label,
       items: group.routes.flatMap(route => items.filter(item => item.to === route)),
     })).filter(group => group.items.length > 0);
+  if (!finance.loading && !finance.error && finance.access?.entitled) {
+    groups.push({ label: 'Finance & Accounts', items: [{ to: '/finance/erpnext', label: 'Finance & Accounts', icon: Calculator, roles: [] }] });
+  }
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_72%_0%,#2dbb4c_0%,#16803d_42%,#0b3c2a_100%)] p-3 sm:p-5">
-      <div className="flex min-h-[calc(100dvh-1.5rem)] flex-col overflow-hidden rounded-[24px] bg-[#f5f8f5] shadow-2xl shadow-emerald-950/25 md:h-[calc(100dvh-2.5rem)] md:min-h-0 md:flex-row">
-      <aside className="flex min-h-0 w-full shrink-0 flex-col bg-[#102d24] text-white md:w-[230px]">
-        <div className="flex items-center gap-2 px-5 py-6">
-          <img src="/assets/Nava-logo.png" alt="NavaPack" className="h-8 w-auto max-w-[155px] object-contain" />
-        </div>
-
-        <div className="mx-4 mb-5 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wider text-white/45">Active workspace</p>
-          <p className="mt-1 text-xs font-medium text-white/90">{user?.role==='accounts'?'NavaPack Finance':'NavaPack Operations'}</p>
-        </div>
-
-        <nav aria-label="Main navigation" className="sidebar-navigation min-h-0 max-h-[40dvh] flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 pb-4 md:max-h-none">
-          {groups.map(group => (
+  return <AppShellFrame
+    navigation={<>          {groups.map(group => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
               {group.label === 'Sales' ? <SalesNavigation role={user?.role} /> : <h2 className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">{group.label}</h2>}
           {group.items.map(({ to, label, icon: Icon }) => (
@@ -123,37 +114,9 @@ export function AppShell() {
             </NavLink>
           ))}
             </section>
-          ))}
-        </nav>
-
-        <div className="shrink-0 border-t border-white/10 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">{user?.name?.slice(0, 1)}</div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-white">{user?.name}</p>
-              <p className="truncate text-[10px] capitalize text-white/45">{user?.role.replace("_", " ")}</p>
-            </div>
-          </div>
-          <button
-            disabled={pendingSaves}
-            title={pendingSaves ? 'Finish or resolve pending database saves before signing out.' : undefined}
-            onClick={logout}
-            className="sidebar-sign-out mt-4 text-white/45 hover:text-white"
-          >
-            <LogOut size={14} /> Sign out
-          </button>
-        </div>
-      </aside>
-
-      <main className="min-h-0 min-w-0 flex-1 bg-[#f5f8f5] md:overflow-y-auto">
-        <div className="flex items-center justify-end gap-4 border-b border-[#e6eee8] px-5 py-4 sm:px-8">
-          <button data-button-icon className="relative rounded-full p-2 text-[#668075] hover:bg-white" aria-label="Notifications"><Bell size={17} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#40bd5b]" /></button>
-          <div className="h-7 w-px bg-[#dce8df]" />
-          <span className="text-xs text-[#668075]">Operations overview</span>
-        </div>
-        <div className="p-5 sm:p-8"><Outlet /></div>
-      </main>
-      </div>
-    </div>
-  );
+          ))}</>}
+    workspaceLabel={user?.role === 'accounts' ? 'NavaPack Finance' : 'NavaPack Operations'}
+    displayName={user?.name} roleLabel={user?.role.replace('_', ' ')}
+    onExit={logout} pendingSaves={pendingSaves}
+  ><Outlet /></AppShellFrame>;
 }

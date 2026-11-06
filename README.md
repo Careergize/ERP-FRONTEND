@@ -10,7 +10,12 @@ Sales Orders now require a saved quotation. Production Manager/Admin approval cr
 
 Job Cards load exclusively from the active Django production workflow API. Empty or failed responses do not fall back to static cards; allocating a Job Card requires an API-backed Sales Order.
 
-Frontend workflows are being implemented and validated. Sales Orders are saved through the active adjacent Backend workflow API. Finished-goods dispatch retains its frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the active adjacent Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. The monorepo includes a separate [Django Phase 1 foundation](../backend/README.md); this frontend is not automatically integrated with it and production domain persistence is not verified.
+Frontend workflows are being implemented and validated. Sales Orders are saved through the configured Backend workflow API. Finished-goods dispatch retains its frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the configured Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. This is the independent ERP-FRONTEND repository; [ERP-BACKEND](https://github.com/Careergize/ERP-BACKEND) owns Django and [Navapack-Finance](https://github.com/Careergize/Navapack-Finance) owns native infrastructure. Production persistence must be verified per workflow.
+
+Finance release checks and explicit cross-repository validation are described in
+[repository validation](docs/finance-repository-validation.md). The separately
+built, fictional static demo uses `npm run build:finance-demo`; hosting-level
+authentication is required before deployment. See [protected demo instructions](docs/finance-protected-static-demo.md).
 
 ## Stack and structure
 

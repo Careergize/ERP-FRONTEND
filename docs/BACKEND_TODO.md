@@ -1,5 +1,18 @@
 # Backend Integration TODO
 
+## Finance UI preview boundary — 6 November 2026
+
+Batch 1 Dashboard uses an isolated typed in-memory read service. No new Django/Frappe endpoints are implemented or expected by the preview. Future module contracts, native identity/company authorization and permissions require separate approval. Demo state must never become an API fallback or a source of financial postings. See [preview scope](finance-ui-preview.md).
+
+
+## CA-owned accounting setup — 6 November 2026
+
+Technical authentication no longer depends on configuring a company, accounts, fiscal year, taxes or openings. All financial configuration belongs to the client’s CA / Finance Manager later. The status-only integration remains unavailable, not assessed and posting-disabled. Before custom functional React setup screens: verify native contracts/runtime, explicit company-scoped permissions, revision/evidence storage, independent review, CA sign-off and separate activation. No setup/COA/posting endpoint exists. See [setup design](../../finance/docs/FINANCE_ADMIN_SETUP_DESIGN.md).
+
+## ERPNext Finance foundation — 6 November 2026
+
+Local read-only status gateway and explicit entitlement/action checks are implemented. Existing applications availability=false and launch restrictions remain unchanged. Verify intended Finance users, least-privilege server identity, company scope and authenticated live transport before proposing availability or COA work. Separate-login transition remains pending; existing accounting posting must not be duplicated in ERPNext. See [integration plan](../../finance/docs/FINANCE_IMPLEMENTATION_PLAN.md).
+
 ## Sales approval, QC and print continuation — 28 October 2026
 
 Sales UI now includes independent review guards and QC findings. Backend enforcement, shared cross-user business-document persistence, inspection/disposition integration, permanent issuance and official PDFs remain pending. Existing PDF infrastructure is browser print only; no programmatic generator/dependency was added.
@@ -399,3 +412,15 @@ Implemented posted-journal company/customer detailed P&L API, stock/purchase sup
 ### Posted voucher PDF — 31 October 2026
 
 Implemented permission-checked read-only PDF download for posted accounting documents, including date-consistent balances and allocations. API/UI/layout checks pass; deployment and live download acceptance remain pending. No new migration or dependency.
+
+
+## Finance integration planning after Batch 6 — 6 November 2026
+
+No new API or backend work was implemented. The [22-module contract proposal](finance-integration-readiness.md) and [staged roadmap](finance-integration-roadmap.md) require separate approval. First settle ledger ownership/cutover and avoid duplicate existing Django posting or operational Sales/Invoice/Return/Inventory workflows. Preserve existing auth/FinanceEntitlement; use a company/action-authorized Django gateway, target native permissions, decimal contracts, durable audit and idempotency. Proposed `/api/finance/v1/` URLs are unavailable planning names, not approved endpoints. Do not connect preview contexts or silently fall back to fictional data in live screens.
+# Finance release boundary — 6 November 2026
+
+Django foundation remains disabled in ERP-BACKEND; native app/infrastructure source
+is prepared for Careergize/Navapack-Finance. No live read adapter, secret provider,
+posting, synchronization, activation or cutover is enabled. Cross-repository
+release checks require explicit backend and infrastructure roots. The static
+fictional demo requires separate host authentication and deployment approval.

@@ -1,5 +1,10 @@
 # Frontend Data Models
 
+## Finance demonstration read models — 6 November 2026
+
+`src/finance/types.ts` defines a preview-only FinanceSnapshot with monthly performance, fictional transactions, party outstanding snapshots and cash accounts. DEMO-prefixed IDs, illustrative integer UGX amounts, independently cloned in-memory data; no operational IDs or persistence. These are presentation read models, not a backend schema. See [preview architecture](finance-ui-preview.md).
+
+
 ## Sales approval, QC and print continuation — 28 October 2026
 
 Sales return snapshots now include append-only inspection previews. Review eligibility excludes all creator/editor/submitter profile IDs, including Admin. Invoice company details are frozen for credit-note print projections. Only explicit example state can be handed off across profiles in the same tab; saved-invoice preview data stays account-scoped.
@@ -371,3 +376,28 @@ Currency adds decimal_places (0–6, default 2), show_in_millions/suffix_symbol/
 ## P&L account classification — 31 October 2026
 
 Account.pnl_section is optional presentation metadata (sales, cost_of_sales, direct_expense, indirect_expense, other_income, or unclassified blank), added by accounting.0008_account_pnl_section. Standard posting-purpose accounts retain fixed report classification. No journal amounts or party references change. Detailed P&L reads existing immutable journals, valuation movements, supplier bills and dispatch invoice payment metadata.
+
+
+## Finance preview Batch 2 — 6 November 2026
+
+`finance/masterData.ts` defines typed demo setup and master records, independent fixture factories and pure validation. `FinanceMastersContext` owns session-only setup/account/tax/party/bank drafts under the existing demo provider. Master ledger and parent links use DEMO IDs. Refresh, reset and exit discard drafts; no operational model or backend schema changes.
+
+
+## Finance preview Batch 3 — 6 November 2026
+
+`transactionData.ts` defines discriminated invoice, receipt/payment, journal and note documents, amount/journal lines, allocations, fictional operational references and local history. `transactionMath.ts` calculates zero-decimal UGX sample amounts with scaled quantities/rates. `transactionService.ts` owns independent snapshots, clones reads and validates the candidate document graph atomically before replacing memory state. `FinanceTransactionsContext` is nested under the existing resettable masters provider. Fictional historical settlements are read-only reference values; planned entries never update operational documents or the Batch 1 balance snapshots. No API or backend model was introduced.
+
+
+## Finance preview Batch 4 — 6 November 2026
+
+`reportData.ts` owns one independent fictional report dataset: a typed account hierarchy, balanced document/ledger lines, explicit invoice due dates and dated settlement references. It imports the exact two immutable Batch 3 invoice snapshots; editable draft state is excluded. `reportMath.ts` derives ledger, Trial Balance, P&L, Balance Sheet and aging from those same lines. No report uses independent Batch 1 Dashboard or Batch 2 master balances. Each report page reads an identical isolated fixture copy. No backend model or persistence changes.
+
+
+## Finance preview Batch 5 — 6 November 2026
+
+`administrationData.ts` centralizes fictional banks/statements, report-derived bank movements, demo company/year/persona/role data, opening scenario types and CA checklist fields. `administrationService.ts` owns clone-on-read snapshots of local matches, company/year-keyed opening drafts, checklist values and append-only local event sequences. Opening stages are Draft, Awaiting demo review and Correction requested; no approved/posted/active state exists. `FinanceAdministrationContext` is nested in the original reset lifecycle. Report data and existing transaction/master services remain unchanged.
+
+
+## Finance Preview Batch 6 — 6 November 2026
+
+`mockData.createDemoSnapshot` now derives monthly revenue/cost/expense, cash, aging and recent reference snapshots from `reportData`/`reportMath`; old independent Dashboard values are superseded. Seeded party balances and the master-page balance cards now derive from the same report baseline. Editable master/transaction/opening/reconciliation/CA state never mutates that baseline. No live DTO or API was introduced. The module-by-module [readiness matrix](finance-integration-readiness.md) describes proposed future boundaries only.

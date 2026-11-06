@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { ProcessManager } from '@/pages/Masters/ProcessManager';
 import { ActivityHistory } from '@/pages/ActivityHistory';
 import { SharedEntriesProvider } from '@/context/SharedEntriesContext';
@@ -41,7 +42,12 @@ import { CostingPage } from "@/pages/Costing/CostingPage";
 import { MastersPage } from "@/pages/Masters/MastersPage";
 import { FinanceQualityOverview } from "@/pages/FinanceDashboard";
 import { AccountingPage } from '@/pages/Accounting';
+import { FinanceAccessProvider } from '@/context/FinanceAccessContext';
+import { FinanceRouteGuard } from '@/components/finance/FinanceRouteGuard';
+import { ERPNextFinanceDashboard } from '@/pages/ERPNextFinanceDashboard';
 import { SalesLayout, SalesDashboard, SalesLedgerPage, SalesDocumentsPage } from '@/pages/Sales/SalesWorkspace';
+
+const FinancePreviewRoutes = import.meta.env.DEV ? lazy(() => import('@/pages/FinancePreview/FinancePreviewRoutes')) : null;
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading, sessionError, retrySession } = useAuth();
@@ -49,7 +55,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   if (loading) return <p role="status" className="p-8">Restoring your session…</p>;
   if (sessionError) return <div className="space-y-3 p-8"><p role="alert">{sessionError}</p><button className="rounded border px-4 py-2" onClick={retrySession}>Retry</button></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (isQCRole(user.role) && location.pathname !== "/" && location.pathname !== "/sales" && location.pathname !== "/sales/returns" && !location.pathname.startsWith("/qc") && !location.pathname.startsWith("/job-cards")) return <Navigate to="/qc" replace />;
+  if (isQCRole(user.role) && location.pathname !== "/" && location.pathname !== "/sales" && location.pathname !== "/sales/returns" && location.pathname !== "/finance/erpnext" && !location.pathname.startsWith("/qc") && !location.pathname.startsWith("/job-cards")) return <Navigate to="/qc" replace />;
   return children;
 }
 
@@ -69,6 +75,7 @@ function AppRoutes() {
       >
         <Route path="/" element={user?.role === "accounts" ? <AccountingPage /> : <RoleDashboard operations={<Dashboard />} />} />
         <Route path="/finance" element={<AccountingPage />} />
+        <Route path="/finance/erpnext" element={<FinanceRouteGuard><ERPNextFinanceDashboard /></FinanceRouteGuard>} />
         <Route path="/finance/quality" element={user?.role==="accounts"?<FinanceQualityOverview/>:<Navigate to="/" replace/>} />
         <Route path="/qc" element={<QualityGuard><QualityPage /></QualityGuard>} />
         <Route path="/qc/inspections/:id" element={<QualityGuard><InspectionDetail /></QualityGuard>} />
@@ -112,11 +119,21 @@ function AppRoutes() {
 }
 
 export function App() {
+  const { pathname } = useLocation();
+  // Exact namespace boundary: preview never mounts live authentication or stores.
+  if (pathname === '/finance/preview' || pathname.startsWith('/finance/preview/')) {
+    if (import.meta.env.DEV && import.meta.env.VITE_FINANCE_UI_PREVIEW === 'true' && FinancePreviewRoutes) {
+      return <Suspense fallback={<p role="status" className="p-8">Loading Finance preview…</p>}><FinancePreviewRoutes /></Suspense>;
+    }
+    return <main className="p-8"><h1 className="text-xl font-semibold">Finance preview unavailable</h1><p className="mt-3">This demonstration is available only in an explicitly enabled local development session.</p><a className="mt-4 inline-block underline" href="/login">Return to Navapack login</a></main>;
+  }
   return (
     <AuthProvider>
+      <FinanceAccessProvider>
       <SharedEntriesProvider>
       <SalesOrdersProvider><ModelsProvider><CommercialProvider><QualityProvider><InventoryProvider><CostingProvider><QuotationsProvider><JobCardsProvider><InvoicesProvider><AppRoutes /></InvoicesProvider></JobCardsProvider></QuotationsProvider></CostingProvider></InventoryProvider></QualityProvider></CommercialProvider></ModelsProvider></SalesOrdersProvider>
       </SharedEntriesProvider>
+      </FinanceAccessProvider>
     </AuthProvider>
   );
 }

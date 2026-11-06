@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import { writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+export async function checkAdministrationBrowser({ evaluate,wait,cdp,evidence }) {
+ const click=text=>evaluate(`[...document.querySelectorAll('button,a')].find(b=>b.textContent===${JSON.stringify(text)}).click()`);
+ const field=label=>`[...document.querySelectorAll('main label,dialog label')].find(l=>l.querySelector('span')?.textContent===${JSON.stringify(label)})`;
+ const fill=(label,value)=>evaluate(`(()=>{const input=${field(label)}.querySelector('input,textarea');const proto=input.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(input,${JSON.stringify(value)});input.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+ const select=(label,value)=>evaluate(`(()=>{const input=${field(label)}.querySelector('select');input.value=${JSON.stringify(value)};input.dispatchEvent(new Event('change',{bubbles:true}))})()`);
+ const nav=async page=>{await evaluate(`(()=>{const link=document.querySelector('a[href="/finance/preview/${page}"]');link.scrollIntoView({block:'nearest'});link.click()})()`);await wait(`location.pathname==='/finance/preview/${page}'`);};
+ const capture=async name=>{await evaluate("document.querySelector('main').scrollTop=0;window.scrollTo(0,0);if(document.querySelector('dialog'))document.querySelector('dialog').scrollTop=0");await writeFile(join(evidence,`${name}.png`),Buffer.from((await cdp('Page.captureScreenshot',{captureBeyondViewport:!name.includes('audit-drawer')&&!name.endsWith('desktop')})).data,'base64'));};
+ const screenshotPair=async name=>{await cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});await capture(`${name}-desktop`);
+ const titles={'batch5-reconciliation':['Fictional bank statement','batch5-reconciliation-tables-desktop'],'batch5-opening-entry':['Account-wise opening scenario','batch5-opening-entry-rows-desktop'],'batch5-administration':['Finance readiness and activation prerequisites','batch5-administration-readiness-desktop']};
+ if(titles[name]) {const [title,file]=titles[name];await evaluate(`(()=>{const main=document.querySelector('main');const heading=[...document.querySelectorAll('h2')].find(h=>h.textContent===${JSON.stringify(title)});main.scrollTop+=heading.getBoundingClientRect().top-main.getBoundingClientRect().top-24})()`);await writeFile(join(evidence,`${file}.png`),Buffer.from((await cdp('Page.captureScreenshot',{captureBeyondViewport:false})).data,'base64'));}
+ await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});assert.ok(await evaluate('document.documentElement.scrollWidth<=window.innerWidth'),`${name}: mobile overflow`);await capture(`${name}-mobile`);
+ if(name==='batch5-administration'){await evaluate("[...document.querySelectorAll('h2')].find(h=>h.textContent==='Finance readiness and activation prerequisites').scrollIntoView({block:'start'})");await writeFile(join(evidence,'batch5-administration-readiness-mobile.png'),Buffer.from((await cdp('Page.captureScreenshot',{captureBeyondViewport:false})).data,'base64'));}
+ };
+ await nav('reconciliation');await wait("document.body.textContent.includes('UGX 100,650')");
+ assert.ok(await evaluate("document.body.textContent.includes('UGX 100,250')&&document.body.textContent.includes('UGX 400')"));
+ await click('Match selected rows locally');await wait("document.querySelector('[role=alert]')?.textContent.includes('equal signed amounts')");
+ await evaluate("document.querySelector('input[aria-label=\"Select statement FICTIONAL-STMT-01\"]').click()");
+ await evaluate("document.querySelector('input[aria-label=\"Select ledger DEMO-REPORT-PAYMENT-01\"]').click()");
+ await click('Match selected rows locally');await wait("document.querySelector('[role=alert]')?.textContent.includes('equal signed amounts')");
+ await evaluate("document.querySelector('input[aria-label=\"Select ledger DEMO-REPORT-RECEIPT-01\"]').click()");
+ await click('Match selected rows locally');await wait("document.body.textContent.includes('Locally matched pairs: 1')");
+ await evaluate("document.querySelector('button[aria-label=\"Match suggestion DEMO-STMT-PAYMENT\"]').click()");await wait("document.body.textContent.includes('Locally matched pairs: 2')");
+ assert.ok(await evaluate("document.body.textContent.includes('Unmatched statement rows: 1')&&document.body.textContent.includes('Unmatched ledger rows: 1')&&document.body.textContent.includes('Unresolved exceptions')"));
+ await evaluate("document.querySelector('button[aria-label=\"Unmatch DEMO-STMT-RECEIPT\"]').click()");await wait("document.body.textContent.includes('Locally matched pairs: 1')");
+ await evaluate("document.querySelector('button[aria-label=\"Match suggestion DEMO-STMT-RECEIPT\"]').click()");await wait("document.body.textContent.includes('Locally matched pairs: 2')");
+ await fill('Minimum absolute amount','1500');await wait("[...document.querySelectorAll('tbody')][0].rows.length===1");assert.ok(await evaluate("document.body.textContent.includes('Statement closingUGX 100,650')"));await fill('Minimum absolute amount','');
+ await fill('Statement from','2026-11-05');await wait("[...document.querySelectorAll('tbody')][0].rows.length===1");await fill('Statement from','2026-11-01');
+ await fill('Maximum absolute amount','-1');await wait("document.querySelector('[role=alert]')?.textContent.includes('valid dates')");await fill('Maximum absolute amount','');
+ await select('Reconciliation bank','DEMO-BANK-UNMAPPED');await wait("document.body.textContent.includes('no ledger mapping')");assert.ok(await evaluate("document.body.textContent.includes('Unresolved exceptions')"));await select('Reconciliation bank','DEMO-BANK-REPORT');
+ await screenshotPair('batch5-reconciliation');
+ await nav('opening-balances');await wait("document.body.textContent.includes('UGX 120,000')");
+ await fill('Opening debit 1','99999');await click('Review and correction');assert.ok(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Prepare demo review').disabled"));await click('Opening entry');await click('Save opening draft');await wait("document.querySelector('[role=alert]')?.textContent.includes('must balance')");await fill('Opening debit 1','100000');
+ await fill('Customer opening amount','500');await click('Save opening draft');await wait("document.querySelector('[role=alert]')?.textContent.includes('reconcile exactly')");await fill('Customer opening amount','0');
+ await click('Add opening account');await select('Opening account 4','ar');await fill('Opening debit 4','500');await fill('Customer opening amount','500');
+ await click('Add opening account');await select('Opening account 5','ap');await fill('Opening credit 5','300');await fill('Supplier opening amount','300');await fill('Opening credit 3','120200');
+ await click('Save opening draft');await wait("document.body.textContent.includes('revision 1')");await wait("document.body.textContent.includes('UGX 120,500')");
+ await screenshotPair('batch5-opening-entry');
+ await click('Review and correction');await click('Prepare demo review');await wait("document.querySelector('[role=alert]')?.textContent.includes('maker cannot')");
+ await select('Independent demo reviewer','DEMO-VIEWER');await click('Prepare demo review');await wait("document.querySelector('[role=alert]')?.textContent.includes('eligible')");
+ await select('Independent demo reviewer','DEMO-CHECKER');await click('Prepare demo review');await wait("document.body.textContent.includes('Awaiting demo review')");
+ await click('Opening entry');assert.ok(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Save opening draft').disabled"));
+ await click('Review and correction');await fill('Local correction reason','Fictional review correction');await click('Preview correction request');await wait("document.querySelector('[role=alert]')?.textContent.includes('maker cannot')");
+ await select('Correction actor','DEMO-CHECKER');await click('Preview correction request');await wait("document.body.textContent.includes('Correction requested')");await screenshotPair('batch5-opening-review');
+ await click('Opening entry');await fill('Opening debit 1','100001');await fill('Opening credit 3','120201');await click('Save opening draft');await wait("document.body.textContent.includes('revision 2')");
+ await select('Opening fiscal year','2027');await wait("document.querySelector('input')?.value==='0'");await click('Save opening draft');await wait("document.querySelector('[role=alert]')?.textContent.includes('positive')");await select('Opening fiscal year','2026');await wait("document.body.textContent.includes('revision 2')");
+ await select('Opening company','DEMO-SANDBOX');await wait("document.querySelector('input')?.value==='0'");await select('Opening company','DEMO-COMPANY');await wait("document.body.textContent.includes('revision 2')");
+ await nav('administration');await wait("document.body.textContent.includes('Demonstration permission matrix')");assert.ok(await evaluate("document.body.textContent.includes('2 unmatched rows; difference UGX 400')"));
+ await fill('CA demo review notes','Fictional local review notes only');await evaluate("[...document.querySelectorAll('main input[type=checkbox]')].forEach(i=>i.click())");await click('Save local CA configuration');await wait("document.body.textContent.includes('4 / 4 marked reviewed; no approval')");
+ assert.ok(await evaluate("document.body.textContent.includes('Activation remains blocked even when every local checklist item is checked')"));await screenshotPair('batch5-administration');
+ await click('View all local audit events');await wait("document.querySelector('dialog')?.open");assert.ok(await evaluate("document.querySelector('dialog').textContent.includes('Local match')&&document.querySelector('dialog').textContent.includes('correction')"));await capture('batch5-audit-drawer-mobile');await cdp('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await wait("!document.querySelector('dialog')");
+ for(const page of ['reconciliation','opening-balances','administration']) {await nav(page);for(const label of ['Post balances','Approve opening balances','Activate Finance','Synchronize bank','Financial export'])assert.ok(await evaluate(`[...document.querySelectorAll('button')].some(b=>b.textContent.startsWith('${label}')&&b.disabled)`));}
+ await nav('reconciliation');await wait("document.body.textContent.includes('Locally matched pairs: 2')");await nav('opening-balances');await wait("document.body.textContent.includes('revision 2')");
+ await nav('balance-sheet');await wait("document.body.textContent.includes('UGX 134,500')");await nav('ledger');await select('Ledger account','bank');await wait("document.body.textContent.includes('UGX 100,250')");
+ await click('Reset preview');await nav('reconciliation');await wait("document.body.textContent.includes('Locally matched pairs: 0')");await nav('opening-balances');await wait("document.body.textContent.includes('revision 0')&&document.body.textContent.includes('UGX 120,000')");await nav('administration');await wait("document.body.textContent.includes('0 / 4 marked reviewed')");
+ console.log('PASS: Batch 5 bank manual/suggested match/unmatch, no mismatch or false reconciliation, filters and retained totals; balanced openings/control subledgers, separate company/year scenarios, independent maker/checker/role/correction/edit-lock restrictions, revision retention; CA checklist never activates, role/company matrix and audit history; reports unchanged; reset, disabled financial actions, desktop/mobile evidence and no overflow.');
+}
