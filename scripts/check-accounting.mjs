@@ -18,7 +18,7 @@ const server=await createServer({configFile:false,plugins:[{name:'accounting-scr
     .replace("useState('Overview')",`useState(${JSON.stringify(tab)})`);
 }}],resolve:{alias:{'@':fileURLToPath(new URL('../src',import.meta.url))}},optimizeDeps:{noDiscovery:true},server:{middlewareMode:true,hmr:false},appType:'custom'});
 try{
-  for(const [screen,expected] of [['Overview','Net profit / loss'],['Analysis','Analysis home'],['Profitability','Customer profitability'],['Orders','Uninvoiced orders'],['Transactions','Post a financial transaction'],['Apply Advances','Apply an existing receipt / payment'],['Purchase Bills','Supplier bill from saved purchase'],['Ledgers','Items and prices for this party'],['Reports','Overall company'],['Inventory','Inventory valuation'],['Posting Queue','Capture existing operational records since cutover'],['Masters','Organise your books'],['Setup','LED account mapping']]){
+  for(const [screen,expected] of [['Connections','One connected accounting book'],['Overview','Net profit / loss'],['Analysis','Analysis home'],['Profitability','Customer profitability'],['Orders','Uninvoiced orders'],['Transactions','Post a financial transaction'],['Apply Advances','Apply an existing receipt / payment'],['Purchase Bills','Supplier bill from saved purchase'],['Ledgers','Items and prices for this party'],['Reports','Overall company'],['Inventory','Inventory valuation'],['Posting Queue','Capture existing operational records since cutover'],['Masters','Organise your books'],['Setup','LED account mapping']]){
     // Separate query IDs prevent fixture modules from sharing cached initial state.
     const {AccountingPage}=await server.ssrLoadModule('/src/pages/Accounting.tsx?screen='+encodeURIComponent(screen));
     const html=renderToStaticMarkup(React.createElement(AccountingPage));
@@ -50,7 +50,7 @@ try{
   assert.ok(adminList.includes('Edit ledger 6150'));assert.ok(adminList.includes('Delete ledger 6150'));assert.ok(adminList.includes('ERP-linked ledgers cannot be deleted'));
   const readOnlyList=renderToStaticMarkup(React.createElement(FinanceLedgerList,{...ledgerProps,canConfigure:false}));
   assert.ok(!readOnlyList.includes('Edit ledger 6150'));assert.ok(!readOnlyList.includes('Delete ledger 6150'));
-  console.log('PASS: all thirteen accounting sections render with configured API-shaped fixtures. Browser interaction, API transport and financial calculations are separate checks.');
+  console.log('PASS: all fourteen accounting sections render with configured API-shaped fixtures. Browser interaction, API transport and financial calculations are separate checks.');
 }finally{await server.close();}
 
 

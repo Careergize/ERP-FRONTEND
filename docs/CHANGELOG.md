@@ -393,3 +393,7 @@ Added Finance Masters for groups/subgroups, ledger creation/membership, voucher-
 ### 30 October 2026 — Finance errors
 
 Added an authenticated accounting schema-readiness guard with actionable HTTP 503 and readable frontend error messages in place of raw server HTML. Database migration remains an explicit server deployment step.
+
+## 5 November 2026
+- Added AccountERP navigation and Connected modules workspace using existing accounting books, operational screens and posting queue; retained /finance compatibility.
+

@@ -682,3 +682,8 @@ Verified: 55 SQLite API/regression tests, Django check/drift, frontend typecheck
 ### Finance server-error handling — 30 October 2026
 
 Accounting endpoints now return an actionable 503 if accounting migrations are missing, after checking access. Finance error messages show the HTTP status/request path and preserve JSON errors without dumping raw HTML. No automatic migration or database change is performed. 32 accounting tests, frontend typecheck/build and SSR/error-format checks pass, plus Django check/drift. Local accounting schema was found unmigrated; configured frontend targets a separate remote server whose schema state was not verified.
+
+## AccountERP — 5 November 2026
+
+Added /account-erp, role-filtered sidebar and dashboard entry, and Connected modules tab reusing existing Finance APIs and source posting. /finance remains compatible. Frontend build/typecheck and fourteen-section accounting SSR pass. No backend changes, live posting, deployment or browser interaction verified. Remaining six-module brief gaps are recorded in ACCOUNT_ERP_PLAN.md.
+

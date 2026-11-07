@@ -399,3 +399,6 @@ Implemented posted-journal company/customer detailed P&L API, stock/purchase sup
 ### Posted voucher PDF — 31 October 2026
 
 Implemented permission-checked read-only PDF download for posted accounting documents, including date-consistent balances and allocations. API/UI/layout checks pass; deployment and live download acceptance remain pending. No new migration or dependency.
+
+AccountERP (5 November 2026): frontend reuses existing adjacent Backend accounting integrations; no new endpoints. Full six-module gaps are in ACCOUNT_ERP_PLAN.md. Verify deployed source posting, permissions, cutover completeness and PostgreSQL concurrency before operational reliance.
+

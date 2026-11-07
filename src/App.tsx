@@ -68,6 +68,7 @@ function AppRoutes() {
         }
       >
         <Route path="/" element={user?.role === "accounts" ? <AccountingPage /> : <RoleDashboard operations={<Dashboard />} />} />
+        <Route path="/account-erp" element={<AccountingPage />} />
         <Route path="/finance" element={<AccountingPage />} />
         <Route path="/finance/quality" element={user?.role==="accounts"?<FinanceQualityOverview/>:<Navigate to="/" replace/>} />
         <Route path="/qc" element={<QualityGuard><QualityPage /></QualityGuard>} />
