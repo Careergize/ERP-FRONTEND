@@ -413,10 +413,9 @@ Implemented posted-journal company/customer detailed P&L API, stock/purchase sup
 
 Implemented permission-checked read-only PDF download for posted accounting documents, including date-consistent balances and allocations. API/UI/layout checks pass; deployment and live download acceptance remain pending. No new migration or dependency.
 
-<<<<<<< HEAD
 AccountERP (5 November 2026): frontend reuses existing adjacent Backend accounting integrations; no new endpoints. Full six-module gaps are in ACCOUNT_ERP_PLAN.md. Verify deployed source posting, permissions, cutover completeness and PostgreSQL concurrency before operational reliance.
 
-=======
+
 
 ## Finance integration planning after Batch 6 — 6 November 2026
 
@@ -428,4 +427,3 @@ is prepared for Careergize/Navapack-Finance. No live read adapter, secret provid
 posting, synchronization, activation or cutover is enabled. Cross-repository
 release checks require explicit backend and infrastructure roots. The static
 fictional demo requires separate host authentication and deployment approval.
->>>>>>> feature/finance-client-demo

@@ -103,12 +103,8 @@ export function AppShell() {
   const { pathname } = useLocation();
   const pendingSaves = useSharedEntriesPending();
   const { user, logout } = useAuth();
-<<<<<<< HEAD
-  const items = getNavItems(user);
-=======
   const finance = useFinanceAccess();
-  const items: NavItem[] = isQCRole(user?.role) ? [{ to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES }, ...QC_SECTIONS.map(([key, label]) => ({ to: `/qc/${key}`, label, icon: ClipboardList, roles: QC_VIEW_ROLES }))] : user?.role === "accounts" ? FINANCE_NAV_ITEMS : NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
->>>>>>> feature/finance-client-demo
+  const items = getNavItems(user);
   const groups = isQCRole(user?.role)
     ? [{ label: "Quality Control", items }, { label: "Sales", items: [] }]
     : NAV_GROUPS.map(group => ({
