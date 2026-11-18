@@ -28,7 +28,7 @@ export interface LoginResponse {
 }
 
 export async function loginRequest(credentials: LoginRequest): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>("/auth/login/", credentials);
+  const { data } = await api.post<LoginResponse>("/auth/login/", credentials, { timeout: 15000 });
   return data;
 }
 

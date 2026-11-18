@@ -22,15 +22,18 @@ export function Login({ finance = false }: { finance?: boolean }) {
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (submitting || success) return;
     setError("");
     if (!username.trim() || !password) {
       setError("Enter your username or email and password to continue.");
       usernameRef.current?.focus();
       return;
     }
+    setSubmitting(true);
     try {
       if (MOCK_LOGIN_ENABLED) {
         loginAsDemo(resolveDemoRole(username, password, demoRole, finance));
@@ -48,10 +51,12 @@ export function Login({ finance = false }: { finance?: boolean }) {
       setShake(true);
       usernameRef.current?.focus();
       window.setTimeout(() => setShake(false), 400);
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  if (loading && !success) return <p role="status" className="p-8">Checking your session…</p>;
+  if (loading && !submitting && !success) return <p role="status" className="p-8">Checking your session…</p>;
   if (user && !success) return <Navigate to="/" replace />;
   return (
     <main className="min-h-screen bg-surface lg:flex">
@@ -67,12 +72,12 @@ export function Login({ finance = false }: { finance?: boolean }) {
             {MOCK_LOGIN_ENABLED && <div><p className="-mt-2 text-xs text-slate-400">Demo mode: {finance ? 'finance@navapack.com' : 'admin@navapack.com'} / test@123</p>{!finance && <label className="text-xs text-slate-500">Demo role<select className="mt-1 block w-full rounded-lg border p-2" value={demoRole} onChange={e => setDemoRole(e.target.value as typeof demoRole)}><option value="admin">Admin</option><option value="accounts">Accounts / Finance</option><option value="qc_inspector">QC Inspector</option><option value="qc_supervisor">QC Supervisor</option><option value="project_manager">Project Manager</option><option value="production_manager">Production Manager</option><option value="store_keeper">Store Keeper</option></select></label>}</div>}
             <div className="flex items-center justify-between pt-1 text-sm"><label className="flex min-h-11 cursor-pointer items-center gap-2 text-slate-600"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-slate-300 accent-teal" /> Remember me</label><a href="mailto:support@navapack.com?subject=Password%20reset" className="font-medium text-blue transition hover:text-navy">Forgot password?</a></div>
             {error && <p role="alert" aria-live="polite" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700">{error}</p>}
-            <Button type="submit" loading={loading} success={success} disabled={loading || success}>Sign in</Button>
+            <Button type="submit" loading={submitting} success={success} disabled={submitting || success}>{submitting ? "Signing in…" : "Sign in"}</Button>
           </form>
           <Link className="mt-5 inline-block text-sm text-blue underline" to={finance?'/login':'/finance/login'}>{finance?'Operations login':'Separate Finance login'}</Link>
           <p className="mt-10 border-t border-slate-200 pt-5 text-xs leading-5 text-slate-400">Need access? Contact your department manager or Nava Pack administrator.</p>
         </div>
-        <footer className="mx-auto mt-auto flex w-full max-w-md justify-between pt-12 text-xs text-slate-400 lg:absolute lg:bottom-7 lg:right-14 lg:max-w-md xl:right-24"><span>© Nava Pack</span><span>v0.1.0 · Secure operations portal</span></footer>
+        <footer className="mx-auto mt-auto flex w-full max-w-md justify-between pt-12 text-xs text-slate-400"><span>© Nava Pack</span><span>v0.1.0 · Secure operations portal</span></footer>
       </section>
     </main>
   );
