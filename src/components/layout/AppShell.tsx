@@ -16,7 +16,7 @@ import {
   Bell,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import type { Role } from "@/types";
+import type { Role, User } from "@/types";
 import { SalesNavigation } from '@/pages/Sales/SalesNavigation';
 
 interface NavItem {
@@ -79,10 +79,30 @@ const NAV_GROUPS = [
   { label: "Finance & Tracking", routes: ["/account-erp", "/costing", "/track-trace"] },
 ];
 
+function getNavItems(user?: User | null): NavItem[] {
+  if (isQCRole(user?.role)) {
+    return [
+      { to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES },
+      ...QC_SECTIONS.map(([key, label]) => ({
+        to: `/qc/${key}`,
+        label,
+        icon: ClipboardList,
+        roles: QC_VIEW_ROLES,
+      })),
+    ];
+  }
+
+  if (user?.role === "accounts") {
+    return FINANCE_NAV_ITEMS;
+  }
+
+  return NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
+}
+
 export function AppShell() {
   const pendingSaves = useSharedEntriesPending();
   const { user, logout } = useAuth();
-  const items: NavItem[] = isQCRole(user?.role) ? [{ to: "/qc", label: "QC Dashboard", icon: LayoutDashboard, roles: QC_VIEW_ROLES }, ...QC_SECTIONS.map(([key, label]) => ({ to: `/qc/${key}`, label, icon: ClipboardList, roles: QC_VIEW_ROLES }))] : user?.role === "accounts" ? FINANCE_NAV_ITEMS : NAV_ITEMS.filter((item) => !user || item.roles.includes(user.role));
+  const items = getNavItems(user);
   const groups = isQCRole(user?.role)
     ? [{ label: "Quality Control", items }, { label: "Sales", items: [] }]
     : NAV_GROUPS.map(group => ({
