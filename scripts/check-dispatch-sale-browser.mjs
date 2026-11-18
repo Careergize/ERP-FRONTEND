@@ -17,7 +17,7 @@ const mocks={
  '@/lib/productionWorkflowApi':`export const workflowRequest=async()=>({customers:[],staff:[]});`,
  '@/lib/api':`export const api={get:async()=>{if(window.__failBalance)throw {response:{data:{detail:'Balance service unavailable'}}};return {data:{partyName:'Synthetic customer',balance:'125.50',reportingCurrency:'USD',asOf:'2026-10-31',pendingPostings:0,cashAccounts:[{code:'1100',name:'Cash'},{code:'1210',name:'Mobile money'}]}};}};`
 };
-const server=await createServer({configFile:false,resolve:{alias:[...Object.keys(mocks).map(key=>({find:key,replacement:'\0dispatch-mock:'+key})),{find:'@',replacement:fileURLToPath(new URL('../src',import.meta.url))}]},optimizeDeps:{include:['react','react-dom/client','react-router-dom','lucide-react']},server:{host:'127.0.0.1',port:0},plugins:[react(),{
+const server=await createServer({configFile:false,resolve:{alias:[...Object.keys(mocks).map(key=>({find:key,replacement:'\0dispatch-mock:'+key})),{find:'@',replacement:fileURLToPath(new URL('../src',import.meta.url))}]},optimizeDeps:{include:['react','react-dom/client','react-router-dom','lucide-react']},server:{host:'127.0.0.1',port:0,hmr:false},plugins:[react(),{
  name:'dispatch-sale-fixtures',enforce:'pre',
  resolveId(id){if(id.startsWith('\0dispatch-mock:'))return id;if(id in mocks)return '\0dispatch-mock:'+id;if(id==='/__dispatch-entry.tsx'||id==='/__dispatch-fixture')return '\0'+id;},
  load(id){
@@ -30,7 +30,7 @@ const server=await createServer({configFile:false,resolve:{alias:[...Object.keys
 let chrome,ws;const profile=await mkdtemp(join(tmpdir(),'dispatch-sale-browser-'));
 try{
  await server.listen();const url=server.resolvedUrls.local[0]+'__dispatch-check';
- chrome=spawn(process.env.CHROME_PATH||'C:/Users/server/AppData/Local/ms-playwright/chromium-1243/chrome-win64/chrome.exe',['--headless','--no-sandbox','--disable-gpu','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{windowsHide:true,stdio:['ignore','ignore','pipe']});
+ chrome=spawn(process.env.CHROME_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',['--headless','--no-sandbox','--disable-gpu','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{windowsHide:true,stdio:['ignore','ignore','pipe']});
  const endpoint=await new Promise((resolve,reject)=>{let logs='';const timer=setTimeout(()=>reject(new Error('Chromium startup timeout: '+logs)),15000);chrome.stderr.on('data',chunk=>{logs+=chunk;const match=logs.match(/DevTools listening on (ws:\/\/\S+)/);if(match){clearTimeout(timer);resolve(match[1]);}});chrome.on('error',reject);});
  ws=new WebSocket(endpoint);await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true});});
  let id=0;const pending=new Map();ws.addEventListener('message',event=>{const data=JSON.parse(String(event.data));if(data.id&&pending.has(data.id)){const {resolve,reject,timer}=pending.get(data.id);clearTimeout(timer);pending.delete(data.id);data.error?reject(new Error(data.error.message)):resolve(data.result);}});
@@ -63,6 +63,6 @@ try{
  assert.equal(await evaluate(`!!window.__dispatch`),false);
  console.log('PASS: Chromium approved-order dispatch displays ledger balance, locks rates, submits cash/mobile-money and credit choices, refreshes invoices, and blocks submission on balance-load failure. Synthetic context fixtures only; backend accounting is tested separately.');
 }finally{
- ws?.close();chrome?.kill();await server.close();await new Promise(r=>setTimeout(r,300));
+ ws?.close();chrome?.kill();server.httpServer?.closeAllConnections();await server.close();await new Promise(r=>setTimeout(r,300));
  assert.equal(resolve(dirname(profile)),resolve(tmpdir()));await rm(profile,{recursive:true,force:true,maxRetries:5,retryDelay:200}).catch(()=>{});
 }

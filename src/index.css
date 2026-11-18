@@ -5,6 +5,15 @@ body {
   @apply text-ink antialiased;
 }
 
+@media screen {
+  table thead,
+  table thead tr,
+  table thead :is(th, td),
+  #finance-workspace table thead :is(th, td) {
+    @apply border-emerald-800 bg-emerald-700 text-sm font-semibold text-white;
+  }
+}
+
 /* Sidebar navigation has its own scale, separate from page actions. */
 .sidebar-navigation {
   scrollbar-width: none;
@@ -163,4 +172,63 @@ button.sidebar-sign-out {
   .quotation-sheet thead { display: table-header-group; }
   .quotation-sheet tr { break-inside: avoid; }
   .quotation-sheet .overflow-x-auto { overflow: visible; }
+}
+
+[data-dashboard-theme="dark"] {
+  background: radial-gradient(circle at 72% 0%, #234738, #101e1a 70%);
+  color-scheme: dark;
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace {
+  --color-ink: #e2ede8;
+  --color-navy: #b9d9ff;
+  --color-gray-400: #a6bab2;
+  --color-gray-500: #aebfb8;
+  --color-gray-600: #bdccc6;
+  --color-gray-700: #d1ded8;
+  --color-gray-800: #e0ebe6;
+  --color-gray-900: #edf6f2;
+  --color-slate-500: #aebfb8;
+  --color-slate-600: #bdccc6;
+  --color-surface: #192923;
+  background: #111d19;
+  color: var(--color-ink);
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace :is(.bg-white, .bg-gray-50, .bg-slate-50, .finance-navigation, .finance-metric) {
+  background-color: #1b2c25;
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace .bg-navy {
+  background-color: #294a70;
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace :is(.rounded-card, .border-b, .finance-navigation, .finance-metric) {
+  border-color: #354b41;
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace > div:first-child :is(button, span.text-xs) {
+  color: #c2d7cd;
+}
+
+[data-dashboard-theme="dark"] .dashboard-workspace > div:first-child button:hover {
+  background: #263c32;
+}
+
+[data-dashboard-theme="dark"] #finance-workspace {
+  color: #e2ede8;
+}
+
+[data-dashboard-theme="dark"] #finance-workspace :is(label, .finance-metric > span, .finance-metric > small) {
+  color: #afc3b9;
+}
+
+[data-dashboard-theme="dark"] #finance-workspace :is(input:not([type="checkbox"]), select, table th, table tbody tr:hover) {
+  background: #23372e;
+  color: #e2ede8;
+  border-color: #354b41;
+}
+
+[data-dashboard-theme="dark"] #finance-workspace table td {
+  border-color: #354b41;
 }

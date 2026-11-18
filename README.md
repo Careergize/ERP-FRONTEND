@@ -10,7 +10,12 @@ Sales Orders now require a saved quotation. Production Manager/Admin approval cr
 
 Job Cards load exclusively from the active Django production workflow API. Empty or failed responses do not fall back to static cards; allocating a Job Card requires an API-backed Sales Order.
 
-Frontend workflows are being implemented and validated. Sales Orders are saved through the active adjacent Backend workflow API. Finished-goods dispatch retains its frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the active adjacent Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. The monorepo includes a separate [Django Phase 1 foundation](../backend/README.md); this frontend is not automatically integrated with it and production domain persistence is not verified.
+Frontend workflows are being implemented and validated. Sales Orders are saved through the configured Backend workflow API. Finished-goods dispatch retains its frontend session workflow. Raw Material and Procurement use confirmed database saves for real accounts through the configured Backend inventory API; demo inventory remains session-only. Other pages use static data or API attempts with mock fallbacks. This is the independent ERP-FRONTEND repository; [ERP-BACKEND](https://github.com/Careergize/ERP-BACKEND) owns Django and [Navapack-Finance](https://github.com/Careergize/Navapack-Finance) owns native infrastructure. Production persistence must be verified per workflow.
+
+Finance release checks and explicit cross-repository validation are described in
+[repository validation](docs/finance-repository-validation.md). The separately
+built, fictional static demo uses `npm run build:finance-demo`; hosting-level
+authentication is required before deployment. See [protected demo instructions](docs/finance-protected-static-demo.md).
 
 ## Stack and structure
 
@@ -40,12 +45,16 @@ Vite uses port 5173. Real Django login is the default; set
 are shown on the login screen only when demo mode is enabled. Demo identities remain
 local to the browser and never authenticate backend requests.
 
+<<<<<<< HEAD
 `VITE_API_BASE_URL` configures Axios and overrides the default for each mode.
 The development default is `http://127.0.0.1:8000/api`. If your shared `.env`
 sets a different API, set `VITE_API_BASE_URL=http://127.0.0.1:8000/api` in
 `.env.development.local` and restart Vite. The production default is
 `https://35.175.179.96/api`. Configure the intended API URL in Vercel and
 rebuild after changes. Do not put secrets in VITE variables.
+=======
+`VITE_API_BASE_URL` configures Axios. The default API is `https://api.navapacksolutions.com/api`. An explicit environment value overrides it; configure the intended API URL in Vercel and rebuild after changes. Backend availability/CORS must be verified separately. Do not put secrets in VITE variables.
+>>>>>>> feature/finance-client-demo
 
 ```powershell
 npm run build

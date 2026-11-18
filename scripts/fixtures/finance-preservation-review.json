@@ -1,0 +1,1502 @@
+{
+  "purpose": "Reviewed repository split and test-only fixture corrections; no operational production logic changed.",
+  "changed": [
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "backend/config/settings.py",
+      "path": "backend/config/settings.py",
+      "old_sha256": "601c4246a8d4f95c744d8cc7585607e6b3d2bfcf1b796a02b2e45c8d51f852a3",
+      "sha256": "9942dce163201ad95a65e38b5df43c02893dccb02a4b93298b81369219f11a4a",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "backend/erp/test_baseline_characterization.py",
+      "path": "backend/erp/test_baseline_characterization.py",
+      "old_sha256": "450b3c9bd9ee0006c6fae65b13c1800fca1be53a24ce728232a1d3bed6f43fb9",
+      "sha256": "2ca5e79d035ccef07aecad058ab4cad28111bce2f0debb95c9c647f1aa92a0ac",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "backend/finance_gateway/tests.py",
+      "path": "backend/finance_gateway/tests.py",
+      "old_sha256": "119ce0755552a184e399d95c9d78e84a09883f4a3d3eafe4ca9f9e9d01700403",
+      "sha256": "facbef49809e3f4111d9951862d211d8ea7b6ebe28159fc1d68cb44f3a5bcc8d",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "backend/finance_gateway/urls.py",
+      "path": "backend/finance_gateway/urls.py",
+      "old_sha256": "201fd7d73eec9f97f91853e0dd98efd890dfa283ef9ed8ace329a706784d4b2d",
+      "sha256": "beacb451596125ce8af471f7ab37f9568795da7160f3877c4826693280541cc7",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/.gitignore",
+      "path": "finance/docker/.gitignore",
+      "old_sha256": "7d3f90b6bafd8edcdd50348d9685dc394f47328fdd1120a124d7e2dfd838fa67",
+      "sha256": "c6e2897f37a9af9b37b95f16ff9da33e82d5b858a193c642fc41048a0d708195",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/Phase1A.ps1",
+      "path": "finance/docker/Phase1A.ps1",
+      "old_sha256": "4bcf1e00818d0afc5254c3d19917484613b9ea797d4ee16321dc43f7ac66408a",
+      "sha256": "f369bd97ef0c9e476d9afacbc177ec3a66feb68287b1ff91ebc9c037368dc87a",
+      "reason": "Approved foundation, repository rules/test portability or verified test-fixture correction"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.dockerignore",
+      "path": "finance/vendor/frappe_docker/.dockerignore",
+      "old_sha256": "567810df3b1dc534447e38ee45f57936a9ec5a530f573290e15dfb9328917a6f",
+      "sha256": "567810df3b1dc534447e38ee45f57936a9ec5a530f573290e15dfb9328917a6f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.editorconfig",
+      "path": "finance/vendor/frappe_docker/.editorconfig",
+      "old_sha256": "f8844ad1f76c4efd3a91c249810fd2bdd72368d13c9f5eeac17b29a1a7559377",
+      "sha256": "f8844ad1f76c4efd3a91c249810fd2bdd72368d13c9f5eeac17b29a1a7559377",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.gitattributes",
+      "path": "finance/vendor/frappe_docker/.gitattributes",
+      "old_sha256": "1df84947e0d933c53fe759123bcf4074fcb674edacd7d3d6de0958311c1e7d4b",
+      "sha256": "1df84947e0d933c53fe759123bcf4074fcb674edacd7d3d6de0958311c1e7d4b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.gitignore",
+      "path": "finance/vendor/frappe_docker/.gitignore",
+      "old_sha256": "e08af65e0c9a473ac1c9d3f1face8e2da29be365ede11aee6ee31231f0f98ff0",
+      "sha256": "e08af65e0c9a473ac1c9d3f1face8e2da29be365ede11aee6ee31231f0f98ff0",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.hadolint.yaml",
+      "path": "finance/vendor/frappe_docker/.hadolint.yaml",
+      "old_sha256": "480a3271ce9b1ad72a5791c62c727293f790d5cee7430f6fa470b8157e77169f",
+      "sha256": "480a3271ce9b1ad72a5791c62c727293f790d5cee7430f6fa470b8157e77169f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.pre-commit-config.yaml",
+      "path": "finance/vendor/frappe_docker/.pre-commit-config.yaml",
+      "old_sha256": "f97b6e84144d915b15a773ee8b2688bc90f80129e0f29fdaac4e09f1e7f5b8af",
+      "sha256": "f97b6e84144d915b15a773ee8b2688bc90f80129e0f29fdaac4e09f1e7f5b8af",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.shellcheckrc",
+      "path": "finance/vendor/frappe_docker/.shellcheckrc",
+      "old_sha256": "4d6a3f0f67cf63d7cdd1567814f15e6e83ec52fd39c411a302c1369de97a8381",
+      "sha256": "4d6a3f0f67cf63d7cdd1567814f15e6e83ec52fd39c411a302c1369de97a8381",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/CODE_OF_CONDUCT.md",
+      "path": "finance/vendor/frappe_docker/CODE_OF_CONDUCT.md",
+      "old_sha256": "00ec16979076b060b0c6fcc3ce58230f9c4e4300be032bb49c73d95e6816af1d",
+      "sha256": "00ec16979076b060b0c6fcc3ce58230f9c4e4300be032bb49c73d95e6816af1d",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/compose.yaml",
+      "path": "finance/vendor/frappe_docker/compose.yaml",
+      "old_sha256": "f2d380dd4343886f53613b428e5a94c947934975c0b2c0268928e828c4a50c69",
+      "sha256": "f2d380dd4343886f53613b428e5a94c947934975c0b2c0268928e828c4a50c69",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/CONTRIBUTING.md",
+      "path": "finance/vendor/frappe_docker/CONTRIBUTING.md",
+      "old_sha256": "8e75db43b6c8b5000702fa0c6544431153f1649c276f08e025434a11a201f6d9",
+      "sha256": "8e75db43b6c8b5000702fa0c6544431153f1649c276f08e025434a11a201f6d9",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docker-bake.hcl",
+      "path": "finance/vendor/frappe_docker/docker-bake.hcl",
+      "old_sha256": "799ac80ff656ed76623f411c65c5ed5e9d59502441d92458c0099a9689ffae0f",
+      "sha256": "799ac80ff656ed76623f411c65c5ed5e9d59502441d92458c0099a9689ffae0f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/example.env",
+      "path": "finance/vendor/frappe_docker/example.env",
+      "old_sha256": "972c98d85572b3ecd55e944ed83bfd13cd13b66cfbd8f2321102cb904e87d242",
+      "sha256": "972c98d85572b3ecd55e944ed83bfd13cd13b66cfbd8f2321102cb904e87d242",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/install_x11_deps.sh",
+      "path": "finance/vendor/frappe_docker/install_x11_deps.sh",
+      "old_sha256": "e040060ad5dc1c89268af42b6c5681140ebca71919a8a1d00754592cdc8ad38c",
+      "sha256": "e040060ad5dc1c89268af42b6c5681140ebca71919a8a1d00754592cdc8ad38c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/LICENSE",
+      "path": "finance/vendor/frappe_docker/LICENSE",
+      "old_sha256": "59195e706321775018254f76c897f7467785f91676b09f3768cc3d4a3bb93044",
+      "sha256": "59195e706321775018254f76c897f7467785f91676b09f3768cc3d4a3bb93044",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/MAINTAINERS.md",
+      "path": "finance/vendor/frappe_docker/MAINTAINERS.md",
+      "old_sha256": "d86c460a5cb71c746d3435f7f06a86181fe928435a1e12627f9b844aa8509de5",
+      "sha256": "d86c460a5cb71c746d3435f7f06a86181fe928435a1e12627f9b844aa8509de5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/pwd.yml",
+      "path": "finance/vendor/frappe_docker/pwd.yml",
+      "old_sha256": "376eef9733c3eb93c43e46954cc5129158121beae2cf0db3bc61babf83c51b26",
+      "sha256": "376eef9733c3eb93c43e46954cc5129158121beae2cf0db3bc61babf83c51b26",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/README.md",
+      "path": "finance/vendor/frappe_docker/README.md",
+      "old_sha256": "d181db1254beec2fb1a2566ec13fb605413e179fdeac2d63f788c2d989a0eacc",
+      "sha256": "d181db1254beec2fb1a2566ec13fb605413e179fdeac2d63f788c2d989a0eacc",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/requirements-test.txt",
+      "path": "finance/vendor/frappe_docker/requirements-test.txt",
+      "old_sha256": "a51bf3eba4220a8716d7830322c44825a5d4ac081a78fdba353e43b69f2e721f",
+      "sha256": "a51bf3eba4220a8716d7830322c44825a5d4ac081a78fdba353e43b69f2e721f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/setup.cfg",
+      "path": "finance/vendor/frappe_docker/setup.cfg",
+      "old_sha256": "1e157b567b52aa38b70c777372e0e5d1fc3fbb2d65a69a36a1e64cb83fb4d927",
+      "sha256": "1e157b567b52aa38b70c777372e0e5d1fc3fbb2d65a69a36a1e64cb83fb4d927",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/dependabot.yml",
+      "path": "finance/vendor/frappe_docker/.github/dependabot.yml",
+      "old_sha256": "44933e3a96a7a183f671a53cd86c89b7f03c99cb2ee639595c6b1d222b64e793",
+      "sha256": "44933e3a96a7a183f671a53cd86c89b7f03c99cb2ee639595c6b1d222b64e793",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/image-size-policy.json",
+      "path": "finance/vendor/frappe_docker/.github/image-size-policy.json",
+      "old_sha256": "dc3d47452642f1fd16078b8f76fd6f3660f66c7a266316201b5f90fdacc7c91d",
+      "sha256": "dc3d47452642f1fd16078b8f76fd6f3660f66c7a266316201b5f90fdacc7c91d",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/PULL_REQUEST_TEMPLATE.md",
+      "path": "finance/vendor/frappe_docker/.github/PULL_REQUEST_TEMPLATE.md",
+      "old_sha256": "9839a405185e6ab2aa6c42d9ed274ff9bd3589dddd268a51ce92fdfbcadc89bd",
+      "sha256": "9839a405185e6ab2aa6c42d9ed274ff9bd3589dddd268a51ce92fdfbcadc89bd",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/ISSUE_TEMPLATE/bug_report.md",
+      "path": "finance/vendor/frappe_docker/.github/ISSUE_TEMPLATE/bug_report.md",
+      "old_sha256": "ec58cb94c710f83cef07809c482288989815e0e404d9d0e7c25ee0a787f3f6e4",
+      "sha256": "ec58cb94c710f83cef07809c482288989815e0e404d9d0e7c25ee0a787f3f6e4",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/ISSUE_TEMPLATE/feature_request.md",
+      "path": "finance/vendor/frappe_docker/.github/ISSUE_TEMPLATE/feature_request.md",
+      "old_sha256": "be6ed5dec8d2c3f5f16b1d660768a401adc5674dbf6e4438c5869d1a4c360a14",
+      "sha256": "be6ed5dec8d2c3f5f16b1d660768a401adc5674dbf6e4438c5869d1a4c360a14",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/ISSUE_TEMPLATE/question-about-using-frappe_docker.md",
+      "path": "finance/vendor/frappe_docker/.github/ISSUE_TEMPLATE/question-about-using-frappe_docker.md",
+      "old_sha256": "76c7ea5d7f51a3002055e2f4376d5f5ab8cbcd274f25b3e1c2441ac6558e8b51",
+      "sha256": "76c7ea5d7f51a3002055e2f4376d5f5ab8cbcd274f25b3e1c2441ac6558e8b51",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/get_latest_tags.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/get_latest_tags.py",
+      "old_sha256": "a78925dc60cd482dbfca3b2965009301eea00704b87ab5cba6523e7d95c491c7",
+      "sha256": "a78925dc60cd482dbfca3b2965009301eea00704b87ab5cba6523e7d95c491c7",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/image_sizes.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/image_sizes.py",
+      "old_sha256": "4073212b1dbbe74f60be0739f0034aa7c05eb9205a95ee5277be3eda0632329f",
+      "sha256": "4073212b1dbbe74f60be0739f0034aa7c05eb9205a95ee5277be3eda0632329f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/test_image_sizes.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/test_image_sizes.py",
+      "old_sha256": "c7ae55cab3a4c42d116839ddcb5f9766f734577fa8ccb16fecf38975742ef130",
+      "sha256": "c7ae55cab3a4c42d116839ddcb5f9766f734577fa8ccb16fecf38975742ef130",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/update_example_env.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/update_example_env.py",
+      "old_sha256": "6c20db9cb5e179190734261aafa59ec346c1ed9530c755999eedd2e8e1f62a47",
+      "sha256": "6c20db9cb5e179190734261aafa59ec346c1ed9530c755999eedd2e8e1f62a47",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/update_pwd.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/update_pwd.py",
+      "old_sha256": "b811677c54094274cf42a70bba654d9ff1346fec4bd5b8a3842bd1211216d558",
+      "sha256": "b811677c54094274cf42a70bba654d9ff1346fec4bd5b8a3842bd1211216d558",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/scripts/validate_compose.py",
+      "path": "finance/vendor/frappe_docker/.github/scripts/validate_compose.py",
+      "old_sha256": "59fef99508d84fc8f654b3ce3597636fa2c0acee8cc25aa5ce575951c10ab316",
+      "sha256": "59fef99508d84fc8f654b3ce3597636fa2c0acee8cc25aa5ce575951c10ab316",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/app-build-image.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/app-build-image.yml",
+      "old_sha256": "b50596bed094e62158bf72f33008d53a8c90ec71426b800ae8af6a84f190d301",
+      "sha256": "b50596bed094e62158bf72f33008d53a8c90ec71426b800ae8af6a84f190d301",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/build_develop.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/build_develop.yml",
+      "old_sha256": "48e27755b91ef413eb70659b566d53d01a71e0323a6aa53cc701895093e7bc5f",
+      "sha256": "48e27755b91ef413eb70659b566d53d01a71e0323a6aa53cc701895093e7bc5f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/build_stable.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/build_stable.yml",
+      "old_sha256": "14b63b39f9e568c5af2dfd3f600631a72c8e460e765e5a1f8237c764a14a7107",
+      "sha256": "14b63b39f9e568c5af2dfd3f600631a72c8e460e765e5a1f8237c764a14a7107",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/core-build-bench.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/core-build-bench.yml",
+      "old_sha256": "d127c96f298d5388dfc180ce6da40610c3eeb296a8da0897000a33bfa424505e",
+      "sha256": "d127c96f298d5388dfc180ce6da40610c3eeb296a8da0897000a33bfa424505e",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/core-build-develop.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/core-build-develop.yml",
+      "old_sha256": "85a71e5b79af0e602e5bfac689965a0249df989595c5751e247a36ab466868c5",
+      "sha256": "85a71e5b79af0e602e5bfac689965a0249df989595c5751e247a36ab466868c5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/core-build-stable.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/core-build-stable.yml",
+      "old_sha256": "977db8eda31890d10afe2ce6f3daa34df09331ccc60b25435b822d7e1caeec2e",
+      "sha256": "977db8eda31890d10afe2ce6f3daa34df09331ccc60b25435b822d7e1caeec2e",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/core-build-test-images.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/core-build-test-images.yml",
+      "old_sha256": "c5b6a947cb4d72840f1303988a76631b062666e2439d4067d3a4b9d0fb2b232a",
+      "sha256": "c5b6a947cb4d72840f1303988a76631b062666e2439d4067d3a4b9d0fb2b232a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/core-publish-images.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/core-publish-images.yml",
+      "old_sha256": "c2a7616be3b151a2cad43f8a81244df34d8a6db6e7df8eb8698d60ceca08815d",
+      "sha256": "c2a7616be3b151a2cad43f8a81244df34d8a6db6e7df8eb8698d60ceca08815d",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/docs-publish-site.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/docs-publish-site.yml",
+      "old_sha256": "eabbc57c1505159a1584e53d35ac1e62d7f6e0b9b8c1ec22bd3366570d215002",
+      "sha256": "eabbc57c1505159a1584e53d35ac1e62d7f6e0b9b8c1ec22bd3366570d215002",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/lint.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/lint.yml",
+      "old_sha256": "2616516e2f9855bfda7b6479b4edec064353f1365bd5a0d31fe446a1814ca351",
+      "sha256": "2616516e2f9855bfda7b6479b4edec064353f1365bd5a0d31fe446a1814ca351",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.github/workflows/stale.yml",
+      "path": "finance/vendor/frappe_docker/.github/workflows/stale.yml",
+      "old_sha256": "331bf36f788965ef3f63a6fb4bef7053c45bd1d96ffd4049729fb58cae039b4f",
+      "sha256": "331bf36f788965ef3f63a6fb4bef7053c45bd1d96ffd4049729fb58cae039b4f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/.vscode/extensions.json",
+      "path": "finance/vendor/frappe_docker/.vscode/extensions.json",
+      "old_sha256": "9805e7addb3e4f3c4bf0c869bbd375212dda9a291cf53d33d4157eb6f32a4ed0",
+      "sha256": "9805e7addb3e4f3c4bf0c869bbd375212dda9a291cf53d33d4157eb6f32a4ed0",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/devcontainer-example/devcontainer.json",
+      "path": "finance/vendor/frappe_docker/devcontainer-example/devcontainer.json",
+      "old_sha256": "9636a9423d970164fd2aa70c8984f3a84457043c0ec0c55e96ca4b920a621a74",
+      "sha256": "9636a9423d970164fd2aa70c8984f3a84457043c0ec0c55e96ca4b920a621a74",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/devcontainer-example/docker-compose.yml",
+      "path": "finance/vendor/frappe_docker/devcontainer-example/docker-compose.yml",
+      "old_sha256": "dced219cf645d89c268c1b9e2ccc39cf2dfafb0b5499555b16c990639a2bbe88",
+      "sha256": "dced219cf645d89c268c1b9e2ccc39cf2dfafb0b5499555b16c990639a2bbe88",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/development/apps-example.json",
+      "path": "finance/vendor/frappe_docker/development/apps-example.json",
+      "old_sha256": "2d3fb6b8160250ca9659e17816c01e4334aa27f441318e382ec2fb7a42ef7694",
+      "sha256": "2d3fb6b8160250ca9659e17816c01e4334aa27f441318e382ec2fb7a42ef7694",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/development/installer.py",
+      "path": "finance/vendor/frappe_docker/development/installer.py",
+      "old_sha256": "9a2bc5bc5ec40f8f82dd6fcdf965b35a69e699466206c8e34cd1cd1fdd41ab60",
+      "sha256": "9a2bc5bc5ec40f8f82dd6fcdf965b35a69e699466206c8e34cd1cd1fdd41ab60",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/development/vscode-example/launch.json",
+      "path": "finance/vendor/frappe_docker/development/vscode-example/launch.json",
+      "old_sha256": "b6d9f91bbd5a7fe7e93fa47b3d67b7b738d11d270334ad5d643a77441b743bab",
+      "sha256": "b6d9f91bbd5a7fe7e93fa47b3d67b7b738d11d270334ad5d643a77441b743bab",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/development/vscode-example/settings.json",
+      "path": "finance/vendor/frappe_docker/development/vscode-example/settings.json",
+      "old_sha256": "78b83ec80b5bc9272f3f007c79fa5aec7da52a0d40f092df77ac868e918b6309",
+      "sha256": "78b83ec80b5bc9272f3f007c79fa5aec7da52a0d40f092df77ac868e918b6309",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/development/vscode-example/tasks.json",
+      "path": "finance/vendor/frappe_docker/development/vscode-example/tasks.json",
+      "old_sha256": "3ad0248af758ffef1236f4dc23569be801512f3063514beda9057e1aee8021c8",
+      "sha256": "3ad0248af758ffef1236f4dc23569be801512f3063514beda9057e1aee8021c8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/getting-started.md",
+      "path": "finance/vendor/frappe_docker/docs/getting-started.md",
+      "old_sha256": "3b0a09109e421e66d14c31a4d41c3c65f83854a7311f6dd13fe8814afccdf0ab",
+      "sha256": "3b0a09109e421e66d14c31a4d41c3c65f83854a7311f6dd13fe8814afccdf0ab",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/index.md",
+      "path": "finance/vendor/frappe_docker/docs/index.md",
+      "old_sha256": "b6426a4c19109f63ea2a09887451444a9a95769e965c09fed231ce19f1b96bab",
+      "sha256": "b6426a4c19109f63ea2a09887451444a9a95769e965c09fed231ce19f1b96bab",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/package.json",
+      "path": "finance/vendor/frappe_docker/docs/package.json",
+      "old_sha256": "e1cb0519e194cd583921edbf3f405b024ba607e662bd5751c15f1edb42341603",
+      "sha256": "e1cb0519e194cd583921edbf3f405b024ba607e662bd5751c15f1edb42341603",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/pnpm-lock.yaml",
+      "path": "finance/vendor/frappe_docker/docs/pnpm-lock.yaml",
+      "old_sha256": "c2ffdb59287c13e4c5f2a757f6ed8f25925989163b40d0f3d5106e94076ea132",
+      "sha256": "c2ffdb59287c13e4c5f2a757f6ed8f25925989163b40d0f3d5106e94076ea132",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/pnpm-workspace.yaml",
+      "path": "finance/vendor/frappe_docker/docs/pnpm-workspace.yaml",
+      "old_sha256": "88db655f56949cb25df60d9bbbcb93de430dd5444d6e8979463d69721252ccd8",
+      "sha256": "88db655f56949cb25df60d9bbbcb93de430dd5444d6e8979463d69721252ccd8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/.vitepress/config.mts",
+      "path": "finance/vendor/frappe_docker/docs/.vitepress/config.mts",
+      "old_sha256": "6c320e25d6a6f82be2e5237b0c89e0ad12050400150e3ecc8b9ea8e866e31237",
+      "sha256": "6c320e25d6a6f82be2e5237b0c89e0ad12050400150e3ecc8b9ea8e866e31237",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/.vitepress/theme/index.ts",
+      "path": "finance/vendor/frappe_docker/docs/.vitepress/theme/index.ts",
+      "old_sha256": "0452f1b3954c8f0f23f4f77792ed00cc31d3b0c642970e9ddc8b63bf0c192da0",
+      "sha256": "0452f1b3954c8f0f23f4f77792ed00cc31d3b0c642970e9ddc8b63bf0c192da0",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/.vitepress/theme/PeleDiagram.vue",
+      "path": "finance/vendor/frappe_docker/docs/.vitepress/theme/PeleDiagram.vue",
+      "old_sha256": "e9414990c75fe400154a27b385bb53e5ca966ce33a6c36f5dff3539b016f9a32",
+      "sha256": "e9414990c75fe400154a27b385bb53e5ca966ce33a6c36f5dff3539b016f9a32",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/01-getting-started/00-introduction.md",
+      "path": "finance/vendor/frappe_docker/docs/01-getting-started/00-introduction.md",
+      "old_sha256": "9b8b2fa5518908bdac9f3ae6fc1488379952ce1b449f6f902017ed88c32cacaf",
+      "sha256": "9b8b2fa5518908bdac9f3ae6fc1488379952ce1b449f6f902017ed88c32cacaf",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/01-getting-started/01-choosing-a-deployment-method.md",
+      "path": "finance/vendor/frappe_docker/docs/01-getting-started/01-choosing-a-deployment-method.md",
+      "old_sha256": "1e13d78941cf791b417595a6fb9c8bbc8cd5ae58c3410155ad8964a1099f442a",
+      "sha256": "1e13d78941cf791b417595a6fb9c8bbc8cd5ae58c3410155ad8964a1099f442a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/01-getting-started/03-arm64.md",
+      "path": "finance/vendor/frappe_docker/docs/01-getting-started/03-arm64.md",
+      "old_sha256": "7c0b37a39a91e080f8e542c021b69252d479eedff2224bc0511bee12f331bf27",
+      "sha256": "7c0b37a39a91e080f8e542c021b69252d479eedff2224bc0511bee12f331bf27",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/01-getting-started/04-single-compose-setup.md",
+      "path": "finance/vendor/frappe_docker/docs/01-getting-started/04-single-compose-setup.md",
+      "old_sha256": "ff9ede3eb0c8531aaceee8185b429a5470002ab4462fff16c4fbb52e32526e3a",
+      "sha256": "ff9ede3eb0c8531aaceee8185b429a5470002ab4462fff16c4fbb52e32526e3a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/01-getting-started/index.md",
+      "path": "finance/vendor/frappe_docker/docs/01-getting-started/index.md",
+      "old_sha256": "9c72b6341aff693fafdea4502aa2e319cd51eeecc9cae222c34164d6af8afb9c",
+      "sha256": "9c72b6341aff693fafdea4502aa2e319cd51eeecc9cae222c34164d6af8afb9c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/01-overview.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/01-overview.md",
+      "old_sha256": "b419df65f766bb226bb1688c4df221b017ebf5b2087d98c3992a0f6d1f372bb7",
+      "sha256": "b419df65f766bb226bb1688c4df221b017ebf5b2087d98c3992a0f6d1f372bb7",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/02-build-setup.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/02-build-setup.md",
+      "old_sha256": "f3b9336c62e8ca475a64d3a82fdd568374d726517c4828dd60d3bbeeb4020e82",
+      "sha256": "f3b9336c62e8ca475a64d3a82fdd568374d726517c4828dd60d3bbeeb4020e82",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/03-start-setup.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/03-start-setup.md",
+      "old_sha256": "01a0337f867b6ab6f0601c6531b4ea948d2445afc8c071eefbfd6cbc6ca824d8",
+      "sha256": "01a0337f867b6ab6f0601c6531b4ea948d2445afc8c071eefbfd6cbc6ca824d8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/04-env-variables.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/04-env-variables.md",
+      "old_sha256": "ebb75a016ff273593ca96dc1e2c4dcc0b8b785af1535a28d313586c27206956f",
+      "sha256": "ebb75a016ff273593ca96dc1e2c4dcc0b8b785af1535a28d313586c27206956f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/05-overrides.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/05-overrides.md",
+      "old_sha256": "6afcbf40b9c5b11eeb2599d7437fdedd877c2a17fc26bce0c3f4d338a5384b70",
+      "sha256": "6afcbf40b9c5b11eeb2599d7437fdedd877c2a17fc26bce0c3f4d338a5384b70",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/06-setup-examples.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/06-setup-examples.md",
+      "old_sha256": "b4b41bed95ee558fc2a7f936ee164b24ef16929afabd913316ec929f73a9b4f6",
+      "sha256": "b4b41bed95ee558fc2a7f936ee164b24ef16929afabd913316ec929f73a9b4f6",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/07-single-server-example.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/07-single-server-example.md",
+      "old_sha256": "f80871305f7bd0480e13c96b8b2f78cd064947c1a9573c0d280e04bb80244acb",
+      "sha256": "f80871305f7bd0480e13c96b8b2f78cd064947c1a9573c0d280e04bb80244acb",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/08-single-server-nginxproxy-example.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/08-single-server-nginxproxy-example.md",
+      "old_sha256": "ed4b801bd4f7c7842c91f27c9f6396e85461640ddcc7597571c8c3e297a49054",
+      "sha256": "ed4b801bd4f7c7842c91f27c9f6396e85461640ddcc7597571c8c3e297a49054",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/02-setup/index.md",
+      "path": "finance/vendor/frappe_docker/docs/02-setup/index.md",
+      "old_sha256": "7dade1e135ea2860fc1eb5c2717c6033ebcab01d1187d72125a7a5c12a76f4ad",
+      "sha256": "7dade1e135ea2860fc1eb5c2717c6033ebcab01d1187d72125a7a5c12a76f4ad",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/04-operations/01-site-operations.md",
+      "path": "finance/vendor/frappe_docker/docs/04-operations/01-site-operations.md",
+      "old_sha256": "7b7310379a89b592d6c9b9f6925917c9ebd7a167b202cd7e51b6b9ec71f57400",
+      "sha256": "7b7310379a89b592d6c9b9f6925917c9ebd7a167b202cd7e51b6b9ec71f57400",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/04-operations/index.md",
+      "path": "finance/vendor/frappe_docker/docs/04-operations/index.md",
+      "old_sha256": "4ca1a563ff66904c299b161bef17d6e25bc59909a9eb510174f6ca1423486b68",
+      "sha256": "4ca1a563ff66904c299b161bef17d6e25bc59909a9eb510174f6ca1423486b68",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/05-development/01-development.md",
+      "path": "finance/vendor/frappe_docker/docs/05-development/01-development.md",
+      "old_sha256": "ba960a3d4ea67eba29a49a9fcbeccfafe31ea3ac6224745850f3a4b3941d918a",
+      "sha256": "ba960a3d4ea67eba29a49a9fcbeccfafe31ea3ac6224745850f3a4b3941d918a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/05-development/02-debugging.md",
+      "path": "finance/vendor/frappe_docker/docs/05-development/02-debugging.md",
+      "old_sha256": "603dbe435ab55b3bd4691209137bbb1e6608151fee8fbc4f31bfc6312aad8aec",
+      "sha256": "603dbe435ab55b3bd4691209137bbb1e6608151fee8fbc4f31bfc6312aad8aec",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/05-development/03-local-services-connection.md",
+      "path": "finance/vendor/frappe_docker/docs/05-development/03-local-services-connection.md",
+      "old_sha256": "69ae95ff35e9f838666d9bab6337a4907d05b97a021682c7d418167eded516a7",
+      "sha256": "69ae95ff35e9f838666d9bab6337a4907d05b97a021682c7d418167eded516a7",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/05-development/04-alternate-setup.md",
+      "path": "finance/vendor/frappe_docker/docs/05-development/04-alternate-setup.md",
+      "old_sha256": "19d018f98589072bc3ca549775588678c1efeeb7ec1d504a22acdf6afe0e36b6",
+      "sha256": "19d018f98589072bc3ca549775588678c1efeeb7ec1d504a22acdf6afe0e36b6",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/05-development/index.md",
+      "path": "finance/vendor/frappe_docker/docs/05-development/index.md",
+      "old_sha256": "6b49941d35f73e2433504210c3981facaf819a2ebdfba508b0372d05e6ac804e",
+      "sha256": "6b49941d35f73e2433504210c3981facaf819a2ebdfba508b0372d05e6ac804e",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/06-migration/01-migrate-from-multi-image-setup.md",
+      "path": "finance/vendor/frappe_docker/docs/06-migration/01-migrate-from-multi-image-setup.md",
+      "old_sha256": "12f6a955de6df3482bd292f1ed62491406139f5de5620246b58428028559b503",
+      "sha256": "12f6a955de6df3482bd292f1ed62491406139f5de5620246b58428028559b503",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/06-migration/02-traefik-v3-migration.md",
+      "path": "finance/vendor/frappe_docker/docs/06-migration/02-traefik-v3-migration.md",
+      "old_sha256": "a1df4de7836acd0b634a9b5549c4026f6e515959c9bfe4e35fb184a33ee2c9d6",
+      "sha256": "a1df4de7836acd0b634a9b5549c4026f6e515959c9bfe4e35fb184a33ee2c9d6",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/06-migration/03-postgres-major-version-upgrade.md",
+      "path": "finance/vendor/frappe_docker/docs/06-migration/03-postgres-major-version-upgrade.md",
+      "old_sha256": "528196dc7b80996cee67b1acfbdc2187e3c1aab79ae9adf57e5024c42e8aed00",
+      "sha256": "528196dc7b80996cee67b1acfbdc2187e3c1aab79ae9adf57e5024c42e8aed00",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/06-migration/index.md",
+      "path": "finance/vendor/frappe_docker/docs/06-migration/index.md",
+      "old_sha256": "da9de7031302601d2d22f9c3ea0c27a460eb27f93f1fc155fb67d7f04d39c49b",
+      "sha256": "da9de7031302601d2d22f9c3ea0c27a460eb27f93f1fc155fb67d7f04d39c49b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/07-troubleshooting/01-troubleshoot.md",
+      "path": "finance/vendor/frappe_docker/docs/07-troubleshooting/01-troubleshoot.md",
+      "old_sha256": "c9d57f65b2e7fe8164e307ed52aaf97c7ae51b624d951c9c002424b7d3b6d204",
+      "sha256": "c9d57f65b2e7fe8164e307ed52aaf97c7ae51b624d951c9c002424b7d3b6d204",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/07-troubleshooting/03-arm64-apple-silicon.md",
+      "path": "finance/vendor/frappe_docker/docs/07-troubleshooting/03-arm64-apple-silicon.md",
+      "old_sha256": "8a86c0bab20fe5b9efd8529e86569d7c3ae23f923acf817c5f93d1a7133c7480",
+      "sha256": "8a86c0bab20fe5b9efd8529e86569d7c3ae23f923acf817c5f93d1a7133c7480",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/07-troubleshooting/index.md",
+      "path": "finance/vendor/frappe_docker/docs/07-troubleshooting/index.md",
+      "old_sha256": "c6492eb089836b1dcabf374ee1ad91aca5d1bd7d911deb07ac6457f3104a1037",
+      "sha256": "c6492eb089836b1dcabf374ee1ad91aca5d1bd7d911deb07ac6457f3104a1037",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/09-concepts/01-custom-app.md",
+      "path": "finance/vendor/frappe_docker/docs/09-concepts/01-custom-app.md",
+      "old_sha256": "50afb37256754403fd5e382a286a675802f20fa1d29d1988aa3016cb8b9be5ef",
+      "sha256": "50afb37256754403fd5e382a286a675802f20fa1d29d1988aa3016cb8b9be5ef",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/09-concepts/index.md",
+      "path": "finance/vendor/frappe_docker/docs/09-concepts/index.md",
+      "old_sha256": "70019b45fc3559ff50f6abc902f93b52d1ffdc1011ec0aae0cc9f749e3285882",
+      "sha256": "70019b45fc3559ff50f6abc902f93b52d1ffdc1011ec0aae0cc9f749e3285882",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/10-tutorials/index.md",
+      "path": "finance/vendor/frappe_docker/docs/10-tutorials/index.md",
+      "old_sha256": "e6a14ce801b48b14e3d55a6294c1ad97fc3bd7d6be8492574b790ffa152240d8",
+      "sha256": "e6a14ce801b48b14e3d55a6294c1ad97fc3bd7d6be8492574b790ffa152240d8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/01-contribute-documentation.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/01-contribute-documentation.md",
+      "old_sha256": "9b427ab825a5671652e10a8b974c4c04e260e710f4b1f5ea858a9390cf05ea97",
+      "sha256": "9b427ab825a5671652e10a8b974c4c04e260e710f4b1f5ea858a9390cf05ea97",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/02-nginx-proxy-acme-companion.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/02-nginx-proxy-acme-companion.md",
+      "old_sha256": "39be8d3ab31af2d10dbdb80074b6b4356f8cfe25c78774815a370292b6a6fb8b",
+      "sha256": "39be8d3ab31af2d10dbdb80074b6b4356f8cfe25c78774815a370292b6a6fb8b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/03-caddy-https.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/03-caddy-https.md",
+      "old_sha256": "318a0fbb2fb27b27727c0fba5804ab7b9445260e2a7aaf4f04c5bbf9e625ecbf",
+      "sha256": "318a0fbb2fb27b27727c0fba5804ab7b9445260e2a7aaf4f04c5bbf9e625ecbf",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/04-create-backups.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/04-create-backups.md",
+      "old_sha256": "b9f56307c0d1eb978646327366274f889f9070f009172a6c0d690f0171bec6fe",
+      "sha256": "b9f56307c0d1eb978646327366274f889f9070f009172a6c0d690f0171bec6fe",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/05-publish-multiple-sites-on-different-ports.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/05-publish-multiple-sites-on-different-ports.md",
+      "old_sha256": "b36fcbf871ab0d6a99c5c56d36dd0748d37d52044ed5d8eb27e8fb1722797f7b",
+      "sha256": "b36fcbf871ab0d6a99c5c56d36dd0748d37d52044ed5d8eb27e8fb1722797f7b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/06-automated-builds-and-deployment.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/06-automated-builds-and-deployment.md",
+      "old_sha256": "a061fc82a8338f5ece6b4e95920d9233662b9150a4b9bb07a02cd2469de91fd2",
+      "sha256": "a061fc82a8338f5ece6b4e95920d9233662b9150a4b9bb07a02cd2469de91fd2",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/07-configuring-vitepress.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/07-configuring-vitepress.md",
+      "old_sha256": "2d4f7a0597db1f79df72ffaaad568834fd87198e44614ccbb186646fbff3307c",
+      "sha256": "2d4f7a0597db1f79df72ffaaad568834fd87198e44614ccbb186646fbff3307c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/08-fork-management.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/08-fork-management.md",
+      "old_sha256": "94f4a7a30373a08a42e9dad211f3ce47aff2788b5b63cec064c383e71985b090",
+      "sha256": "94f4a7a30373a08a42e9dad211f3ce47aff2788b5b63cec064c383e71985b090",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/09-build-app-images-with-github-actions.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/09-build-app-images-with-github-actions.md",
+      "old_sha256": "d6085115f57ad0c1719fa987667e2f7cc225ea59c8a8cb6456e8e92c78a6b414",
+      "sha256": "d6085115f57ad0c1719fa987667e2f7cc225ea59c8a8cb6456e8e92c78a6b414",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/10-validate-container-changes.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/10-validate-container-changes.md",
+      "old_sha256": "13a63c102bf4cb9edca7a4ef1c78ff83ce23a754b6624d316d2c8a92f6271e7a",
+      "sha256": "13a63c102bf4cb9edca7a4ef1c78ff83ce23a754b6624d316d2c8a92f6271e7a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/12-fix-crlf-line-endings-on-windows.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/12-fix-crlf-line-endings-on-windows.md",
+      "old_sha256": "d24c5d069b375744daf751d9efd26334cefe975f2a13d98fa0e51115fd11e776",
+      "sha256": "d24c5d069b375744daf751d9efd26334cefe975f2a13d98fa0e51115fd11e776",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/11-how-to/index.md",
+      "path": "finance/vendor/frappe_docker/docs/11-how-to/index.md",
+      "old_sha256": "b902257a17ba32e217de42c8f167355e70dd5011a2fbc9491549ab16118a7905",
+      "sha256": "b902257a17ba32e217de42c8f167355e70dd5011a2fbc9491549ab16118a7905",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/12-reference/01-repository-versioning-policy.md",
+      "path": "finance/vendor/frappe_docker/docs/12-reference/01-repository-versioning-policy.md",
+      "old_sha256": "0bf2d3e43a49f326e33a2c6565f3b6d1d56a70f964ed6431d96f7cd24bdaa7c8",
+      "sha256": "0bf2d3e43a49f326e33a2c6565f3b6d1d56a70f964ed6431d96f7cd24bdaa7c8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/12-reference/02-app-build-workflow.md",
+      "path": "finance/vendor/frappe_docker/docs/12-reference/02-app-build-workflow.md",
+      "old_sha256": "541194ebeaf844fd8ad95219ecb2b9457e4895e55c4d0f7b9f7d4d29b998ac84",
+      "sha256": "541194ebeaf844fd8ad95219ecb2b9457e4895e55c4d0f7b9f7d4d29b998ac84",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/12-reference/06-image-size-checks.md",
+      "path": "finance/vendor/frappe_docker/docs/12-reference/06-image-size-checks.md",
+      "old_sha256": "6368e96820e2fb552b9729ba6c5a85d98bea38f6ea868259b24f1bb1efc18291",
+      "sha256": "6368e96820e2fb552b9729ba6c5a85d98bea38f6ea868259b24f1bb1efc18291",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/12-reference/07-mariadb-defaults.md",
+      "path": "finance/vendor/frappe_docker/docs/12-reference/07-mariadb-defaults.md",
+      "old_sha256": "bbc8fae507ff6c1b8d62c715c69d99c2c4d486a97fbef8f888cb76d96d3e167b",
+      "sha256": "bbc8fae507ff6c1b8d62c715c69d99c2c4d486a97fbef8f888cb76d96d3e167b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/12-reference/index.md",
+      "path": "finance/vendor/frappe_docker/docs/12-reference/index.md",
+      "old_sha256": "f6de6e06a89466c2d490e67f9f2978c2f1282d635efd83e20d7c59e10abc5edd",
+      "sha256": "f6de6e06a89466c2d490e67f9f2978c2f1282d635efd83e20d7c59e10abc5edd",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/01-container-immutability.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/01-container-immutability.md",
+      "old_sha256": "4428f38b2335eb499f1a6c07338c4f7b7bfbb09d7174981ed0c876c558040b32",
+      "sha256": "4428f38b2335eb499f1a6c07338c4f7b7bfbb09d7174981ed0c876c558040b32",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/02-bind-mounts-and-volumes.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/02-bind-mounts-and-volumes.md",
+      "old_sha256": "e579e739eaf833aa505c3d76457297ec216b5ee96c6d08a0672a7c96ea71dd52",
+      "sha256": "e579e739eaf833aa505c3d76457297ec216b5ee96c6d08a0672a7c96ea71dd52",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/03-asset-handling.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/03-asset-handling.md",
+      "old_sha256": "978f2669ee5891e319d958e0af19a622980b02771f18659d6c0d8eeca1bfaa81",
+      "sha256": "978f2669ee5891e319d958e0af19a622980b02771f18659d6c0d8eeca1bfaa81",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/04-tls-ssl-approaches.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/04-tls-ssl-approaches.md",
+      "old_sha256": "20df0722030f0d24136dedbd46ad6fced5fefdcbe3171b9ec5a7e688a4ca3633",
+      "sha256": "20df0722030f0d24136dedbd46ad6fced5fefdcbe3171b9ec5a7e688a4ca3633",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/05-unix-socket-proxying.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/05-unix-socket-proxying.md",
+      "old_sha256": "7a1517b25bebb071b40bb8acf255790a9f8f5029734d76e62f34b5e7374fad33",
+      "sha256": "7a1517b25bebb071b40bb8acf255790a9f8f5029734d76e62f34b5e7374fad33",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/06-framework-comparisons.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/06-framework-comparisons.md",
+      "old_sha256": "e40e23ffb164531573d0d5418b7d089f954b17a53580e6bc763d44c6e7d9f641",
+      "sha256": "e40e23ffb164531573d0d5418b7d089f954b17a53580e6bc763d44c6e7d9f641",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/07-github-actions-image-workflows.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/07-github-actions-image-workflows.md",
+      "old_sha256": "818d8c8cfe06e545825079eca96dbb77b330e1b427c72c6949ae938d10e64118",
+      "sha256": "818d8c8cfe06e545825079eca96dbb77b330e1b427c72c6949ae938d10e64118",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/08-container-validation.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/08-container-validation.md",
+      "old_sha256": "d7d15ce385cfc0ca122afccbd10f16bd050975ec1931d716691085661be3e6c1",
+      "sha256": "d7d15ce385cfc0ca122afccbd10f16bd050975ec1931d716691085661be3e6c1",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/13-explanation/index.md",
+      "path": "finance/vendor/frappe_docker/docs/13-explanation/index.md",
+      "old_sha256": "cee2719cddca83fa53304f87e78062dbc3e0b8d36f5743ab87ad0c915debcc08",
+      "sha256": "cee2719cddca83fa53304f87e78062dbc3e0b8d36f5743ab87ad0c915debcc08",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/images/Docker Desktop Screenshot - Resources section.png",
+      "path": "finance/vendor/frappe_docker/docs/images/Docker Desktop Screenshot - Resources section.png",
+      "old_sha256": "2b21834cb2f471a8db9e5cd8dc16637242212e658420f1c1ce1e1266f1fa04ad",
+      "sha256": "2b21834cb2f471a8db9e5cd8dc16637242212e658420f1c1ce1e1266f1fa04ad",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/images/Docker Manual Screenshot - Resources section.png",
+      "path": "finance/vendor/frappe_docker/docs/images/Docker Manual Screenshot - Resources section.png",
+      "old_sha256": "4cbf093f0492ed65b6ae57d158cb5a494bff95a88ee0ebd0978bfa595ac5240a",
+      "sha256": "4cbf093f0492ed65b6ae57d158cb5a494bff95a88ee0ebd0978bfa595ac5240a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/public/favicon.png",
+      "path": "finance/vendor/frappe_docker/docs/public/favicon.png",
+      "old_sha256": "11a2516a7c291b9af4be78d47d597cb67c5908bbf49a76791ecb9cecaef2e0e5",
+      "sha256": "11a2516a7c291b9af4be78d47d597cb67c5908bbf49a76791ecb9cecaef2e0e5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/docs/public/frappe-docker.png",
+      "path": "finance/vendor/frappe_docker/docs/public/frappe-docker.png",
+      "old_sha256": "11a2516a7c291b9af4be78d47d597cb67c5908bbf49a76791ecb9cecaef2e0e5",
+      "sha256": "11a2516a7c291b9af4be78d47d597cb67c5908bbf49a76791ecb9cecaef2e0e5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/images/bench/Dockerfile",
+      "path": "finance/vendor/frappe_docker/images/bench/Dockerfile",
+      "old_sha256": "93654f66451a8914c1b1ea26e2ae2d8650566a6b66d120a9ce4c7292e4f17eb1",
+      "sha256": "93654f66451a8914c1b1ea26e2ae2d8650566a6b66d120a9ce4c7292e4f17eb1",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/images/custom/Containerfile",
+      "path": "finance/vendor/frappe_docker/images/custom/Containerfile",
+      "old_sha256": "d5d9bc7fa7a9cea22aa38b3563efb083dde50be62d1f0fa639f03d03b3042bf7",
+      "sha256": "d5d9bc7fa7a9cea22aa38b3563efb083dde50be62d1f0fa639f03d03b3042bf7",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/images/layered/Containerfile",
+      "path": "finance/vendor/frappe_docker/images/layered/Containerfile",
+      "old_sha256": "4a817037cc31cc0e121dc0d195375a582785f243194b46b48968f7de13d0a0c0",
+      "sha256": "4a817037cc31cc0e121dc0d195375a582785f243194b46b48968f7de13d0a0c0",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/images/production/Containerfile",
+      "path": "finance/vendor/frappe_docker/images/production/Containerfile",
+      "old_sha256": "b604939975ea430cf66808e3d0a9c47a139b55fc53b7f83712e4e5e27448dcf5",
+      "sha256": "b604939975ea430cf66808e3d0a9c47a139b55fc53b7f83712e4e5e27448dcf5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.backup-cron.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.backup-cron.yaml",
+      "old_sha256": "f44569c312ebdd68917305b825e0f3887d7b96a83b995a897c455b438c364705",
+      "sha256": "f44569c312ebdd68917305b825e0f3887d7b96a83b995a897c455b438c364705",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.bind-mount-db-data.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.bind-mount-db-data.yaml",
+      "old_sha256": "62f28992de1706c935a93593f48422118b1e4337cbd5ff4afe8d74bcfb3804a5",
+      "sha256": "62f28992de1706c935a93593f48422118b1e4337cbd5ff4afe8d74bcfb3804a5",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.bind-mount-redis-queue.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.bind-mount-redis-queue.yaml",
+      "old_sha256": "59cfa110302638cace9f99513d8e6c3e2dfedb270158505bb0bf5d3893dc3d6e",
+      "sha256": "59cfa110302638cace9f99513d8e6c3e2dfedb270158505bb0bf5d3893dc3d6e",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.bind-mount-sites.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.bind-mount-sites.yaml",
+      "old_sha256": "d3ab83b28bb534e2e70cd6183cce35affee896174b8a2e0784dd08ecb524e4c7",
+      "sha256": "d3ab83b28bb534e2e70cd6183cce35affee896174b8a2e0784dd08ecb524e4c7",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.custom-domain-ssl.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.custom-domain-ssl.yaml",
+      "old_sha256": "d0e5a9d8ac8c9f0fbd07a391dab8bc418745dc416afbe2875c5b8e09ca3a6ca0",
+      "sha256": "d0e5a9d8ac8c9f0fbd07a391dab8bc418745dc416afbe2875c5b8e09ca3a6ca0",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.custom-domain.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.custom-domain.yaml",
+      "old_sha256": "d37a32767d53a18dc4e7c0be937e5bd4669216d7c24ad1af5ea5e1a579a3d134",
+      "sha256": "d37a32767d53a18dc4e7c0be937e5bd4669216d7c24ad1af5ea5e1a579a3d134",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.https.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.https.yaml",
+      "old_sha256": "de070b7325f7f4ae448051ae7f2cd5f7e74706b6dc6f7de8c3c8faf27954462c",
+      "sha256": "de070b7325f7f4ae448051ae7f2cd5f7e74706b6dc6f7de8c3c8faf27954462c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.mariadb-secrets.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.mariadb-secrets.yaml",
+      "old_sha256": "498717ff59dea9a3d8345f1ed5d0e7cb52339397cc1a521e47a8709a4c666d47",
+      "sha256": "498717ff59dea9a3d8345f1ed5d0e7cb52339397cc1a521e47a8709a4c666d47",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.mariadb-shared.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.mariadb-shared.yaml",
+      "old_sha256": "628a58500f9317fedfff0257884e99434e7b715619439cc2a687d2c7cd74d079",
+      "sha256": "628a58500f9317fedfff0257884e99434e7b715619439cc2a687d2c7cd74d079",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.mariadb.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.mariadb.yaml",
+      "old_sha256": "b215ec0a025f6e6b81651a84947aaf3a0b65b159ead9a2820499651e152da254",
+      "sha256": "b215ec0a025f6e6b81651a84947aaf3a0b65b159ead9a2820499651e152da254",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.migrator.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.migrator.yaml",
+      "old_sha256": "a0f62f91a73a59d6aafde2b772142c158284feae43c5f20fb58fef20b75dc363",
+      "sha256": "a0f62f91a73a59d6aafde2b772142c158284feae43c5f20fb58fef20b75dc363",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.multi-bench-ssl.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.multi-bench-ssl.yaml",
+      "old_sha256": "1db763a83b21cf7c3bdf7705002f3c0afcc4f3c745f1740f2c55c68820ab88d8",
+      "sha256": "1db763a83b21cf7c3bdf7705002f3c0afcc4f3c745f1740f2c55c68820ab88d8",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.multi-bench.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.multi-bench.yaml",
+      "old_sha256": "2495618aac02c97e99b2d662d426f2a98cdaf440e2a2ed8c8681d8f62565a199",
+      "sha256": "2495618aac02c97e99b2d662d426f2a98cdaf440e2a2ed8c8681d8f62565a199",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.nginxproxy-ssl.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.nginxproxy-ssl.yaml",
+      "old_sha256": "77de00f87b5a043407ffcfb25364e08bc829baa7465c32d74ab5d25d7275b6b9",
+      "sha256": "77de00f87b5a043407ffcfb25364e08bc829baa7465c32d74ab5d25d7275b6b9",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.nginxproxy.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.nginxproxy.yaml",
+      "old_sha256": "8f44b6cc14a607bd5f2217181c4b7a89a7952ee9e39b26933ec31370af3eb2ed",
+      "sha256": "8f44b6cc14a607bd5f2217181c4b7a89a7952ee9e39b26933ec31370af3eb2ed",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.noproxy.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.noproxy.yaml",
+      "old_sha256": "0fb74a3d863cc09d0a0790f44c254e21706f6dffaf5634335ea1aa4099abb935",
+      "sha256": "0fb74a3d863cc09d0a0790f44c254e21706f6dffaf5634335ea1aa4099abb935",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.postgres.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.postgres.yaml",
+      "old_sha256": "1ac1bf7c55b09241dc6d4daa89701437e5ab75b7099a649f0ac33c059b03fa91",
+      "sha256": "1ac1bf7c55b09241dc6d4daa89701437e5ab75b7099a649f0ac33c059b03fa91",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.proxy.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.proxy.yaml",
+      "old_sha256": "4b62b045d91aeda7c22f26b0608c07938f562caa7cc97219f743569b26258a8f",
+      "sha256": "4b62b045d91aeda7c22f26b0608c07938f562caa7cc97219f743569b26258a8f",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.redis.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.redis.yaml",
+      "old_sha256": "b904d5ebe079d4ea7b3be0aa017bc3e6b5cda501b429b28fa47163501854083b",
+      "sha256": "b904d5ebe079d4ea7b3be0aa017bc3e6b5cda501b429b28fa47163501854083b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.traefik-ssl.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.traefik-ssl.yaml",
+      "old_sha256": "9d66eeaec55a0e20f899a6c5e0c7d4e0ade4281664f7c2b2727cb09d1c48d547",
+      "sha256": "9d66eeaec55a0e20f899a6c5e0c7d4e0ade4281664f7c2b2727cb09d1c48d547",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/overrides/compose.traefik.yaml",
+      "path": "finance/vendor/frappe_docker/overrides/compose.traefik.yaml",
+      "old_sha256": "3ffe51f55e74f5446500b412cc2ba6f59ba418ca3b9a5d9bd0ac8a1032fdca5c",
+      "sha256": "3ffe51f55e74f5446500b412cc2ba6f59ba418ca3b9a5d9bd0ac8a1032fdca5c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/resources/core/main-entrypoint.sh",
+      "path": "finance/vendor/frappe_docker/resources/core/main-entrypoint.sh",
+      "old_sha256": "bb850ec1e13cccf326c8fdc9bb64a4b90c219d7f39295481822207251f25aebd",
+      "sha256": "bb850ec1e13cccf326c8fdc9bb64a4b90c219d7f39295481822207251f25aebd",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/resources/core/start.sh",
+      "path": "finance/vendor/frappe_docker/resources/core/start.sh",
+      "old_sha256": "194a7225d6fb0a49dc0591d1ac450e3ff8060b93ee4a47be503ef40e61bbb48a",
+      "sha256": "194a7225d6fb0a49dc0591d1ac450e3ff8060b93ee4a47be503ef40e61bbb48a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/resources/core/nginx/nginx-entrypoint.sh",
+      "path": "finance/vendor/frappe_docker/resources/core/nginx/nginx-entrypoint.sh",
+      "old_sha256": "be48a5529598e418db2c33c663a8f662579d22d9910219a9cf4a60b3ebc06d73",
+      "sha256": "be48a5529598e418db2c33c663a8f662579d22d9910219a9cf4a60b3ebc06d73",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/resources/core/nginx/nginx-template.conf",
+      "path": "finance/vendor/frappe_docker/resources/core/nginx/nginx-template.conf",
+      "old_sha256": "b2489efba19836101fb2aaf187958752fef81b405de37232a0107dae0984cc16",
+      "sha256": "b2489efba19836101fb2aaf187958752fef81b405de37232a0107dae0984cc16",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/resources/core/nginx/security_headers.conf",
+      "path": "finance/vendor/frappe_docker/resources/core/nginx/security_headers.conf",
+      "old_sha256": "6a0da3cffcbf5c185103aad5f451ea7a37ce8253cfcf3247478541e1da271f8c",
+      "sha256": "6a0da3cffcbf5c185103aad5f451ea7a37ce8253cfcf3247478541e1da271f8c",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/compose-configs.json",
+      "path": "finance/vendor/frappe_docker/tests/compose-configs.json",
+      "old_sha256": "875543b72fa1073915d9a71e155c8013805432c46ef2aa2c09fcac3437197cfa",
+      "sha256": "875543b72fa1073915d9a71e155c8013805432c46ef2aa2c09fcac3437197cfa",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/compose.ci.yaml",
+      "path": "finance/vendor/frappe_docker/tests/compose.ci.yaml",
+      "old_sha256": "e9ba1b874d25c95268bc2e36fe35ed8cececaeadf206ae27d512ef7dc78ab924",
+      "sha256": "e9ba1b874d25c95268bc2e36fe35ed8cececaeadf206ae27d512ef7dc78ab924",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/conftest.py",
+      "path": "finance/vendor/frappe_docker/tests/conftest.py",
+      "old_sha256": "bc807365ef07718bb6f3e91eb0d7815a631405085ef0c82b407fec0267b8584b",
+      "sha256": "bc807365ef07718bb6f3e91eb0d7815a631405085ef0c82b407fec0267b8584b",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/test_frappe_docker.py",
+      "path": "finance/vendor/frappe_docker/tests/test_frappe_docker.py",
+      "old_sha256": "f5cae64433e80f3860f370bb530f98e24a57db7145dc3d27840e4f2200260205",
+      "sha256": "f5cae64433e80f3860f370bb530f98e24a57db7145dc3d27840e4f2200260205",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/utils.py",
+      "path": "finance/vendor/frappe_docker/tests/utils.py",
+      "old_sha256": "b6058c1dcd3943547d1e1083c7c8622a0394ce8dd848a1e1735e51776b9a7173",
+      "sha256": "b6058c1dcd3943547d1e1083c7c8622a0394ce8dd848a1e1735e51776b9a7173",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/_check_connections.py",
+      "path": "finance/vendor/frappe_docker/tests/_check_connections.py",
+      "old_sha256": "7020f4562a16c6df942dc26a1f94b0dc1ea5858b09fcc5eaed27123af94ea701",
+      "sha256": "7020f4562a16c6df942dc26a1f94b0dc1ea5858b09fcc5eaed27123af94ea701",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/_check_website_theme.py",
+      "path": "finance/vendor/frappe_docker/tests/_check_website_theme.py",
+      "old_sha256": "117f8d6c82a4b61cc382f8379f8b1672730b6b9acea9ed596adf938d7f23884d",
+      "sha256": "117f8d6c82a4b61cc382f8379f8b1672730b6b9acea9ed596adf938d7f23884d",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/_ping_frappe_connections.py",
+      "path": "finance/vendor/frappe_docker/tests/_ping_frappe_connections.py",
+      "old_sha256": "d78cc6db2fadc0595b172aea4a4eacf195545031d446e9ae6296913a3541e67a",
+      "sha256": "d78cc6db2fadc0595b172aea4a4eacf195545031d446e9ae6296913a3541e67a",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/_wait_for_s3.py",
+      "path": "finance/vendor/frappe_docker/tests/_wait_for_s3.py",
+      "old_sha256": "1172636c2a872755f30fc9f7c05d6dcbe550f60701619cfae45eb2ed2c6c4114",
+      "sha256": "1172636c2a872755f30fc9f7c05d6dcbe550f60701619cfae45eb2ed2c6c4114",
+      "reason": "Pinned upstream source relocation"
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "old_path": "finance/docker/upstream/tests/__init__.py",
+      "path": "finance/vendor/frappe_docker/tests/__init__.py",
+      "old_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": "Pinned upstream source relocation"
+    }
+  ],
+  "excluded_runtime": [
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/.env.local",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/versions.local.json",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/backups/20261106_003914-finance_localhost-database.sql.gz",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/backups/20261106_003914-finance_localhost-files.tgz",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/backups/20261106_003914-finance_localhost-private-files.tgz",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/backups/20261106_003914-finance_localhost-site_config_backup.json",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/build/Containerfile.base",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/config",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/description",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/HEAD",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/index",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/packed-refs",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/applypatch-msg.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/commit-msg.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/fsmonitor-watchman.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/post-update.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-applypatch.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-commit.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-merge-commit.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-push.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-rebase.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/pre-receive.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/prepare-commit-msg.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/push-to-checkout.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/sendemail-validate.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/hooks/update.sample",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/info/exclude",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/logs/HEAD",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/logs/refs/heads/main",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/logs/refs/remotes/origin/HEAD",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/objects/pack/pack-3d6deec99e9ea2498e8a16df71f325c59f481d4e.idx",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/objects/pack/pack-3d6deec99e9ea2498e8a16df71f325c59f481d4e.pack",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/objects/pack/pack-3d6deec99e9ea2498e8a16df71f325c59f481d4e.rev",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/refs/heads/main",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    },
+    {
+      "manifest": "scripts/finance-batch3-preservation.json",
+      "path": "finance/docker/upstream/.git/refs/remotes/origin/HEAD",
+      "reason": "Runtime/local artifact excluded from release source; vendored tracked upstream is separately locked."
+    }
+  ]
+}

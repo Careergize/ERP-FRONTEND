@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { ModelManager } from '@/pages/Masters/ModelManager';
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
-import { FINISHED_BY_ID, FINISHED_CATEGORY_LABEL, findFinishedGood, finishedBalance, finishedGoodLabel } from '@/lib/finishedGoodsData';
+import { FINISHED_BY_ID, findFinishedGood, finishedBalance, finishedGoodLabel } from '@/lib/finishedGoodsData';
 import { reserved } from '@/lib/fulfillment';
 import { useInventory } from '@/context/InventoryContext';
 import { lineTotal, orderSummary, today, validateOrder, type SalesOrderDraft } from '@/lib/salesOrders';
@@ -38,7 +38,7 @@ export function NewSalesOrderModal({ onClose, onCreated }: { onClose: () => void
   const [showModels, setShowModels] = useState(false);
   const { createSharedSalesOrder } = useSalesOrders();
   const { load: reloadJobs } = useJobCards();
-  const { finishedMovements, ledger, finishedProducts: FINISHED_GOODS, finishedLoading, finishedError, reloadFinished } = useInventory();
+  const { finishedMovements, ledger, finishedProducts: FINISHED_GOODS, finishedCategories, finishedLoading, finishedError, reloadFinished } = useInventory();
   const getAvailableStock = (itemId: string | undefined, name: string, unit: string) => {
     const product = findFinishedGood(itemId, name, unit);
     return product && product.unit === unit ? (finishedBalance(product, finishedMovements).currentStock === null ? undefined : finishedBalance(product, finishedMovements).currentStock! - reserved(ledger, product.id)) : undefined;
@@ -104,7 +104,7 @@ export function NewSalesOrderModal({ onClose, onCreated }: { onClose: () => void
     try { const order = await createSharedSalesOrder({ ...effective, quotationTemplate: { company, validityDays: company.validityDays } }); await Promise.all([reloadJobs(), reloadQuotations()]); onCreated(order.orderNumber); navigate(`/sales-orders/${order.id}`); if ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'costing') { const item = order.items?.find(i => i.fulfillmentSource === 'manufacturing'); if (item && order.jobCardIds[0]) navigate(`/job-cards/${order.jobCardIds[0]}?tab=costing`); } }
     catch (error) { setErrors({ form: error instanceof Error ? error.message : 'Unable to create order.' }); locked.current = false; setSubmitting(false); }
   };
-  const items = FINISHED_GOODS.map(item => { const available = getAvailableStock(item.id, finishedGoodLabel(item), item.unit); return { id: item.id, name: finishedGoodLabel(item), detail: `${FINISHED_CATEGORY_LABEL[item.category]} · Source row ${item.sourceRow} · ${available === undefined ? 'Stock not recorded' : `Available: ${available.toLocaleString('en-IN')} ${item.unit}`}` }; });
+  const items = FINISHED_GOODS.map(item => { const available = getAvailableStock(item.id, finishedGoodLabel(item), item.unit); return { id: item.id, name: finishedGoodLabel(item), detail: `${finishedCategories[item.category] ?? item.category} · Source row ${item.sourceRow} · ${available === undefined ? 'Stock not recorded' : `Available: ${available.toLocaleString('en-IN')} ${item.unit}`}` }; });
   const error = (text?: string) => text && <p role="alert" className="mt-1 text-xs text-red-600">{text}</p>;
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/30 p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="new-order-title">
     <div ref={dialog} className="max-h-[95vh] w-full max-w-6xl overflow-y-auto rounded-card bg-white p-4 shadow-xl sm:p-6">

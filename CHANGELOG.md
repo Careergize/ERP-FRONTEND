@@ -1,4 +1,48 @@
+### 10 November 2026 - Customer receipt allocation
 
+Customer receipts support Advance, Against Ref, New Ref and On Account. Against Ref shows open invoices for the selected customer and currency. Requires accounting migration 0012_document_receipt_mode.
+
+### 10 November 2026 - Purchase voucher payments
+
+Manual purchase vouchers support credit or full payment from a cash, bank or mobile-money account. Purchases can select a saved raw material or describe a company item or service. The supplier picker can create and select a saved Finance supplier ledger without leaving the voucher. Paid purchases record the payment method and paying ledger separately. Requires accounting migrations through 0011_document_purchase_method.
+
+### 10 November 2026 - Dated accounting vouchers
+
+Finance vouchers show the configured company, voucher category and posting date together. Opening balances use the book's cutover date. Sales vouchers support credit sales for an existing customer and paid-in-full cash sales for an existing or walk-in customer. Requires accounting migration 0009_document_sale_payment. Sales voucher lines select finished goods with recorded stock on hand and fill in the description and stock unit.
+
+### 6 November 2026 — Finance preview Batch 6 final QA
+
+Aligned Dashboard and party balance summaries with the reconciled report ledger; added whole-unit chart scaling, unique sidebar destinations, global display states, clearer preview/illustrative labels and modal keyboard containment. Added comprehensive route/accessibility/accounting/preservation checks, repaired test-only dispatch browser cleanup, and documented the module integration plan and client walkthrough. No APIs or production configuration changed. [Final report](docs/finance-ui-preview-batch6.md).
+
+### 6 November 2026 — Finance preview Batch 5
+
+Added local fictional bank match/unmatch and exception summaries, balanced opening scenarios with independent demo review/corrections, and Finance Administration role/company/CA/readiness/audit presentation. Original report figures, operational modules and development-only boundary remain preserved. No live APIs or financial activation. [Review and validation](docs/finance-ui-preview-batch5.md).
+
+### 6 November 2026 — Finance preview Batch 4
+
+Added read-only General Ledger, Trial Balance, comparative P&L, Balance Sheet and receivable/payable aging from one reconciled fictional ledger. Shared Batch 3 reference invoices reconcile exactly; drafts remain excluded. Date/account/type filters and invoice drill-downs preserve the existing preview boundary and operational workflows. [Review and validation](docs/finance-ui-preview-batch4.md).
+
+### 6 November 2026 — Finance preview Batch 3
+
+Added demonstration accounting views for sales/purchase invoices, receipts/payments, balanced journals and linked credit/debit notes. Reusable document references and local history accompany validated session-only draft services. Operational workflows and disabled financial actions remain intact; no API integration. [Inventory and validation](docs/finance-ui-preview-batch3.md).
+
+### 6 November 2026 — Finance preview Batch 2
+
+Added Accounting Setup and Financial Masters inside the existing development-only preview. Validated local draft forms, account hierarchy, tax templates/mapping, party credit profiles and fictional banks reuse the existing shell. Financial actions remain disabled; no live integration. [Review report](docs/finance-ui-preview-batch2.md).
+
+### 6 November 2026 — Finance preview Batch 1
+
+Added an explicitly gated development-only Finance & Accounts Dashboard inside the existing React app. Fictional KPIs/charts, outstanding summaries, searchable transactions and accessible detail drawer use isolated in-memory fixtures. Existing login/sidebar/accounting preserved; financial actions disabled. [Inventory and test report](docs/finance-ui-preview.md).
+
+
+
+### 6 November 2026 — Technical Finance readiness and CA ownership
+
+Added neutral accounting-setup/posting policy metadata, reusable connection/setup-guide components and private manual connectivity diagnostics. CA guidance appears only after authenticated connectivity. Accounting setup/approval controls, COA retrieval and ERPNext posting remain deferred; existing application login/sidebar/routes/accounting are preserved.
+
+### 6 November 2026 — ERPNext Finance status shell
+
+Added `/finance/erpnext` with explicit Finance entitlement, access states and optional server-side read-only diagnostics. Existing login/sidebar/accounting preserved; ERPNext remains unavailable. No financial synchronization or migration. See [validation and limitations](../finance/docs/FINANCE_TEST_REPORT.md).
 
 ### Labour Job register usability — 29 October 2026
 
@@ -83,3 +127,8 @@ Day Book voucher details can download a backend-generated PDF with journal lines
 ### 31 October 2026 - Admin ledger row actions
 
 Added visible Edit/Delete buttons beside existing ledgers at the top of Finance Masters. Editing focuses the existing form; deletion retains confirmation and all backend history protections.
+# Release readiness — 6 November 2026
+
+Prepared three independent repository boundaries, explicit cross-repository
+preservation checks and a separate static fictional Finance demo. Operational
+production Preview remains restricted; hosting-level demo protection is required.

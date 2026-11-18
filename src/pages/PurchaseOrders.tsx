@@ -70,7 +70,7 @@ export function PurchaseOrders() {
 
 export function PurchaseOrderEditor() {
   const { user } = useAuth();
-  const { finishedProducts, finishedMovements, finishedLoading, finishedError, reloadFinished } = useInventory();
+  const { finishedProducts, finishedCategories, finishedMovements, finishedLoading, finishedError, reloadFinished } = useInventory();
   const navigate = useNavigate();
   const [draft, setDraft] = useState<Draft>(newDraft);
   const [error, setError] = useState('');
@@ -116,7 +116,7 @@ export function PurchaseOrderEditor() {
           {line.stock_item && <p className="text-xs text-slate-500">Receipts will add quantity to this exact variant.</p>}
         </> : <>
           <input aria-label={`Item ${index + 1} description`} placeholder="New stock item name" className={input} required maxLength={250} value={line.description} onChange={e => updateLine(index, 'description', e.target.value)} />
-          <select aria-label={`Item ${index + 1} category`} className={input} value={line.new_item!.category} onChange={e => patchLine(index, { new_item: { ...line.new_item!, category: e.target.value as FinishedCategory } })}><option value="carrier-bags">Carrier Bags</option><option value="flat-bags">Flat Bags</option><option value="packing">Packing</option></select>
+          <select aria-label={`Item ${index + 1} category`} className={input} value={line.new_item!.category} onChange={e => patchLine(index, { new_item: { ...line.new_item!, category: e.target.value as FinishedCategory } })}>{Object.entries(finishedCategories).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>
           <div className="grid grid-cols-2 gap-2">{([['subgroup', 'Subgroup', 200], ['size', 'Size', 100], ['brand', 'Brand', 100], ['packing_size', 'Packing size', 100], ['customer', 'Customer / variant', 200]] as const).map(([key, label, max]) => <label key={key} className="space-y-1 text-xs text-slate-500"><span>{label}</span><input aria-label={`Item ${index + 1} ${label}`} placeholder={label} maxLength={max} className={input} value={line.new_item![key]} onChange={e => patchLine(index, { new_item: { ...line.new_item!, [key]: e.target.value } })} /></label>)}</div>
         </>}
       </td>

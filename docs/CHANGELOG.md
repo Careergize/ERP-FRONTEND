@@ -1,3 +1,7 @@
+## 18 November 2026 — Backend domain
+
+- Updated the shared UI API default and environment configuration to https://api.navapacksolutions.com/api.
+
 # Changelog
 
 ## Sales sidebar and internal tabs — 28 October 2026

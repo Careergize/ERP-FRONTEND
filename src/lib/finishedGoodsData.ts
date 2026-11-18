@@ -1,6 +1,6 @@
 import { FINISHED_GOODS_REFERENCE, FINISHED_MOVEMENTS_REFERENCE } from './finishedGoodsReference';
 
-export type FinishedCategory = 'carrier-bags' | 'flat-bags' | 'packing';
+export type FinishedCategory = string;
 export const FINISHED_CATEGORY_LABEL: Record<FinishedCategory, string> = {
   'carrier-bags': 'Carrier Bags', 'flat-bags': 'Flat Bags', packing: 'Packing',
 };
@@ -25,7 +25,16 @@ export interface FinishedGood {
   sourceClosingStock: number | null;
   dataNotes: string[];
 }
+export type FinishedReceiptPricing = {
+  currency: string;
+  unitPrice: number;
+  priceBasis?: 'kg';
+  cartons?: number;
+  kgPerCarton?: number;
+};
+
 export interface FinishedGoodsMovement {
+  receiptPricing?: FinishedReceiptPricing;
   sale?: import('./stockSale').StockSaleSnapshot;
   goodsReceivedNoteId?: string;
   purchaseOrderId?: string;

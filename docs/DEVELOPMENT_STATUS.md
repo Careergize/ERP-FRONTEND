@@ -1,5 +1,40 @@
 # Development Status
 
+## Backend domain — 18 November 2026
+
+The shared UI API client and local environment settings now target https://api.navapacksolutions.com/api, including the development override. Explicit deployment environment values still override the default and require a rebuild. Live browser authentication/CORS remains unverified.
+
+## Finance UI preview — Batch 6 final frontend QA, 6 November 2026
+
+All 22 preview destinations audited. Dashboard and seeded customer/supplier balances now derive from the reconciled report ledger; drafts remain isolated. Unique sidebar destinations, shared display states, illustrative labels and explicit modal keyboard containment were refined. Full preservation/accounting/browser checks and a module integration map/client walkthrough are documented in [the final frontend report](finance-ui-preview-batch6.md). This is local demo readiness, not live-accounting or production approval; integrations remain unimplemented. Stopped for final review.
+
+## Finance UI preview — Batch 5, 6 November 2026
+
+Bank reconciliation now supports fictional statement/report-ledger matching in memory. Opening scenarios support account/subledger balancing, company/year separation, independent demo review and corrections. Finance Administration presents fictional users/roles/company access, CA checklist, blocked readiness and local audit events. No real records, approvals, grants or activation. Batch 1–4 behavior and report figures are preserved. See [Batch 5 inventory and evidence](finance-ui-preview-batch5.md). Batch 6 has not started.
+
+## Finance UI preview — Batch 4, 6 November 2026
+
+Read-only General Ledger, Trial Balance, P&L, Balance Sheet and receivable/payable aging now share one reconciled fictional dataset. Exact Batch 3 reference invoices are included; editable drafts and independent Dashboard/profile snapshots are explicitly excluded. Report dates are bounded to 1 January–6 November 2026. All financial actions remain disabled. See [Batch 4 inventory, reconciliation and browser evidence](finance-ui-preview-batch4.md). Batch 5 has not started.
+
+## Finance UI preview — Batch 3, 6 November 2026
+
+Development-only Finance transaction accounting views now cover sales/purchase invoices, receipts/payments, journals and credit/debit notes. Typed in-memory services validate totals, linked references, allocation budgets and balanced journals. All posting/payment/approval actions remain disabled; production preview restrictions and operational workflows remain unchanged. Batch 4 has not started. See [Batch 3 review report](finance-ui-preview-batch3.md).
+
+## Finance UI preview — Batch 1, 6 November 2026
+
+Development-only `/finance/preview` Dashboard added behind DEV + explicit VITE_FINANCE_UI_PREVIEW=true and an entry gate. Shared shell presentation reused; live login, accounting, navigation and entitlement remain intact. Fictional in-memory data only; no live providers/API calls or financial actions. Batch 2 now adds setup, accounts, taxes, customer/supplier profiles and banking masters with validated memory-only drafts. See [Batch 2 report](finance-ui-preview-batch2.md). See [file inventory and validation](finance-ui-preview.md).
+
+
+## Finance technical readiness and CA handoff — 6 November 2026
+
+The ERPNext status contract now explicitly reports accounting_setup=not_assessed and posting_enabled=false while available remains false. Reusable FinanceReadinessPanel and FinanceSetupGuide separate connection state from unassessed accounting setup; the CA handoff message appears only after validated authenticated connectivity. No login/sidebar/routes, financial masters, approval controls, migrations or posting behavior changed. Private manual PowerShell connectivity diagnostics and future CA setup design are documented. See [current report](../../finance/docs/FINANCE_TEST_REPORT.md) for validation and remaining prerequisites.
+
+## ERPNext Finance read-only foundation — 6 November 2026
+
+Added an entitlement-controlled ERPNext Finance shell at `/finance/erpnext` inside the existing AppShell. `/finance`, both existing login routes and all operational navigation remain intact. Existing Django JWT and FinanceEntitlement are reused; ERPNext remains unavailable. Optional manually requested `/api/finance/status/` diagnostics require the existing grant-view permission and cannot enable Finance. No COA, posting, sync or migration added.
+
+Validation: focused backend/frontend, TypeScript/build and synthetic Edge desktop/mobile checks passed. Broader backend: 358 tests, 352 passed and six unchanged missing-prepare_quote errors. Live credentials/company/native authorization remain unverified. See [Finance test report](../../finance/docs/FINANCE_TEST_REPORT.md).
+
 ## Visible Admin ledger actions — 31 October 2026
 
 Finance → Masters → Ledgers now places Existing ledgers at the top with per-row Edit and Delete buttons for Admin. Edit fills the existing name/group editor, scrolls to it and focuses the name field. Delete requires confirmation and uses the existing saved name/group concurrency checks; cancel sends no request. Linked parties have Delete disabled. Other roles see the read-only list without action buttons. Existing backend guards still prevent deletion of built-in/used/linked ledgers and protect journal history. No backend authority or schema changes.
@@ -682,8 +717,17 @@ Verified: 55 SQLite API/regression tests, Django check/drift, frontend typecheck
 ### Finance server-error handling — 30 October 2026
 
 Accounting endpoints now return an actionable 503 if accounting migrations are missing, after checking access. Finance error messages show the HTTP status/request path and preserve JSON errors without dumping raw HTML. No automatic migration or database change is performed. 32 accounting tests, frontend typecheck/build and SSR/error-format checks pass, plus Django check/drift. Local accounting schema was found unmigrated; configured frontend targets a separate remote server whose schema state was not verified.
+<<<<<<< HEAD
 
 ## AccountERP — 5 November 2026
 
 Added /account-erp, role-filtered sidebar and dashboard entry, and Connected modules tab reusing existing Finance APIs and source posting. /finance remains compatible. Frontend build/typecheck and fourteen-section accounting SSR pass. No backend changes, live posting, deployment or browser interaction verified. Remaining six-module brief gaps are recorded in ACCOUNT_ERP_PLAN.md.
 
+=======
+# Repository release readiness — 6 November 2026
+
+Frontend unit checks no longer depend on sibling checkouts. A separate explicit
+three-repository preservation command retains cross-system assertions. Production
+build and isolated static Finance demo build pass; the production Preview guard
+is unchanged. See finance-repository-validation.md and finance-protected-static-demo.md.
+>>>>>>> feature/finance-client-demo

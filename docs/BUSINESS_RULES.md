@@ -1,5 +1,18 @@
 # Business Rules
 
+## Finance UI preview — 6 November 2026
+
+Finance demonstration requires a development build, explicit preview flag and explicit entry. It grants no entitlement and changes no live availability/posting flags. All amounts/statuses are fictional and labeled Demo Data. No posting, approval, activation, email or financial export is available. Preview state is discarded on reset, exit or refresh. Operational dispatch-only inventory deduction and existing Django accounting are unchanged.
+
+
+## Technical readiness is not accounting approval — 6 November 2026
+
+An authenticated integration identity is only a technical result. accounting_setup=not_assessed makes no claim about whether company/accounting configuration exists or is complete. The CA setup guide appears only after validated connectivity and disappears on retry/loading/error. The client’s CA / Finance Manager chooses all financial configuration later; do not infer or seed defaults/sample records. ERPNext available=false and posting_enabled=false remain enforced. Future independent review and CA sign-off cannot be replaced by Admin privileges or a successful connection check.
+
+## ERPNext Finance access — 6 November 2026
+
+ERPNext Finance navigation requires explicit server-reported entitlement; Admin/Accounts role alone grants nothing. The new route remains an unavailable status shell. Diagnostics additionally require Django grant-view permission, remain read-only and cannot issue a Frappe session. Existing `/finance` accounting and dispatch-based stock deductions are unchanged. Future ERPNext posting must use approved ownership/cutover and must not duplicate local invoices, cash or inventory.
+
 ## Sales approval, QC and print continuation — 28 October 2026
 
 No user, including Admin, may review their own created/edited/submitted Sales preview. QC roles record Pass/Fail/Hold and inspected quantities; full QC pass still requires separate stock authorization. Draft/pending credit-note prints carry DRAFT; approved session previews cannot be issued as official documents.
@@ -429,3 +442,28 @@ Admin can create currency display preferences matching the supplied reference. N
 ## Detailed P&L basis — 31 October 2026
 
 Net profit is posted income less posted expenses for the selected period/customer ID. Gross profit uses sales less classified COGS/direct expense; unclassified ledgers remain separately disclosed. Customer income/costs require explicit attribution; common costs and inventory ownership are not guessed. Cash/credit splits require recorded sale payment type. Perpetual inventory is already reflected in COGS: supporting opening stock, receipts/purchases and closing stock must not be added as another expense calculation. Pending postings can leave statements incomplete.
+
+
+## Finance preview Batch 2 — 6 November 2026
+
+All configuration is illustrative, unapproved and in memory. Parent accounts must be compatible groups; cycles, duplicate codes and changes invalidating existing children/mappings are rejected. Taxes map to liability ledgers; customers and banks to asset ledgers; suppliers to liability ledgers. These are demo validation conventions, not Navapack accounting policy. Rates are bounded 0–100 and credit days 0–365; bank references require FICTIONAL-. CA configuration never grants approval. Posting, approval and activation remain disabled.
+
+
+## Finance preview Batch 3 — 6 November 2026
+
+Transactions remain unposted demonstration drafts. Invoice sources constrain party, direction and currency; notes and allocations must match their invoice and cannot predate it. References are unique and DEMO-prefixed. UGX integer prices, quantities up to three decimals and illustrative additive tax rates up to two decimals use half-up per-line net/tax rounding; this is not approved accounting policy. Rates default to zero, and totals are bounded. Entry allocations must equal the positive receipt/payment amount; duplicate invoice allocations and aggregate over-allocation are rejected. Sales credits and supplier debits reduce planned receivable/payable budgets without executing returns or inventory movements. Invoice edits cannot invalidate dependent notes or allocations. Journal lines require a non-group ledger and exactly one positive debit/credit; totals must balance. All draft mutations revalidate the candidate graph and add only local history. Reset/exit/refresh discards it.
+
+
+## Finance preview Batch 4 — 6 November 2026
+
+All reports are read-only fictional views for 2026-01-01 through 2026-11-06. Date ranges are inclusive; prior history and the explicit opening entry form opening balances. GL type filtering hides rows without recomputing account balances. Trial totals exclude group subtotals. P&L compares the previous equal-length period when covered by the dataset. Balance Sheet equity includes unclosed current-year earnings from the same P&L dataset. Aging uses UTC calendar days past explicit illustrative due dates; current includes due today/future, then 1–30, 31–60, 61–90 and more than 90 days. Settlements count only through the selected as-of date. Bucket totals reconcile to dated receivable/payable control ledgers. Exact Batch 3 reference invoices/settlements are included; all editable drafts and independent prior snapshots are excluded. UGX whole-unit arithmetic reuses the shared scaled line calculation convention; report fixtures require zero illustrative tax. Account classification, cost recognition and due dates are fictional examples, not approved Navapack policies.
+
+
+## Finance preview Batch 5 — 6 November 2026
+
+Reconciliation uses the report bank ledger for 1–6 November 2026. Same-bank, equal signed amounts within an illustrative three-day window may be paired once; suggestions do not auto-match. Filters affect visible tables only; summary totals always cover the fixed statement period. A zero explained residual does not reconcile unresolved or unmapped rows. Matching never modifies ledger data. The primary 2026 opening scenario starts from the exact report opening entry; other company/year scenarios start empty, with no carry-forward. Whole-unit debit/credit totals must balance positively, use unique non-group balance-sheet accounts, and reconcile customer debit/supplier credit subledgers to AR/AP controls. Independent demo reviewers must differ from the maker, have Checker/CA role and company access, and only the assigned reviewer may request a reasoned correction. Review locks edits; resaving a correction clears the assignment and requires new review. Unsaved editor changes cannot be prepared for review. Actual approval/posting/activation is always disabled. CA checklist completion grants no permission or readiness. All events and scenarios are memory-only, isolated from real login, entitlement and immutable report figures.
+
+
+## Finance Preview Batch 6 — 6 November 2026
+
+Dashboard and customer/supplier baseline summaries reconcile to the fictional ledger as of 2026-11-06. Dashboard expenses include cost of sales plus operating expenses; compare equal date scopes (default six-month Dashboard vs default six-day report differ). Reference snapshots are distinct from unposted local drafts. Scenario currency/company/credit-term edits do not retarget/revalue the immutable ledger. The UGX 400 bank difference and statement -100 / ledger -500 exceptions are intentional and stay unresolved. Global simulated loading/empty/error states apply across all routes. Every sidebar destination is unique; Dashboard section anchors remain inside the Dashboard. Native drawers additionally contain Tab/Shift+Tab focus and restore the trigger on dismissal. No posting, approval, activation, bank sync or export is enabled.

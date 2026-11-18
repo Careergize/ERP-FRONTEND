@@ -2,7 +2,8 @@ import { api } from './api';
 import type { RawMaterial, RawMaterialMovement } from './rawMaterialData';
 import type { ProcurementItem } from './procurement';
 
-export interface RawInventorySnapshot { materials: RawMaterial[]; movements: RawMaterialMovement[]; plans: ProcurementItem[]; canPost: boolean; canPlan: boolean }
+export interface RawStockValuation { amount: string; currency: string; materialCount: number }
+export interface RawInventorySnapshot { stockValuation?: RawStockValuation | null; materials: RawMaterial[]; movements: RawMaterialMovement[]; plans: ProcurementItem[]; canPost: boolean; canPlan: boolean }
 export async function fetchRawInventory() {
   return (await api.get<RawInventorySnapshot>('/raw-inventory/', {timeout:15000})).data;
 }
