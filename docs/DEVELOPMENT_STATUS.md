@@ -1,5 +1,9 @@
 # Development Status
 
+## Main branch merge repair — 18 November 2026
+
+Resolved committed merge markers in the shared API client, navigation, Accounting, Dashboard and documentation. Preserved AccountERP connections, Finance access navigation and the new API domain. TypeScript/production build, auth and mocked integration checks passed. Broader accounting SSR is blocked by its missing InventoryProvider fixture; Finance gateway preservation fails its older API-client hash. Live deployment remains unverified.
+
 ## Backend domain — 18 November 2026
 
 The shared UI API client and local environment settings now target https://api.navapacksolutions.com/api, including the development override. Explicit deployment environment values still override the default and require a rebuild. Live browser authentication/CORS remains unverified.
