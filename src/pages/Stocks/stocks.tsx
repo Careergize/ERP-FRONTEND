@@ -1,5 +1,7 @@
 import { useSharedEntryAccess } from '@/context/SharedEntriesContext';
 import { StockIntelligence } from '@/components/StockIntelligence';
+import { api } from '@/lib/api';
+import { inventoryError } from '@/lib/rawInventoryApi';
 import { useAuth } from '@/context/AuthContext';
 import { findWorkItem } from '@/lib/parentJobCards';
 import { useJobCards } from '@/context/JobCardsContext';
@@ -8,20 +10,33 @@ import { reserved } from '@/lib/fulfillment';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { ArrowDownToLine, ChevronDown, Download, Printer, Search } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { ENTRY_INPUT } from '@/components/ui/SearchSelect';
 import { InventoryMovementModal } from '@/components/ui/InventoryMovementModal';
 import { useInventory } from '@/context/InventoryContext';
-import { FINISHED_BY_ID, FINISHED_CATEGORY_LABEL, finishedBalance, finishedRangeBalance, finishedGoodName, finishedGoodLabel, matchesFinishedGood, type FinishedCategory, type FinishedGood } from '@/lib/finishedGoodsData';
-import { SalesOrderDemand } from './SalesOrderDemand';
+import { FINISHED_BY_ID, FINISHED_CATEGORY_LABEL, finishedBalance, finishedRangeBalance, finishedGoodName, finishedGoodLabel, matchesFinishedGood, type FinishedCategory, type FinishedGood, type FinishedGoodsMovement } from '@/lib/finishedGoodsData';
 
 type Tab = 'levels' | 'movements' | 'report';
 type CategoryFilter = FinishedCategory | 'all';
 const TABS: [Tab, string][] = [['levels', 'Stock Levels'], ['movements', 'Movements'], ['report', 'Monthly Report']];
-const CATEGORIES = Object.entries(FINISHED_CATEGORY_LABEL) as [FinishedCategory, string][];
+
 const fmt = (value: number | null) => value === null ? 'Not recorded' : value.toLocaleString('en-IN', { maximumFractionDigits: 2 });
 const TH = 'px-4 py-3 font-medium';
 const TD = 'px-4 py-3';
 const BUTTON = 'flex items-center gap-2 rounded-card border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-navy';
+
+function ReceiptCost({ movement }: { movement: FinishedGoodsMovement }) {
+  const pricing = movement.receiptPricing;
+  if (!pricing) return null;
+  const kilograms = movement.unit.toLowerCase() === 'ctn' && pricing.kgPerCarton !== undefined
+    ? movement.quantity * pricing.kgPerCarton
+    : movement.quantity;
+  const total = pricing.unitPrice * (pricing.priceBasis === 'kg' ? kilograms : pricing.cartons ?? movement.quantity);
+  return <p className="mt-1 text-xs text-gray-600">
+    {pricing.cartons !== undefined && <>{fmt(pricing.cartons)} cartons × {fmt(pricing.kgPerCarton ?? null)} kg · </>}
+    {pricing.currency} {fmt(total / kilograms)} per kg · {pricing.currency} {fmt(total)} total
+  </p>;
+}
 
 function ProductCell({ product, variant = false }: { product: FinishedGood; variant?: boolean }) {
   return <div className="min-w-[180px] max-w-[300px]">
@@ -51,11 +66,27 @@ export function StockPage() {
   const { user } = useAuth();
   const stockAccess=useSharedEntryAccess('inventory-ledger');
   const stockSaveBlocked=user?.id.startsWith('demo-')?'Sign in with a real backend account to record Stock IN.':stockAccess.error?`Stock IN is unavailable: ${stockAccess.error}`:!stockAccess.loaded?'Loading shared stock records. Stock IN will be available after loading finishes.':!stockAccess.writable?'Your backend account does not have permission to save the stock ledger.':'';
-  const { ledger, finishedMovements, addFinishedMovement, finishedPieces, updateFinishedPieces, finishedProducts: FINISHED_GOODS, finishedLoading, finishedError, reloadFinished } = useInventory();
+  const { ledger, finishedMovements, addFinishedMovement, finishedPieces, updateFinishedPieces, finishedProducts: FINISHED_GOODS, finishedLoading, finishedError, reloadFinished, finishedCategories, canAddFinishedCategory } = useInventory();
+  const cartonReceipts = useMemo(() => {
+    const latest = new Map<string, FinishedGoodsMovement>();
+    for (const movement of finishedMovements) {
+      if (movement.type !== 'IN' || !movement.receiptPricing?.kgPerCarton) continue;
+      const previous = latest.get(movement.productId);
+      if (!previous || movement.date >= previous.date) latest.set(movement.productId, movement);
+    }
+    return latest;
+  }, [finishedMovements]);
+
   const { cards, load } = useJobCards();
   useEffect(() => { void load(); }, [load]);
   const [tab, setTab] = useState<Tab>('levels');
+  const CATEGORIES = Object.entries(finishedCategories);
+  const [newCategory, setNewCategory] = useState('');
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
   const [category, setCategory] = useState<CategoryFilter>('all');
+  const [confirmCategoryDelete, setConfirmCategoryDelete] = useState(false);
   const [query, setQuery] = useState('');
   const [brand, setBrand] = useState('all');
   const [unit, setUnit] = useState('all');
@@ -89,13 +120,13 @@ export function StockPage() {
     ['Product ID', 'Product', 'Category', 'Customer', 'Size', 'Brand', 'Pieces', 'Packaging', 'Unit', 'Opening Stock', 'Total IN', 'Total OUT', 'Closing Stock'],
     ...products.map(product => {
       const row = report.get(product.id)!;
-      return [product.id, finishedGoodName(product), FINISHED_CATEGORY_LABEL[product.category], product.customer, product.size, product.brand, finishedPieces[product.id] ?? product.pieces ?? null, product.packingSize, product.unit, row.openingStock, row.stockIn, row.stockOut, row.currentStock];
+      return [product.id, finishedGoodName(product), finishedCategories[product.category] ?? product.category, product.customer, product.size, product.brand, finishedPieces[product.id] ?? product.pieces ?? null, product.packingSize, product.unit, row.openingStock, row.stockIn, row.stockOut, row.currentStock];
     }),
   ]);
   const count = tab === 'movements' ? movements.length : products.length;
   if (finishedLoading) return <p role="status" className="p-6">Loading finished-goods stock…</p>;
   if (finishedError) return <Card><p role="alert" className="text-red-700">{finishedError}</p><button className="mt-3 underline" onClick={() => void reloadFinished()}>Reload stock</button></Card>;
-  return <div className="space-y-6"><Card><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-medium text-navy">Purchase receipts</p><p className="text-sm text-slate-500">GRNs add received quantities after excluding damaged goods. Immediate purchase receipts are also included.</p></div><div className="flex gap-4 flex-wrap max-w-full"><Link to="/purchase-orders" className="text-sm underline">Purchase Orders</Link><button className="text-sm underline" onClick={() => void reloadFinished()}>Reload stock</button></div></div></Card><Card><p className="text-sm text-navy">Manufactured Stock IN requires independent QC release and final manager authorization, then an exact batch receipt from Job Cards.</p><p className="text-xs text-gray-500">Manual unbatched reference imports are restricted to Admin and cannot bypass an active product QC hold.</p><Link to="/job-cards" className="text-sm underline">Approved Job Card receipts</Link></Card>
+  return <div className="space-y-6">
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
       <div><h1 className="text-2xl font-semibold text-navy">Stock</h1><p className="mt-1 text-sm text-gray-500">Receive finished goods and review stock levels, movements and monthly reports. Sales dispatch is in Sales Management.</p></div>
       <div className="flex items-center gap-2 flex-wrap max-w-full">{user?.role === "admin" ? <button type="button" disabled={!!stockSaveBlocked} onClick={() => setDirection('IN')} className={BUTTON+' disabled:opacity-50'}><ArrowDownToLine size={16} />Stock IN</button> : <Link to="/job-cards" className={BUTTON}><ArrowDownToLine size={16} />Receive Approved Batch</Link>}</div>
@@ -104,9 +135,73 @@ export function StockPage() {
     <section aria-label="Stock summary" className="grid grid-cols-2 gap-4 lg:grid-cols-4 print:hidden">{kpis.map(card => <Card key={card.label}><p className="text-sm text-gray-500">{card.label}</p><p className="mt-1 text-2xl font-semibold text-navy">{card.value}</p><p className="mt-1 text-xs text-gray-500">{card.hint}</p></Card>)}</section>
     {notice && <p role="status" className="rounded-card bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}
     <details className="rounded-card border bg-white p-4"><summary className="cursor-pointer font-semibold text-navy">Stock alerts, product conversions & costing summary</summary><StockIntelligence/></details>
-    <SalesOrderDemand />
     <div role="tablist" aria-label="Stock views" className="flex gap-6 border-b border-gray-200 print:hidden flex-wrap max-w-full">{TABS.map(([id, label]) => <button key={id} type="button" role="tab" id={`stock-tab-${id}`} aria-selected={tab === id} aria-controls={`stock-panel-${id}`} onClick={() => { setTab(id); resetList(); }} className={`-mb-px border-b-2 pb-3 text-sm font-medium ${tab === id ? 'border-navy text-navy' : 'border-transparent text-gray-500 hover:text-navy'}`}>{label}</button>)}</div>
-    <div role="group" aria-label="Finished goods categories" className="inline-flex flex-wrap rounded-card bg-gray-100 p-2 print:hidden gap-3 max-w-full">{([['all', 'All'], ...CATEGORIES] as [CategoryFilter, string][]).map(([id, label]) => <button key={id} type="button" aria-pressed={category === id} onClick={() => { setCategory(id); setBrand('all'); setUnit('all'); resetList(); }} className={`rounded-md px-3 py-1.5 text-sm font-medium ${category === id ? 'bg-white text-navy shadow-sm' : 'text-gray-600 hover:text-navy'}`}>{label}</button>)}</div>
+    <div className="flex flex-wrap items-end gap-3 print:hidden">
+    {canAddFinishedCategory && (addingCategory ? (
+      <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={async event => {
+        event.preventDefault();
+        if (savingCategory || !newCategory.trim()) return;
+        setSavingCategory(true);
+        setCategoryError('');
+        try {
+          await api.post('/finished-stock/', { name: newCategory });
+          setAddingCategory(false);
+          setNewCategory('');
+          await reloadFinished();
+        } catch (error) {
+          setCategoryError(inventoryError(error));
+        } finally {
+          setSavingCategory(false);
+        }
+      }}>
+        <label className="text-sm">Category name<input className={ENTRY_INPUT} autoFocus required maxLength={80} value={newCategory} onChange={event => setNewCategory(event.target.value)} /></label>
+        <button className={BUTTON} disabled={savingCategory}>Save category</button>
+        <button className={BUTTON} type="button" disabled={savingCategory} onClick={() => { setAddingCategory(false); setCategoryError(''); }}>Cancel</button>
+        {categoryError && <p role="alert" className="text-sm text-red-700">{categoryError}</p>}
+      </form>
+    ) : <button type="button" className={BUTTON + ' print:hidden'} onClick={() => setAddingCategory(true)}>Add category</button>)}
+      <label className="text-sm font-medium text-gray-700">
+        Category
+        <select className={ENTRY_INPUT} value={category} onChange={event => {
+          setCategory(event.target.value);
+          setBrand('all');
+          setUnit('all');
+          resetList();
+        }}>
+          <option value="all">All categories</option>
+          {CATEGORIES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+        </select>
+      </label>
+      {user?.role === 'admin' && category !== 'all' && finishedCategories[category] && !Object.prototype.hasOwnProperty.call(FINISHED_CATEGORY_LABEL, category) && (
+        <button type="button" className={BUTTON} onClick={() => { setCategoryError(''); setConfirmCategoryDelete(true); }}>Delete category</button>
+      )}
+      {confirmCategoryDelete && <ConfirmationDialog
+        title="Delete category?"
+        closeLabel="Cancel"
+        onClose={() => setConfirmCategoryDelete(false)}
+        confirm={{ label: savingCategory ? 'Deleting…' : 'Delete category', action: async () => {
+          if (savingCategory) return;
+          setSavingCategory(true);
+          setCategoryError('');
+          try {
+            await api.delete('/finished-stock/', { params: { category } });
+            setConfirmCategoryDelete(false);
+            setCategory('all');
+            setBrand('all');
+            setUnit('all');
+            resetList();
+            await reloadFinished();
+          } catch (error) {
+            setCategoryError(inventoryError(error));
+          } finally {
+            setSavingCategory(false);
+          }
+        } }}
+      >
+        <p>Delete <strong>{finishedCategories[category]}</strong> from Finished Goods?</p>
+        {categoryError && <p role="alert" className="text-red-700">{categoryError}</p>}
+      </ConfirmationDialog>}
+    </div>
     <div className="flex flex-wrap items-end gap-3 print:hidden">
       <div className="relative min-w-[220px] flex-1"><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input aria-label="Search finished goods" type="search" placeholder="Search finished goods..." value={query} onChange={event => { setQuery(event.target.value); resetList(); }} className={`${ENTRY_INPUT} pl-9`} /></div>
       <select aria-label="Brand" value={brand} onChange={event => { setBrand(event.target.value); resetList(); }} className={`${ENTRY_INPUT} !w-auto max-w-[220px]`}><option value="all">All brands</option>{brands.map(value => <option key={value}>{value}</option>)}</select>
@@ -123,17 +218,32 @@ export function StockPage() {
           <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500"><tr>{['Date', 'Product / Variant', 'Category', 'Movement', 'Quantity', 'Unit', 'Reference', 'Customer / Destination'].map(label => <th key={label} scope="col" className={TH}>{label}</th>)}</tr></thead>
           <tbody className="divide-y divide-gray-100">{movements.slice(0, limit).map(movement => {
             const product = FINISHED_BY_ID.get(movement.productId)!;
-            return <tr key={movement.id} className="hover:bg-gray-50"><td className={`${TD} whitespace-nowrap text-gray-500`}>{movement.date}</td><td className={TD}><ProductCell product={product} variant /></td><td className={TD}>{FINISHED_CATEGORY_LABEL[product.category]}</td><td className={TD}><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${movement.type === 'IN' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{movement.type}</span></td><td className={`${TD} text-right tabular-nums`}>{fmt(movement.quantity)}</td><td className={TD}>{movement.unit}</td><td className={TD}>{movement.reference || '—'}{movement.goodsReceivedNoteId && <Link className="ml-2 underline" to={`/goods-received-notes/${movement.goodsReceivedNoteId}`}>GRN</Link>}{movement.purchaseOrderId && <Link className="ml-2 underline" to={`/purchase-orders/${movement.purchaseOrderId}`}>Purchase Order</Link>}{movement.salesOrderId && <Link className="ml-2 underline" to={`/sales-orders/${movement.salesOrderId}`}>Sales Order</Link>}{movement.jobCardId && <Link className="ml-2 underline" to={`/job-cards/${movement.jobCardId}`}>Job Card</Link>}{movement.batch && <p className="text-xs">{movement.batch}</p>}{movement.remarks && <p className="mt-1 text-xs text-gray-400">{movement.remarks}</p>}</td><td className={TD}>{movement.customer || '—'}</td></tr>;
+            return <tr key={movement.id} className="hover:bg-gray-50"><td className={`${TD} whitespace-nowrap text-gray-500`}>{movement.date}</td><td className={TD}><ProductCell product={product} variant /></td><td className={TD}>{finishedCategories[product.category] ?? product.category}</td><td className={TD}><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${movement.type === 'IN' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{movement.type}</span></td><td className={`${TD} text-right tabular-nums`}>{fmt(movement.quantity)}</td><td className={TD}>{movement.unit}</td><td className={TD}>{movement.reference || '—'}{movement.goodsReceivedNoteId && <Link className="ml-2 underline" to={`/goods-received-notes/${movement.goodsReceivedNoteId}`}>GRN</Link>}{movement.purchaseOrderId && <Link className="ml-2 underline" to={`/purchase-orders/${movement.purchaseOrderId}`}>Purchase Order</Link>}{movement.salesOrderId && <Link className="ml-2 underline" to={`/sales-orders/${movement.salesOrderId}`}>Sales Order</Link>}{movement.jobCardId && <Link className="ml-2 underline" to={`/job-cards/${movement.jobCardId}`}>Job Card</Link>}{movement.batch && <p className="text-xs">{movement.batch}</p>}{movement.receiptPricing && <ReceiptCost movement={movement} />}{movement.remarks && <p className="mt-1 text-xs text-gray-400">{movement.remarks}</p>}</td><td className={TD}>{movement.customer || '—'}</td></tr>;
           })}{!movements.length && <tr><td colSpan={8} className="p-10 text-center text-gray-500">No finished-goods movements match your filters.</td></tr>}</tbody>
         </table> : <table className="w-full min-w-[850px] text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500"><tr>{(tab === 'levels' ? ['Product / Item', 'Category', 'Size', 'Brand', 'Pieces', 'Packaging', 'Physical Stock', 'Reserved', 'Available', 'Unit', 'Status'] : ['Product / Variant', 'Category', 'Opening Stock', 'Total IN', 'Total OUT', 'Closing Stock', 'Unit', 'Details']).map(label => <th key={label} scope="col" className={TH}>{label}</th>)}</tr></thead>
+          <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500"><tr>{(tab === 'levels' ? ['Product / Item', 'Category', 'Size', 'Brand', 'Packaging', 'Available', 'Avg. kg / carton', 'Price / carton', 'Unit', 'Status', 'Total Amount'] : ['Product / Variant', 'Category', 'Opening Stock', 'Total IN', 'Total OUT', 'Closing Stock', 'Unit', 'Details']).map(label => <th key={label} scope="col" className={TH}>{label}</th>)}</tr></thead>
           <tbody className="divide-y divide-gray-100">{products.slice(0, limit).map(product => {
             const row = tab === 'report' ? report.get(product.id)! : balances.get(product.id)!;
+            const pricing = cartonReceipts.get(product.id)?.receiptPricing;
+            const kgPerCarton = pricing?.kgPerCarton;
+            const cartonPrice = pricing && kgPerCarton !== undefined
+              ? (pricing.priceBasis === 'kg' ? pricing.unitPrice * kgPerCarton : pricing.unitPrice)
+              : null;
+            const available = row.currentStock === null ? null : row.currentStock - reserved(ledger, product.id);
+            const totalAmount = available !== null && kgPerCarton !== undefined && cartonPrice !== null
+              ? available * kgPerCarton * cartonPrice
+              : null;
             const daily = finishedMovements.filter(movement => movement.productId === product.id && (from && to ? movement.date >= from && movement.date <= to : movement.date.startsWith(month)) && (movementType === 'all' || movement.type === movementType)).sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
             return <Fragment key={product.id}>
-              <tr className="hover:bg-gray-50"><td className={TD}><ProductCell product={product} variant={tab === 'report'} /></td><td className={`${TD} text-gray-500`}>{FINISHED_CATEGORY_LABEL[product.category]}</td>
-                {tab === 'levels' ? <><td className={TD}>{product.size || '—'}</td><td className={TD}>{product.brand || '—'}</td><td className={TD}>{fmt(finishedPieces[product.id] ?? product.pieces ?? null)}</td><td className={TD}>{product.packingSize || '—'}</td></> : [row.openingStock, row.stockIn, row.stockOut].map((value, index) => <td key={index} className={`${TD} text-right tabular-nums text-gray-600`}>{fmt(value)}</td>)}
-                <td className={`${TD} text-right font-semibold tabular-nums text-navy`}>{fmt(row.currentStock)}</td>{tab === 'levels' && <><td className={TD}>{fmt(reserved(ledger, product.id))}</td><td className={TD}>{fmt(row.currentStock === null ? null : row.currentStock - reserved(ledger, product.id))}</td></>}<td className={TD}>{product.unit}</td><td className={TD}>{tab === 'levels' ? <StockStatus quantity={row.currentStock} /> : <button type="button" aria-expanded={expanded === product.id} aria-controls={`daily-${product.id}`} aria-label={`Daily movements for ${finishedGoodLabel(product)}`} onClick={() => setExpanded(expanded === product.id ? null : product.id)} className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-navy hover:underline"><ChevronDown size={14} />Daily movements</button>}</td>
+              <tr className="hover:bg-gray-50"><td className={TD}><ProductCell product={product} variant={tab === 'report'} /></td><td className={`${TD} text-gray-500`}>{finishedCategories[product.category] ?? product.category}</td>
+                {tab === 'levels' ? <><td className={TD}>{product.size || '—'}</td><td className={TD}>{product.brand || '—'}</td><td className={TD}>{product.packingSize || '—'}</td></> : [row.openingStock, row.stockIn, row.stockOut].map((value, index) => <td key={index} className={`${TD} text-right tabular-nums text-gray-600`}>{fmt(value)}</td>)}
+                {tab === 'levels' ? <>
+                  <td className={`${TD} text-right font-semibold tabular-nums text-navy`}>{fmt(available)}</td>
+                  <td className={TD}>{kgPerCarton === undefined ? '—' : fmt(kgPerCarton)}</td>
+                  <td className={`${TD} whitespace-nowrap`}>{pricing && cartonPrice !== null ? `${pricing.currency} ${fmt(cartonPrice)}` : '—'}</td>
+                </> : <td className={`${TD} text-right font-semibold tabular-nums text-navy`}>{fmt(row.currentStock)}</td>}
+                <td className={TD}>{product.unit}</td><td className={TD}>{tab === 'levels' ? <StockStatus quantity={row.currentStock} /> : <button type="button" aria-expanded={expanded === product.id} aria-controls={`daily-${product.id}`} aria-label={`Daily movements for ${finishedGoodLabel(product)}`} onClick={() => setExpanded(expanded === product.id ? null : product.id)} className="flex items-center gap-1 whitespace-nowrap text-xs font-medium text-navy hover:underline"><ChevronDown size={14} />Daily movements</button>}</td>
+                {tab === 'levels' && <td className={`${TD} whitespace-nowrap font-bold`}>{pricing && totalAmount !== null ? `${pricing.currency} ${(pricing.currency === 'UGX' ? totalAmount.toLocaleString('en-UG', { maximumFractionDigits: 2 }) : fmt(totalAmount))}` : '—'}</td>}
               </tr>
               {tab === 'report' && expanded === product.id && <tr><td colSpan={8} id={`daily-${product.id}`} className="bg-gray-50 p-4"><p className="mb-2 text-xs text-gray-500">Source: {product.sourceSheet}, row {product.sourceRow}. Reference opening: {product.openingDate}.</p>{daily.length ? <table aria-label={`Daily movements for ${finishedGoodLabel(product)}`} className="w-full text-left text-xs"><thead><tr>{['Date', 'Movement', 'Quantity', 'Unit', 'Reference', 'Customer / Destination'].map(label => <th scope="col" key={label} className="px-3 py-2 font-medium text-gray-500">{label}</th>)}</tr></thead><tbody>{daily.map(movement => <tr key={movement.id}><td className="px-3 py-2">{movement.date}</td><td className="px-3 py-2">{movement.type}</td><td className="px-3 py-2">{fmt(movement.quantity)}</td><td className="px-3 py-2">{movement.unit}</td><td className="px-3 py-2">{movement.reference || '—'}{movement.goodsReceivedNoteId && <Link className="ml-2 underline" to={`/goods-received-notes/${movement.goodsReceivedNoteId}`}>GRN</Link>}{movement.purchaseOrderId && <Link className="ml-2 underline" to={`/purchase-orders/${movement.purchaseOrderId}`}>Purchase Order</Link>}{movement.salesOrderId && <Link className="ml-2 underline" to={`/sales-orders/${movement.salesOrderId}`}>Sales Order</Link>}{movement.jobCardId && <Link className="ml-2 underline" to={`/job-cards/${movement.jobCardId}`}>Job Card</Link>}{movement.batch && <p className="text-xs">{movement.batch}</p>}</td><td className="px-3 py-2">{movement.customer || '—'}</td></tr>)}</tbody></table> : <p className="text-sm text-gray-500">No daily movements in this month.</p>}</td></tr>}
             </Fragment>;
@@ -147,11 +257,11 @@ export function StockPage() {
       options={FINISHED_GOODS.map(product => ({ id: product.id, name: finishedGoodLabel(product), category: product.category, unit: product.unit, openingDate: product.openingDate, available: balances.get(product.id)!.currentStock === null ? null : balances.get(product.id)!.currentStock! - reserved(ledger, product.id),
         pieces: finishedPieces[product.id] ?? product.pieces, customer: product.customer,
         fields: [['Size', product.size || '—'], ['Brand', product.brand || '—'], ['Packaging', product.packingSize || '—'], ['Customer', product.customer || '—'], ['Opening Stock', fmt(balances.get(product.id)!.openingStock)], ['Stock IN', fmt(balances.get(product.id)!.stockIn)], ['Stock OUT', fmt(balances.get(product.id)!.stockOut)], ['Status', balances.get(product.id)!.currentStock === null ? 'Not recorded' : balances.get(product.id)!.currentStock! < 0 ? 'Negative balance' : balances.get(product.id)!.currentStock === 0 ? 'Out of stock' : 'In Stock']],
-        detail: `${FINISHED_CATEGORY_LABEL[product.category]} · ${product.subgroup} · Source row ${product.sourceRow}` }))}
+        detail: `${finishedCategories[product.category] ?? product.category} · ${product.subgroup} · Source row ${product.sourceRow}` }))}
       onClose={() => setDirection(null)} onSave={entry => {
         if(stockSaveBlocked)throw new Error(stockSaveBlocked);
         const product = FINISHED_BY_ID.get(entry.materialId)!;
-        addFinishedMovement({ requestId: entry.requestId, productId: product.id, date: entry.date, type: direction, quantity: entry.quantity, unit: product.unit, reference: entry.reference, remarks: entry.remarks, movementPurpose: 'receipt', customer: entry.customer });
+        addFinishedMovement({ requestId: entry.requestId, productId: product.id, date: entry.date, type: direction, quantity: entry.quantity, unit: product.unit, reference: entry.reference, remarks: entry.remarks, movementPurpose: 'receipt', customer: entry.customer, ...(entry.receiptPricing ? { receiptPricing: entry.receiptPricing } : {}) });
         if (direction === 'IN' && entry.pieces !== undefined) updateFinishedPieces(product.id, entry.pieces);
         setNotice(`Stock ${direction} recorded: ${fmt(entry.quantity)} ${product.unit} · ${finishedGoodLabel(product)}.`);
       }} />}

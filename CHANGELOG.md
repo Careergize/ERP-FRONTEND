@@ -1,3 +1,15 @@
+### 10 November 2026 - Customer receipt allocation
+
+Customer receipts support Advance, Against Ref, New Ref and On Account. Against Ref shows open invoices for the selected customer and currency. Requires accounting migration 0012_document_receipt_mode.
+
+### 10 November 2026 - Purchase voucher payments
+
+Manual purchase vouchers support credit or full payment from a cash, bank or mobile-money account. Purchases can select a saved raw material or describe a company item or service. The supplier picker can create and select a saved Finance supplier ledger without leaving the voucher. Paid purchases record the payment method and paying ledger separately. Requires accounting migrations through 0011_document_purchase_method.
+
+### 10 November 2026 - Dated accounting vouchers
+
+Finance vouchers show the configured company, voucher category and posting date together. Opening balances use the book's cutover date. Sales vouchers support credit sales for an existing customer and paid-in-full cash sales for an existing or walk-in customer. Requires accounting migration 0009_document_sale_payment. Sales voucher lines select finished goods with recorded stock on hand and fill in the description and stock unit.
+
 ### 6 November 2026 — Finance preview Batch 6 final QA
 
 Aligned Dashboard and party balance summaries with the reconciled report ledger; added whole-unit chart scaling, unique sidebar destinations, global display states, clearer preview/illustrative labels and modal keyboard containment. Added comprehensive route/accessibility/accounting/preservation checks, repaired test-only dispatch browser cleanup, and documented the module integration plan and client walkthrough. No APIs or production configuration changed. [Final report](docs/finance-ui-preview-batch6.md).

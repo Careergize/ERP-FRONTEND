@@ -1,5 +1,9 @@
 # Development Status
 
+## Backend domain — 18 November 2026
+
+The shared UI API client and local environment settings now target https://api.navapacksolutions.com/api, including the development override. Explicit deployment environment values still override the default and require a rebuild. Live browser authentication/CORS remains unverified.
+
 ## Finance UI preview — Batch 6 final frontend QA, 6 November 2026
 
 All 22 preview destinations audited. Dashboard and seeded customer/supplier balances now derive from the reconciled report ledger; drafts remain isolated. Unique sidebar destinations, shared display states, illustrative labels and explicit modal keyboard containment were refined. Full preservation/accounting/browser checks and a module integration map/client walkthrough are documented in [the final frontend report](finance-ui-preview-batch6.md). This is local demo readiness, not live-accounting or production approval; integrations remain unimplemented. Stopped for final review.

@@ -19,7 +19,7 @@ const th = 'px-4 py-3 font-medium';
 const td = 'px-4 py-3 tabular-nums';
 export function RawMaterialPage() {
   const quality = useQuality();
-  const { rawMovements, rawMaterials:RAW_MATERIALS, addRawMovement,rawLoading,rawError,reloadRaw,rawCanPost } = useInventory();
+  const { rawMovements, rawMaterials:RAW_MATERIALS, addRawMovement,rawStockValuation,rawLoading,rawError,reloadRaw,rawCanPost } = useInventory();
   const {user}=useAuth();const demo=user?.id.startsWith('demo-');
   const [category, setCategory] = useState<RawCategory>('virgin');
   const [view, setView] = useState<View>('levels');
@@ -48,6 +48,15 @@ export function RawMaterialPage() {
     return { label: `${label} Stock`, value: known.length ? [...totals].map(([unit, total]) => `${fmt(total)} ${unit}`).join(', ') : 'Not recorded',
       hint: `${entries.length} materials${known.length < entries.length ? ` · ${entries.length - known.length} balances unrecorded` : ''}` };
   });
+  const stockValue = {
+    label: 'Total Stock Value',
+    value: rawStockValuation
+      ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: rawStockValuation.currency, currencyDisplay: 'code' }).format(Number(rawStockValuation.amount))
+      : 'Not recorded',
+    hint: rawStockValuation
+      ? `Posted valuation for ${rawStockValuation.materialCount} of ${RAW_MATERIALS.length} materials`
+      : 'No posted raw material valuation',
+  };
   const minimumMasters = RAW_MATERIALS.filter(m => m.minLevel !== undefined);
   const low = minimumMasters.filter(m => { const balance = rawMaterialBalance(m, rawMovements).currentStock; return balance !== null && balance < m.minLevel!; }).length;
   const exportReport = () => {
@@ -61,7 +70,7 @@ export function RawMaterialPage() {
   if(rawError)return <Card><p role="alert">{rawError}</p><button className="mt-3 underline" onClick={()=>void reloadRaw()}>Reload saved inventory</button></Card>;
   return <div className="space-y-6"><Card><h2 className="font-semibold text-navy">Raw receipt quality status</h2><p className="text-xs text-gray-500">Physical Stock IN does not imply QC acceptance. Pending/rejected receipts remain physically recorded and are excluded from ordinary issue availability.</p><Link to="/qc/raw" className="underline">Raw Material Inspection</Link><details><summary>Receipt acceptance history</summary>{rawMovements.filter(m => m.movementType === "IN").map(m => <p key={m.id} className="text-xs">{m.date} · {m.materialName} · Receipt {m.id} · {m.quantity} {m.unit} · {rawQualityStatus(quality, m.id)}</p>)}</details></Card>
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-semibold text-navy">Raw Material</h1><p className="mt-1 text-sm text-gray-500">Virgin materials, recycled granules and inks used in production.</p></div><div className="flex gap-2 flex-wrap max-w-full"><button className={button} disabled={!rawCanPost} onClick={() => setDirection('IN')}><ArrowDownToLine size={16} />Stock IN</button><button className={"flex items-center gap-2 rounded-card bg-navy px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-navy"} disabled={!rawCanPost} onClick={() => setDirection('OUT')}><ArrowUpFromLine size={16} />Stock OUT</button></div></header>
-    <section aria-label="Raw material summary" className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[summary[0], { label: 'Below Minimum', value: minimumMasters.length ? String(low) : 'Not configured', hint: minimumMasters.length ? 'Materials with configured minimums' : 'Workbook does not specify minimum levels' }, summary[1], summary[2]].map(card => <Card key={card.label}><p className="text-sm text-gray-500">{card.label}</p><p className="mt-1 text-2xl font-semibold text-navy">{card.value}</p><p className="mt-1 text-xs text-gray-500">{card.hint}</p></Card>)}</section>
+    <section aria-label="Raw material summary" className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">{[summary[0], { label: 'Below Minimum', value: minimumMasters.length ? String(low) : 'Not configured', hint: minimumMasters.length ? 'Materials with configured minimums' : 'Workbook does not specify minimum levels' }, summary[1], summary[2], stockValue].map(card => <Card key={card.label}><p className="text-sm text-gray-500">{card.label}</p><p className="mt-1 text-2xl font-semibold text-navy">{card.value}</p><p className="mt-1 text-xs text-gray-500">{card.hint}</p></Card>)}</section>
     <button className="text-navy underline" onClick={()=>void reloadRaw()}>Reload latest saved stock</button>
     <p className="text-xs text-gray-500">Reference: September 2026 physical stock workbook. All 91 material records are included; existing demo granules are kept separately. Ink and solvent opening balances were not recorded.</p>
     {notice && <p role="status" className="rounded-card bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}

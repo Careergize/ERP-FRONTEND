@@ -42,7 +42,7 @@ try {
   await assert.rejects(loadWorkflowCollection('processes/'), /Permission denied/);
   const dev = loadEnv('development', process.cwd());
   const production = loadEnv('production', process.cwd());
-  if (dev.VITE_API_BASE_URL === 'http://127.0.0.1:8000/api') {
+  if (dev.VITE_API_BASE_URL === 'http://127.0.0.1:8002/api') {
     assert.notEqual(production.VITE_API_BASE_URL, dev.VITE_API_BASE_URL, 'Development-only override must not leak into production');
   }
   console.log('PASS: independent master responses, JWT/method/path, invalid responses, permission failures and development-only configuration. Mock transport; no persistence claim.');

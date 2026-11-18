@@ -1,14 +1,14 @@
 import { useSharedEntry, useRefreshSharedEntry } from '@/context/SharedEntriesContext';
 import { useSalesOrders } from './SalesOrdersContext';
 import { api } from '@/lib/api';
-import { FINISHED_GOODS, replaceFinishedCatalog, type FinishedGood } from '@/lib/finishedGoodsData';
+import { FINISHED_GOODS, FINISHED_CATEGORY_LABEL, replaceFinishedCatalog, type FinishedGood } from '@/lib/finishedGoodsData';
 import { useAuth } from './AuthContext';
 import { useQuality } from './QualityContext';
 import { subjectHeld } from '@/lib/quality';
 import { assertManualFinishedINQC, assertFinishedReceiptQC, rawHeldQuantity } from '@/lib/qualityIntegration';
 import { rawMaterialBalance } from '@/lib/rawMaterialData';
 import { createContext, useContext, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
-import { fetchRawInventory, postRawMovement, persistRawPlan, inventoryError } from '@/lib/rawInventoryApi';
+import { fetchRawInventory, postRawMovement, persistRawPlan, inventoryError, type RawStockValuation } from '@/lib/rawInventoryApi';
 import { validatePlan, type ProcurementItem } from '@/lib/procurement';
 import { FINISHED_BY_ID, type FinishedGoodsMovement } from '@/lib/finishedGoodsData';
 import { allocate, confirmDirectDispatch, confirmDispatch, confirmDispatchBatch, reverseDispatch, reserved, physical, batchPhysical, type FulfillmentLedger, type DispatchBatchEntry } from '@/lib/fulfillment';
@@ -20,6 +20,8 @@ interface InventoryContextValue {
   previewDispatchBatch: (order: SalesOrder, entries: DispatchBatchEntry[]) => void;
   dispatchBatch: (orderId: string, entries: DispatchBatchEntry[]) => void;
   finishedProducts: FinishedGood[];
+  finishedCategories: Record<string, string>;
+  canAddFinishedCategory: boolean;
   finishedLoading: boolean;
   finishedError: string;
   reloadFinished: () => Promise<void>;
@@ -39,6 +41,7 @@ interface InventoryContextValue {
   rawMovements: RawMaterialMovement[];
   rawMaterials: RawMaterial[];
   rawPlans: ProcurementItem[];
+  rawStockValuation: RawStockValuation | null;
   rawLoading: boolean;
   rawError: string;
   rawCanPost: boolean;
@@ -82,6 +85,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [rawCanPost,setRawCanPost]=useState(false),[rawCanPlan,setRawCanPlan]=useState(false);
   const owner=useRef(user?.id); owner.current=user?.id;
   const [finishedProducts, setFinishedProducts] = useState<FinishedGood[]>(FINISHED_GOODS);
+  const [finishedCategories, setFinishedCategories] = useState(FINISHED_CATEGORY_LABEL);
+  const [canAddFinishedCategory, setCanAddFinishedCategory] = useState(false);
   const [finishedLoading, setFinishedLoading] = useState(false);
   const [finishedError, setFinishedError] = useState('');
   const finishedSequence = useRef(0);
@@ -90,8 +95,10 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     if (!account || account.startsWith('demo-')) return;
     setFinishedLoading(true); setFinishedError('');
     try {
-      const { data } = await api.get<{ products: FinishedGood[]; receipts: FinishedGoodsMovement[] }>('/finished-stock/', { timeout: 15000 });
+      const { data } = await api.get<{ products: FinishedGood[]; receipts: FinishedGoodsMovement[]; categories?: Record<string, string>; canAddCategory?: boolean }>('/finished-stock/', { timeout: 15000 });
       if (owner.current !== account || finishedSequence.current !== sequence) return;
+      setFinishedCategories(data.categories ?? FINISHED_CATEGORY_LABEL);
+      setCanAddFinishedCategory(data.canAddCategory ?? false);
       replaceFinishedCatalog(data.products); setFinishedProducts(data.products);
       await refreshSharedEntry('inventory-ledger');
       const next = { ...current.current, movements: [...current.current.movements.filter(m => !m.purchaseOrderId), ...data.receipts] };
@@ -104,11 +111,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [user?.id, refreshSharedEntry]);
   useEffect(() => {
     finishedSequence.current++;
+    setFinishedCategories(FINISHED_CATEGORY_LABEL);
+    setCanAddFinishedCategory(false);
     replaceFinishedCatalog(); setFinishedProducts(FINISHED_GOODS);
     setPurchaseReceipts([]); setFinishedError('');
     setFinishedLoading(!!user && !user.id.startsWith('demo-'));
     void reloadFinished();
   }, [reloadFinished]);
+  const [rawStockValuation, setRawStockValuation] = useState<RawStockValuation | null>(null);
   const rawSequence=useRef(0);
   const reloadRaw=useCallback(async()=>{
     const account=user?.id, sequence=++rawSequence.current;
@@ -120,6 +130,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const data=await fetchRawInventory();
       if(owner.current!==account||rawSequence.current!==sequence)return;
       setRawMaterials(data.materials);rawCurrent.current=data.movements;setRaw(data.movements);setRawPlans(data.plans);
+      setRawStockValuation(data.stockValuation ?? null);
       setRawCanPost(data.canPost);setRawCanPlan(data.canPlan);
     }catch(e){if(owner.current===account&&rawSequence.current===sequence)setRawError(inventoryError(e));}
     finally{if(owner.current===account&&rawSequence.current===sequence)setRawLoading(false);}
@@ -127,6 +138,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   useEffect(()=>{
     const demo=user?.id.startsWith('demo-');
     rawSequence.current++;
+    setRawStockValuation(null);
     rawCurrent.current=demo?RAW_MOVEMENTS:[];setRaw(rawCurrent.current);
     setRawMaterials(demo?RAW_MATERIALS:[]);setRawPlans([]);setRawError('');setRawLoading(!!user&&!demo);
     setRawCanPost(!!demo&&['admin','store_keeper'].includes(user?.role??''));
@@ -168,6 +180,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     if(owner.current!==account)return;
     rawSequence.current++;
     rawCurrent.current = [...rawCurrent.current.filter(m=>m.id!==saved.id),saved]; setRaw(rawCurrent.current);
+    void reloadRaw();
   };
   const requireApprovedOrder = (order?: SalesOrder) => { if (!order?.salesOrderApproval) throw new Error('Production Manager or Admin must approve the Sales Order before Stock OUT.'); };
   const checkDispatchBatch = (order: SalesOrder, entries: DispatchBatchEntry[]) => {
@@ -189,7 +202,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }
     return confirmDispatchBatch(current.current, order, entries);
   };
-  return <InventoryContext.Provider value={{ previewDispatchBatch: (order, entries) => { checkDispatchBatch(order, entries); }, dispatchBatch: (orderId, entries) => { const order = getOrders().find(row => row.id === orderId); if (!order) throw new Error('Select a saved Sales Order.'); publish(checkDispatchBatch(order, entries)); }, finishedProducts,finishedLoading,finishedError,reloadFinished,rawMaterials,rawPlans,rawLoading,rawError,rawCanPost,rawCanPlan,reloadRaw,saveRawPlan,conversions, thresholds,
+  return <InventoryContext.Provider value={{ previewDispatchBatch: (order, entries) => { checkDispatchBatch(order, entries); }, dispatchBatch: (orderId, entries) => { const order = getOrders().find(row => row.id === orderId); if (!order) throw new Error('Select a saved Sales Order.'); publish(checkDispatchBatch(order, entries)); }, finishedProducts,finishedCategories,canAddFinishedCategory,finishedLoading,finishedError,reloadFinished,rawMaterials,rawPlans,rawStockValuation,rawLoading,rawError,rawCanPost,rawCanPlan,reloadRaw,saveRawPlan,conversions, thresholds,
     saveConversion: draft => { if (!['admin','production_manager'].includes(user?.role ?? '')) throw new Error('Admin/Production Manager manages conversions.'); const product = FINISHED_BY_ID.get(draft.productId); if (!product || product.unit !== draft.unit) throw new Error('Select exact product/unit.'); const next = { ...draft, id: crypto.randomUUID(), version: 1 + Math.max(0,...conversionRef.current.filter(c=>c.productId===draft.productId && c.modelId===draft.modelId).map(c=>c.version)) }; validateConversion(next); conversionRef.current=[...conversionRef.current,next]; setConversions(conversionRef.current); },
     saveThreshold: draft => { if (!['admin','store_keeper','production_manager'].includes(user?.role ?? '')) throw new Error('Your role cannot configure stock thresholds.'); if (FINISHED_BY_ID.get(draft.productId)?.unit !== draft.unit) throw new Error('Use exact stock unit.'); validateThreshold(draft); setThresholds(list=>[...list.filter(t=>t.productId!==draft.productId), structuredClone(draft)]); },
     directDispatch: (order,item,batch,draft) => { if (!['admin','store_keeper','receptionist'].includes(user?.role ?? '')) throw new Error('Your role cannot dispatch stock.'); const stored=getOrders().find(o=>o.id===order.id),line=stored?.items?.find(i=>i.id===item.id);if(!stored||!line)throw new Error('Select a current Sales Order line.'); requireApprovedOrder(stored); const held=current.current.movements.some(m=>m.productId===line.itemId && m.batch===batch && m.manufacturingItemId && quality.getState().inspections.some(i=>i.subject.manufacturingItemId===m.manufacturingItemId && i.subject.batchNumber===batch && subjectHeld(quality.getState(),i.subject))); if(held) throw new Error('A QC hold prevents dispatch of this batch.'); publish(confirmDirectDispatch(current.current,stored,line,batch,draft)); },

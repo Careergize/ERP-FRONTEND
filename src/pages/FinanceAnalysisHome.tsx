@@ -1,3 +1,4 @@
+import { formatDisplayDate } from '@/lib/formatDisplayDate';
 import { Card } from '@/components/ui/Card';
 
 type Row = Record<string, unknown>;
@@ -36,7 +37,7 @@ export function FinanceAnalysisHome({report, start, end, onReport, onAccount}: P
   const outflow = details?.reduce((sum,r)=>sum+Number(r.outflows),0);
   const balance = (code:string) => Number(report.trialBalance.find(r=>r.code===code)?.balance ?? 0);
   const accounts = [...report.cashBank].sort((a,b)=>Number(b.closing)-Number(a.closing));
-  return <div className="space-y-5"><div className="finance-section-heading"><div><span className="finance-eyebrow">FINANCIAL OVERVIEW</span><h2>Analysis home</h2><p>{start} to {end} · Company-wide posted accounts</p></div></div>
+  return <div className="space-y-5"><div className="finance-section-heading"><div><span className="finance-eyebrow">FINANCIAL OVERVIEW</span><h2>Analysis home</h2><p>{formatDisplayDate(start)} to {formatDisplayDate(end)} · Company-wide posted accounts</p></div></div>
     <div className="finance-metrics">{[
       ['Total income',report.profitLoss.income,'Profit & Loss'],
       ['Net profit / loss',report.profitLoss.netProfit,'Profit & Loss'],

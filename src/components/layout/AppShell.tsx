@@ -2,7 +2,7 @@ import { AppShellFrame } from './AppShellFrame';
 import { QC_VIEW_ROLES, isQCRole } from '@/lib/quality';
 import { useSharedEntriesPending } from '@/context/SharedEntriesContext';
 import { QC_SECTIONS } from '@/pages/Quality/QualityPage';
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/quotations", label: "Quotations", icon: FileText, roles: ["project_manager", "receptionist", "accounts", "production_manager", "admin"] },
   { to: "/qc", label: "Quality Control", icon: ClipboardList, roles: QC_VIEW_ROLES },
   { to: "/job-cards", label: "Job Cards", icon: ClipboardList, roles: ["receptionist", "production_manager", "store_keeper", "production_operator", "admin"] },
-  { to: "/stock", label: "Stock", icon: Boxes, roles: ["store_keeper", "admin"] },
+  { to: "/stock", label: "Finished Goods", icon: Boxes, roles: ["store_keeper", "admin"] },
   { to: "/raw-materials", label: "Raw Material", icon: Package, roles: ["store_keeper", "admin"] },
   { to: "/spares", label: "Spares", icon: Package, roles: ["store_keeper", "admin"] },
   { to: "/consumables", label: "Consumables", icon: Package, roles: ["store_keeper", "admin"] },
@@ -65,7 +65,7 @@ const FINANCE_NAV_ITEMS: NavItem[] = [
   { to: "/quotations", label: "Quotations", icon: FileText, roles: ["accounts"] },
   { to: "/raw-materials", label: "Raw Materials", icon: Package, roles: ["accounts"] },
   { to: "/recycling", label: "Recycling", icon: Recycle, roles: ["accounts"] },
-  { to: "/stock", label: "Stocks", icon: Boxes, roles: ["accounts"] },
+  { to: "/stock", label: "Finished Goods", icon: Boxes, roles: ["accounts"] },
   { to: "/track-trace", label: "Track & Trace", icon: Search, roles: ["accounts"] },
 ];
 
@@ -80,6 +80,7 @@ const NAV_GROUPS = [
 ];
 
 export function AppShell() {
+  const { pathname } = useLocation();
   const pendingSaves = useSharedEntriesPending();
   const { user, logout } = useAuth();
   const finance = useFinanceAccess();
@@ -94,7 +95,7 @@ export function AppShell() {
     groups.push({ label: 'Finance & Accounts', items: [{ to: '/finance/erpnext', label: 'Finance & Accounts', icon: Calculator, roles: [] }] });
   }
 
-  return <AppShellFrame
+  return <AppShellFrame themeEnabled={pathname === "/"}
     navigation={<>          {groups.map(group => (
             <section key={group.label} aria-label={group.label} className="space-y-1">
               {group.label === 'Sales' ? <SalesNavigation role={user?.role} /> : <h2 className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">{group.label}</h2>}

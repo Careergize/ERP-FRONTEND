@@ -2,9 +2,10 @@ import { useConfirmSharedSave } from '@/context/SharedEntriesContext';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { ENTRY_INPUT, SearchSelect } from './SearchSelect';
+import type { FinishedReceiptPricing } from '@/lib/finishedGoodsData';
 
 export interface InventoryOption { id: string; name: string; category: string; unit: string; available: number | null; openingDate?: string; detail?: string; fields?: [string, string][]; pieces?: number | null; customer?: string }
-export interface InventoryEntry { requestId?: string; movementPurpose?: 'transfer' | 'waste' | 'adjustment'; date: string; materialId: string; quantity: number; reference: string; remarks: string; customer?: string; pieces?: number }
+export interface InventoryEntry { requestId?: string; movementPurpose?: 'transfer' | 'waste' | 'adjustment'; date: string; materialId: string; quantity: number; reference: string; remarks: string; customer?: string; pieces?: number; receiptPricing?: FinishedReceiptPricing }
 const today = () => new Date().toLocaleDateString('en-CA');
 export function InventoryMovementModal({ direction, title, options, categories, initialCategory, onClose, onSave, finishedGoods = false, saveBlockedReason = '', saveNotice = 'Entries are saved to the shared backend. Wait for save confirmation.' }: {
   direction: 'IN' | 'OUT'; title: string; options: InventoryOption[]; categories: [string, string][];
@@ -16,6 +17,11 @@ export function InventoryMovementModal({ direction, title, options, categories, 
   const [materialId, setMaterialId] = useState('');
   const [date, setDate] = useState(today);
   const [quantity, setQuantity] = useState('');
+  const [receiptUnit, setReceiptUnit] = useState<'kg' | 'carton'>('kg');
+  const [cartons, setCartons] = useState('');
+  const [kgPerCarton, setKgPerCarton] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
+  const [currency, setCurrency] = useState('UGX');
   const [reference, setReference] = useState('');
   const [remarks, setRemarks] = useState('');
   const [movementPurpose,setMovementPurpose]=useState<'transfer'|'waste'|'adjustment'>('transfer');
@@ -29,6 +35,14 @@ export function InventoryMovementModal({ direction, title, options, categories, 
   close.current = onClose;
   const locked = useRef(false);
   const selected = options.find(option => option.id === materialId);
+  const unit = selected?.unit.toLowerCase();
+  const canPriceReceipt = finishedGoods && direction === 'IN' && (unit === 'kg' || unit === 'ctn');
+  const byCarton = canPriceReceipt && (unit === 'ctn' || receiptUnit === 'carton');
+  const totalKg = byCarton ? Number((Number(cartons) * Number(kgPerCarton)).toFixed(6)) : Number(quantity);
+  const stockQuantity = byCarton && unit === 'ctn' ? Number(cartons) : totalKg;
+  const totalPrice = Number(unitPrice) * totalKg;
+  const showPrice = canPriceReceipt && unitPrice !== '' && stockQuantity > 0 && Number.isFinite(totalPrice);
+  const formatPrice = (value: number) => value.toLocaleString('en-IN', { maximumFractionDigits: 6 });
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
@@ -51,15 +65,25 @@ export function InventoryMovementModal({ direction, title, options, categories, 
     event.preventDefault();
     if (locked.current) return;
     if(saveBlockedReason){setError(saveBlockedReason);return;}
-    if (!selected || !date || !Number.isFinite(Number(quantity)) || Number(quantity) <= 0) {
+    if (!selected || !date || !Number.isFinite(stockQuantity) || stockQuantity <= 0) {
       setError(`Select a ${finishedGoods ? 'product' : 'material'}, a date and a quantity greater than zero.`); return;
     }
+    if (byCarton && (!Number.isSafeInteger(Number(cartons)) || Number(cartons) <= 0 || !Number.isFinite(totalKg) || totalKg <= 0)) {
+      setError('Enter a positive carton count and average kg per carton.'); return;
+    }
+    if (canPriceReceipt && (byCarton || unitPrice !== '') && (!showPrice || Number(unitPrice) < 0 || !/^[A-Z]{3}$/.test(currency))) {
+      setError('Enter a valid price and a three-letter currency code.'); return;
+    }
+    const receiptPricing: FinishedReceiptPricing | undefined = showPrice ? {
+      currency, unitPrice: Number(unitPrice), priceBasis: 'kg',
+      ...(byCarton ? { cartons: Number(cartons), kgPerCarton: Number(kgPerCarton) } : {}),
+    } : undefined;
     if (selected.openingDate && date < selected.openingDate) { setError(`The reference ledger begins on ${selected.openingDate}. Choose that date or later.`); return; }
     if (finishedGoods && direction === 'IN' && pieces !== '' && (!Number.isSafeInteger(Number(pieces)) || Number(pieces) <= 0)) { setError('Pieces must be a positive whole number or left unrecorded.'); return; }
     locked.current = true;
     setSaving(true);setError('');
     try {
-      await onSave({ requestId:requestId.current,movementPurpose: finishedGoods && direction==='OUT' ? movementPurpose : undefined, date, materialId, quantity: Number(quantity), reference: reference.trim(), remarks: remarks.trim(), ...(finishedGoods ? { customer: customer.trim(), ...(direction === 'IN' && pieces !== '' ? { pieces: Number(pieces) } : {}) } : {}) });
+      await onSave({ requestId:requestId.current,movementPurpose: finishedGoods && direction==='OUT' ? movementPurpose : undefined, date, materialId, quantity: stockQuantity, receiptPricing, reference: reference.trim(), remarks: remarks.trim(), ...(finishedGoods ? { customer: customer.trim(), ...(direction === 'IN' && pieces !== '' ? { pieces: Number(pieces) } : {}) } : {}) });
       await confirmSave();
       onClose();
     } catch(e) { setError(e instanceof Error?e.message:'Unable to save. Reload the store before retrying.'); }
@@ -81,7 +105,18 @@ export function InventoryMovementModal({ direction, title, options, categories, 
         {selected && <p className="text-sm text-gray-500">{finishedGoods ? 'Current Stock' : 'Available'}: {selected.available === null ? 'Not recorded' : `${selected.available.toLocaleString('en-IN', { maximumFractionDigits: 2 })} ${selected.unit}`}</p>}
         {direction === 'OUT' && selected?.available != null && Number(quantity) > selected.available && <p role="status" className="text-xs text-amber-700">Quantity exceeds the recorded balance. This simulation allows the entry.</p>}
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm text-gray-600">Quantity<input type="number" required min="0.000001" step="any" value={quantity} onChange={event => setQuantity(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>
+          {canPriceReceipt && unit === 'kg' && <label className="text-sm text-gray-600">Receive by<select className={`${ENTRY_INPUT} mt-1`} value={receiptUnit} onChange={event => { setReceiptUnit(event.target.value === 'carton' ? 'carton' : 'kg'); setUnitPrice(''); }}><option value="kg">Kilograms</option><option value="carton">Cartons</option></select></label>}
+          {byCarton ? <>
+            <label className="text-sm text-gray-600">Cartons<input className={`${ENTRY_INPUT} mt-1`} type="number" min="1" step="1" required value={cartons} onChange={event => setCartons(event.target.value)} /></label>
+            <label className="text-sm text-gray-600">Average kg per carton<input className={`${ENTRY_INPUT} mt-1`} type="number" min="0.000001" step="any" required value={kgPerCarton} onChange={event => setKgPerCarton(event.target.value)} /></label>
+          </> : <label className="text-sm text-gray-600">{canPriceReceipt ? 'Quantity (kg)' : 'Quantity'}<input type="number" required min="0.000001" step="any" value={quantity} onChange={event => setQuantity(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>}
+          {canPriceReceipt && <>
+            <label className="text-sm text-gray-600">Price per kg<input className={`${ENTRY_INPUT} mt-1`} type="number" min="0" step="any" required={byCarton} value={unitPrice} onChange={event => setUnitPrice(event.target.value)} /></label>
+            <label className="text-sm text-gray-600">Currency<input className={`${ENTRY_INPUT} mt-1`} placeholder="e.g. UGX" maxLength={3} pattern="[A-Z]{3}" required={byCarton || unitPrice !== ''} value={currency} onChange={event => setCurrency(event.target.value.toUpperCase())} /></label>
+          </>}
+          {canPriceReceipt && totalKg > 0 && <p aria-live="polite" className="col-span-full rounded-card bg-emerald-50 p-3 text-sm text-emerald-900">
+            <strong>{formatPrice(totalKg)} kg total</strong>{showPrice && <> · {currency} {formatPrice(Number(unitPrice))} per kg · {currency} {formatPrice(totalPrice)} total cost</>}
+          </p>}
           <label className="text-sm text-gray-600">Unit<input readOnly value={selected?.unit ?? ''} className={`${ENTRY_INPUT} mt-1 bg-gray-50`} /></label>
         </div>
         {finishedGoods && direction === 'OUT' && <label className="block text-sm text-gray-600">Customer / Destination<input value={customer} onChange={event => setCustomer(event.target.value)} className={`${ENTRY_INPUT} mt-1`} /></label>}
